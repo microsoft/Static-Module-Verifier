@@ -1,0 +1,9 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <Dirs Include="smvsdv"/>
+  </ItemGroup>
+
+  <Import Project="$(SLAMSRC)\msbuild\sdv.targets" />
+
+</Project>

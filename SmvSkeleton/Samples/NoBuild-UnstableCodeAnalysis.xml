@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SMVConfig
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="Config.xsd"
+>
+  <!-- Please don't add any comments with double hyphens in them.                                                                              -->
+  <!-- XML does not support a double hyphen within a comment, since it is a delimiter.                                                         -->
+  <!-- Available variables which can be used inside actions :                                                                                  -->
+  <!-- $assemblyDir         : Directory where SMV binaries are located            [Available in all actions]                                   -->
+  <!-- $workingDir          : Directory where SMV is run                          [Available in all actions]                                   -->
+  <!-- $actionName          : Name of the current action                          [Available in all actions]                                   -->
+  <!-- $actionPath          : Path where the current action is run                [Available in all actions]                                   -->
+  <!-- $configFilePath      : Path of the config file provided to SMV             [Available in all actions]                                   -->
+  <!-- $logFilePath         : Path to the log file                                [Available in all actions, if SMV is run with /log:<path>]   -->
+  <!-- $ModuleName          : Name of the module                                  [Available if SMV is run with /module:<name>]                -->
+  <!-- $ModuleDateCreated   : Date created timestamp of the module                [Available if SMV is run with /module:<name>]                -->
+  <!-- $ModuleId            : Id of the module                                    [Available if SMV is run with /module:<name>]                -->
+  <!-- $ModuleLastModified  : Last modified timestamp of the module               [Available if SMV is run with /module:<name>]                -->
+  <Analysis>
+    <Action name="RunUnstableCodeAnalysis">
+      <Env key="acs_bin_dir" value="%smv%\analysisplugins\UnstableCodeAnalysis\AlmostCorrectSpecsBinaries" />
+      <CopyArtifact name="functionunitbpldir" entity="FunctionUnit" type="bpl" to="bpls" />
+      <CopyArtifact name="cfgDir" entity="CompilationUnit" type="rawcfgf" to="cfg" />
+      <!--<CopyArtifact name="sourceDir" entity="Module" type="source" to="src" />-->
+      <Command value="%smv%\analysisplugins\UnstableCodeAnalysis\scripts\unstable.bat" arguments="[$functionunitbpldir] -full -FindDoomedProgramPoints" />
+    </Action>
+
+  </Analysis>
+</SMVConfig>

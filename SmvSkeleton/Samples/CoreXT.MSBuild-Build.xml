@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SMVConfig
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="Config.xsd"
+>
+  <!-- Please don't add any comments with double hyphens in them.                                                                              -->
+  <!-- XML does not support a double hyphen within a comment, since it is a delimiter.                                                         -->
+  <!-- Available variables which can be used inside actions :                                                                                  -->
+  <!-- $assemblyDir         : Directory where SMV binaries are located            [Available in all actions]                                   -->
+  <!-- $workingDir          : Directory where SMV is run                          [Available in all actions]                                   -->
+  <!-- $actionName          : Name of the current action                          [Available in all actions]                                   -->
+  <!-- $actionPath          : Path where the current action is run                [Available in all actions]                                   -->
+  <!-- $configFilePath      : Path of the config file provided to SMV             [Available in all actions]                                   -->
+  <!-- $logFilePath         : Path to the log file                                [Available in all actions, if SMV is run with /log:<path>]   -->
+  <!-- $outputDir           : Directory where the build files are generated       [Available in all actions following InterceptedBuild]        -->
+  <!-- Run the normal build, intercepted build and the scan step -->
+  <Variables>
+    <SetVar key="projectFile" value="fail_driver1.vcxproj" />
+  </Variables>
+
+  <Build>
+    
+    <!-- Do a normal build first to ensure everything builds correctly. -->
+    <Action name="NormalBuild" breakOnError="true" nextAction="InterceptedBuild">      
+      <Command value="build" arguments="nuke" />
+      <Command value="build" arguments="-cz  /j [$smvLogFileNamePrefix]" />
+    </Action>
+
+    <Action name="InterceptedBuild" nextAction="BPL">      
+      <!-- <Command value="&quot;c:\program files (x86)\microsoft visual studio 12.0\vc\vcvarsall.bat&quot;" arguments="x86" /> -->
+      <Command value="SET" arguments="SMV_OUTPUT_DIR=[$outputDir]" />
+      <Command value="SET" arguments="SMV_CL_ADD_ARG=" />
+      <Command value="msbuild" arguments="/noconsolelogger /fileLoggerParameters:LogFile=[$smvLogFileNamePrefix].log /t:rebuild /p:trackfileaccess=false /p:forcerebuild=true /p:cltoolpath=%smv%\bin /p:linktoolpath=%smv%\bin /p:libtoolpath=%smv%\bin [$projectFile]"/>
+    </Action>
+    
+    <Action name="BPL" breakOnError="false">
+      <Path value="[$outputDir]" />
+      <Env key="PATH" value="%smv%\analysisPlugins\sdv\bin\engine\engineq;%smv%\analysisPlugins\sdv\bin\engine\engineq\Corral;%PATH%" />
+      <Command value="slam" arguments=" -no_slamcl -leave_files –smv"/>
+    </Action>
+  </Build>
+</SMVConfig>

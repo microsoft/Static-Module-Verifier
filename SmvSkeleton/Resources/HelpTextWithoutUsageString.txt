@@ -1,0 +1,40 @@
+/Debug
+	To write all the output to the console.
+
+/ProjectFile
+	Name of the project file. It can also be set in the config file.
+
+/Analyze
+	To run analysis.
+
+/Module:<Name>[@<LastModified>]
+	Specify a module for processing. <Name> is the name of the module. If there
+	are multiple modules with the same name, the version that was most recently
+	modified is used. Specify which version of the module to use by passing the
+	<LastModified> value in yyyyMMddHHmmss format. Use /SearchModules to find
+	all versions of a particular module. If the analysis requires multiple
+	modules, pass this parameter once for each module.
+	Eg. For an analysis that requires three modules:
+	smvskeleton.exe /Module:module1 /Module:module2 /Module:mod3@20140604221756
+
+/Rules|Check:*|Rule1,Rule2,Rule3...
+	Specify the rules (comma separated or * for all the rules), you want to verify.
+
+/Log:<LogFilePath>
+	Specify the path for the log file, if you want to persist the log.
+
+/Plugin:<DLLPath>
+	Specify the path to the DLL, if you want to use a plugin
+
+/Config:<ConfigFilePath>
+	Specify the path for the Config file.
+
+/GetAvailableModules
+	Print the entire list of modules in the system to the console.
+
+/SearchModules:<SearchString>
+	Print the list of all the modules in the data source whose names or paths
+	contain <SearchString>.
+
+/Help | /?
+	Print this help text.

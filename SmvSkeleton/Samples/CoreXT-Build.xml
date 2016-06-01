@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SMVConfig
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="Config.xsd"
+>
+  <!-- Please don't add any comments with double hyphens in them.                                                                              -->
+  <!-- XML does not support a double hyphen within a comment, since it is a delimiter.                                                         -->
+  <!-- Available variables which can be used inside actions :                                                                                  -->
+  <!-- $assemblyDir         : Directory where SMV binaries are located            [Available in all actions]                                   -->
+  <!-- $workingDir          : Directory where SMV is run                          [Available in all actions]                                   -->
+  <!-- $actionName          : Name of the current action                          [Available in all actions]                                   -->
+  <!-- $actionPath          : Path where the current action is run                [Available in all actions]                                   -->
+  <!-- $configFilePath      : Path of the config file provided to SMV             [Available in all actions]                                   -->
+  <!-- $logFilePath         : Path to the log file                                [Available in all actions, if SMV is run with /log:<path>]   -->
+  <!-- $outputDir           : Directory where the build files are generated       [Available in all actions following InterceptedBuild]        -->
+  <!-- $analysisDir         : $outputDir\SMV                                      [Available in all actions following InterceptedBuild]        -->
+  <!-- Run the normal build, intercepted build and the scan step -->
+  
+<Variables>
+      <SetVar key="projectFile" value="sources" />
+    </Variables>
+<Build>
+    
+    
+    <!-- Do a normal build first to ensure everything builds correctly. -->
+    <Action name="NormalBuild" breakOnError="true" nextAction="InterceptedBuild">
+      <Command value="set" arguments="inetroot=c:\enlistments\edge" />
+      <Command value="set" arguments="corextbranch=edge" />
+      <Command value="set" arguments="smv_intercept=true" />
+      <Command value="c:\enlistments\edge\tools\path1st\myenv.cmd" arguments="" />
+      <Command value="build" arguments="-cz  /j [$smvLogFileNamePrefix]" />
+    </Action>
+
+    <!-- Intercepted build to produce IR. -->
+    <Action name="InterceptedBuild">
+      <Command value="set" arguments="inetroot=c:\enlistments\edge" />
+      <Command value="set" arguments="corextbranch=edge" />
+      <Command value="set" arguments="smv_intercept=true" />
+      <Command value="c:\enlistments\edge\tools\path1st\myenv.cmd" arguments="" />
+      <Command value="build" arguments="-cz /j [$smvLogFileNamePrefix].a" />
+    </Action>
+  </Build>
+<Analysis>
+<Action name="NullCheckerAnalysis">
+      <Path value="[$outputDir]" />
+      <Env key="SMV_ORIG" value="%SMV%" />
+      <Env key="SMV" value="%smv_orig%\analysisPlugins\NullChecker\bin\engine" />
+      <Env key="PATH" value="%smv_orig%\analysisPlugins\NullChecker\bin\engine;%smv_orig%\analysisPlugins\NullChecker\bin\engine\;%smv_orig%\analysisPlugins\NullChecker\bin\engine\corral;%PATH%" />
+      <Command value="wlimit" arguments="/b /r /c /w 3000 /u 3000 /m 2500 slam -no_slamcl -leave_files -smv >wlimit.txt 2>wlimit.err" />
+    </Action>
+</Analysis>
+</SMVConfig>

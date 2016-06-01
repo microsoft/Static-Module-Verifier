@@ -1,0 +1,1 @@
+smvskeleton.exe [/ProjectFile:<Name>] [/Analyze] [/Debug] [/Module:<Name>[@<LastModified>]] [/Rules|Check:*|Rule1,Rule2,Rule3...] [/Plugin:<DLLPath>] [/Log:<LogFilePath>] [/Config:<ConfigFilePath>] [/GetAvailableModules] [/SearchModules:<SearchString>] [/Help|/?]
