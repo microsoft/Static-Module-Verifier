@@ -32,3 +32,16 @@
 /SmvSkeleton/obj
 /SmvTest/bin/Release
 /SmvTest/obj
+/Smv2Sql/bin/Debug
+/SmvAccessor/bin/Debug
+/SMVActionsTable/bin/Debug
+/SmvCloud/bin/Debug
+/SmvCloud/obj/Debug
+/SmvCloud/rcf/Debug/SmvCloudWorkerContent
+/SmvCloudWorker/bin/Debug
+/SmvDb/obj/Debug
+/SmvInterceptor/bin/Debug
+/SmvInterceptorWrapper/bin/Debug
+/SmvLineCounter/bin/Debug
+/SmvSdv/obj
+/SmvTest/bin/Debug
