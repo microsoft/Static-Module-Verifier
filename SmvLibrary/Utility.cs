@@ -863,12 +863,12 @@ namespace SmvLibrary
 
                 if (buildTime > 0)
                 {
-                    Log.LogMessage("Build time:    " + buildTime);
+                    Log.LogMessage("Build time: " + buildTime + " seconds.");
                 }
 
                 if (analysisTime > 0)
                 {
-                    Log.LogMessage("Analysis time:    " + analysisTime);
+                    Log.LogMessage("Analysis time: " + analysisTime + " seconds.");
                 }
             }            
         }
