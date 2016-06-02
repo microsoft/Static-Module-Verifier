@@ -39,7 +39,7 @@ The final directory structure should look as follows:
   + analysisPlugins: contains sub folders that have analysis plugins
     * SDV: Static Driver Verifier analysis plugin
     - bin: binaries that are SDV specific. Usually also a cmd script that
-           wraps calls to smv.exe
+      wraps calls to smv.exe
     - configurations: SMV configurations for build and analysis
       - ...: any other folders you need for your plugin
 
