@@ -1,7 +1,6 @@
 SMV - Static Module Verifier
 ============================
 
-# Introduction
 This is the core project that enables users to build and verify their
 modules using SMV. Currently SMV supports multiple build environments,
 and produces IR that is based on the SLAM toolchain. Currently, SMV is
@@ -39,8 +38,9 @@ The final directory structure should look as follows:
   + bin: contains all binaries, and today, the intercept.xml as well
   + analysisPlugins: contains sub folders that have analysis plugins
     * SDV: Static Driver Verifier analysis plugin
-      - bin: binaries that are SDV specific. Usually also a cmd script that wraps calls to smv.exe
-      - configurations: SMV configurations for build and analysis
+    - bin: binaries that are SDV specific. Usually also a cmd script that
+           wraps calls to smv.exe
+    - configurations: SMV configurations for build and analysis
       - ...: any other folders you need for your plugin
 
 # SMV and the Azure Cloud
@@ -54,4 +54,5 @@ The final directory structure should look as follows:
     * SmvCloud\ServiceConfiguration.Cloud.cscfg
     * SmvLibrary\CloudConfig.xml
     * SmvCloudWorkerContent\CloudConfig.xml
-  
+- To use the cloud, you can add *executeOn="cloud"* to any action tag,
+  and it will execute using the SMV cloud
