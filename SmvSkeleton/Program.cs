@@ -353,7 +353,7 @@ namespace SmvSkeleton
             }
 
             Utility.PrintResult(Utility.result, (int)buildTime, (int)analysisTime);
-            Log.LogInfo(String.Format("DONE. Total time taken {0} seconds", (int)(buildTime + analysisTime)));
+            Log.LogInfo(String.Format("Total time taken {0} seconds", (int)(buildTime + analysisTime)));
         }
 
         /// <summary>

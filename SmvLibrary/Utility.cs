@@ -858,7 +858,7 @@ namespace SmvLibrary
 
                 foreach (DictionaryEntry actionResult in result)
                 {
-                    Log.LogMessage(String.Format(CultureInfo.InvariantCulture, "{0}  :  {1}", actionResult.Key.ToString().PadRight(55), actionResult.Value));
+                    Log.LogMessage(String.Format(CultureInfo.InvariantCulture, "{0}  :  {1}", actionResult.Key.ToString().PadRight(45), actionResult.Value));
                 }
 
                 Log.LogMessage("=============================================================");
