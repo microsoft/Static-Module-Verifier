@@ -175,7 +175,7 @@ namespace SmvCloudWorker2
 
                             // Execute the action.
                             SMVActionResult result = Utility.ExecuteAction(action);
-
+                            
                             // Change the paths back to their old values.
                             foreach (var key in keys)
                             {

@@ -113,7 +113,6 @@
     </None>
     <None Include="Resources\HelpTextWithoutUsageString.txt" />
     <None Include="Resources\UsageString.txt" />
-    <Content Include="Resources\sdv-pre-results.h" />
     <Content Include="Samples\MSBuild-Build.xml" />
     <Content Include="Samples\NMake-OpenSSL.xml" />
     <Content Include="Samples\NoBuild-SlamScan.xml">

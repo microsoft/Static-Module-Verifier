@@ -633,6 +633,7 @@ namespace SmvLibrary
 
                 // Launch a cmd.exe process to run commands in.
                 Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
+
                 if (process == null)
                 {
                     Log.LogFatalError("Could not launch process.");
@@ -738,6 +739,8 @@ namespace SmvLibrary
                 }
                 else
                 {
+                    // are we sure we want to exit here... the cloud worker instance becomes 
+                    // unhealthy after exiting here...
                     Log.LogFatalError(String.Format("Action: {0}, failed.", name));
                 }
 
