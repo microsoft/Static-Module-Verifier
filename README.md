@@ -49,7 +49,10 @@ The final directory structure should look as follows:
   + You will need to create the following:
     * A storage account
     * A service bus namespace
-  + Once those are created, you can deploy the SMV Worker Role project directly from VS2015
+  + Once those are created, you can deploy the SMV Worker Role project directly from VS2015. Before that, create the following services in Azure:
+    * Storage service with your name of choice (name)
+    * Service bus with the same name and a queue called smvactions
+    * Cloud service with same name
   + Edit the following files for the connection strings for your newly created services:
     * SmvCloud\ServiceConfiguration.Cloud.cscfg
     * SmvLibrary\CloudConfig.xml
