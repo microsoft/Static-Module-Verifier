@@ -146,7 +146,6 @@ namespace SmvLibrary
                         throw;
                     }
                 }
-                System.Threading.Thread.Sleep(5000);
             }
         }
 
@@ -172,7 +171,7 @@ namespace SmvLibrary
             byte[] serializedAction = Utility.ObjectToByteArray(action);
             string moduleHash = Utility.smvModule == null ? string.Empty : Utility.smvModule.Hash;
             ActionsTableEntry entry = new ActionsTableEntry(action.name, actionGuid, schedulerInstanceGuid, serializedAction,
-                Utility.version, Utility.pluginPath, moduleHash);
+                Utility.version, null, moduleHash);
             tableDataSource.AddEntry(entry);
 
             // Add message to queue.        
@@ -209,7 +208,7 @@ namespace SmvLibrary
             ActionsTableEntry entry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
             var action = (SMVAction)Utility.ByteArrayToObject(entry.SerializedAction);
 
-            Console.WriteLine("ActionComplete for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
+            Log.LogInfo("ActionComplete for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
 
             // Populate the original action object so that the master scheduler gets the changes to the action object.
             context.action.analysisProperty = action.analysisProperty;
@@ -220,7 +219,7 @@ namespace SmvLibrary
             if(entry.Status != (int)ActionStatus.Complete)
             {
                 Log.LogError(string.Format("Failed to complete action: {0} ({1})", actionGuid, context.action.name));
-                context.callback(new SMVActionResult[] { context.action.result }, context.context);
+                context.callback(context.action, new SMVActionResult[] { context.action.result }, context.context);
             }
 
             // Download and extract the results.
@@ -239,9 +238,10 @@ namespace SmvLibrary
             {
                 writer.WriteLine("Wait Time: " + waitTime.ToString());
                 writer.WriteLine("Dequeue Count: " + dequeueCount);
+                writer.WriteLine("Output" + Environment.NewLine + results.First().output);
             }
 
-            context.callback(results, context.context);
+            context.callback(context.action, results, context.context);
         }
 
         protected virtual void Dispose(bool disposing)

@@ -89,7 +89,6 @@ namespace SmvLibrary
         [XmlIgnoreAttribute]
         public IDictionary<string, string> variables { get; set; }
     
-
         public string GetFullName() 
         {
             return (string.IsNullOrEmpty(analysisProperty)) ? name : name + " - " + analysisProperty;

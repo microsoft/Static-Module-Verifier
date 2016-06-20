@@ -16,6 +16,7 @@ namespace SmvLibrary
 
         static string logPath;
 
+
         public static void SetLogPath(string path)
         {
             if (!String.IsNullOrEmpty(path))
@@ -29,7 +30,7 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="type">The type of message.</param>
         /// <param name="message">The message to log.</param>
-        static void WriteLog(string type, string message, TextWriter logger)
+        public static void WriteLog(string type, string message, TextWriter logger)
         {
             string result = String.Empty;
 
@@ -39,7 +40,7 @@ namespace SmvLibrary
             }
             else
             {
-                result = String.Format(CultureInfo.InvariantCulture, "{0} : {1}", type, message);
+                result = String.Format(CultureInfo.InvariantCulture, "[{0}] {1}", type, message);
             }
 
             if(logger != null)
@@ -60,12 +61,22 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="fileName">Filename.</param>
         /// <param name="text">The text to log.</param>
-        public static void WriteToFile(string fileName, string text)
+        public static void WriteToFile(string fileName, string text, bool useLogPath)
         {
-            if (!String.IsNullOrEmpty(logPath))
+            if (useLogPath)
             {
-                string path = Path.Combine(logPath, fileName + ".txt");
-                using (StreamWriter sw = new StreamWriter(path))
+                if (!String.IsNullOrEmpty(logPath))
+                {
+                    string path = Path.Combine(logPath, fileName + ".txt");
+                    using (StreamWriter sw = new StreamWriter(path))
+                    {
+                        sw.WriteLine(text);
+                    }
+                }
+            }
+            else
+            {
+                using (StreamWriter sw = new StreamWriter(fileName))
                 {
                     sw.WriteLine(text);
                 }

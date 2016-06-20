@@ -13,6 +13,7 @@ namespace SmvLibrary
     {
         public static int MaxRetries = 6;                                   /// Maximum number of times to try to connect to blob storage before giving up.
         public const int RetryBackoffInterval = 4;                          /// Time to wait in seconds before retrying a request.
+        public const int WorkerWaitTime = 5 * 1000;                         /// Time to wait between successive dequeues from the queue for new work
         public const int BeginReceiveTimeoutInHours = 9;                    /// Timeout for the BeginReceive() call.
         public const string InputBlobContainerName = "smvactions";          /// Container action data is uploaded to.
         public const string OutputBlobContainerName = "smvresults";         /// Container results are downloaded from.

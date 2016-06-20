@@ -20,7 +20,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 [assembly: CLSCompliant(true)]
 namespace SmvLibrary
 {
-    sealed public class Utility
+    public class Utility
     {
         public static SmvAccessor.Module smvModule = null;                                 /// The module if a module and plugin is provided.
         public static ISmvAccessor accessor;                                               /// Accessor object used to interact with the data source.
@@ -538,19 +538,25 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="actions">The list of actions to be executed.</param>
         /// <returns>The list of results of the actions that were executed.</returns>
-        public static List<SMVActionResult> ExecuteActions(SMVAction[] actions)
+        public static List<SMVActionResult> ExecuteActions(SMVAction[] actions, SMVActionCompleteCallBack callback = null)
         {
             var waitHandle = new CountdownEvent(actions.Length);
             actionResults = new List<SMVActionResult>();
 
+            if(callback == null)
+            {
+                callback = new SMVActionCompleteCallBack(DoneExecuteAction);
+            }
+
             foreach (SMVAction action in actions)
             {
-                action.variables = new Dictionary<string, string>(Utility.smvVars);
+                if(action.variables == null)
+                    action.variables = new Dictionary<string, string>(Utility.smvVars);
                 if (!string.IsNullOrEmpty(action.analysisProperty))
                 {
-                    action.variables.Add("analysisProperty", action.analysisProperty);
+                    action.variables["analysisProperty"] = action.analysisProperty;
                 }
-                Utility.scheduler.AddAction(action, new SMVActionCompleteCallBack(DoneExecuteAction), waitHandle);
+                Utility.scheduler.AddAction(action, callback, waitHandle);
             }
 
             waitHandle.Wait();
@@ -562,7 +568,7 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="results"></param>
         /// <param name="context"></param>
-        static void DoneExecuteAction(IEnumerable<SMVActionResult> results, object context)
+        static void DoneExecuteAction(SMVAction action, IEnumerable<SMVActionResult> results, object context)
         {
             actionResults.AddRange(results);
 
@@ -706,7 +712,7 @@ namespace SmvLibrary
                 }
 
                 // Write logs to file if log argument is provided to SMV.
-                Log.WriteToFile(name, output);
+                Log.WriteToFile(Path.Combine(actionPath, "smvexecute.log"), output, false);
 
                 action.result = new SMVActionResult(action.name, output, (process.ExitCode == 0),
                     process.ExitCode != 0 && action.breakOnError);
@@ -917,6 +923,7 @@ namespace SmvLibrary
             }
             smvVars.Add(key, value);
         }
+        
 
         /// <summary>
         /// Replaces the name of each variable embedded in the specified
@@ -947,6 +954,9 @@ namespace SmvLibrary
 
                 arg = StringReplace(arg, k, value, StringComparison.InvariantCultureIgnoreCase);
             }
+
+            if (GetUniqueRegexMatches(@"\[\$(.*?)\]", arg).Length > 0)
+                return ExpandVariables(arg, dict);
 
             return arg;
         }

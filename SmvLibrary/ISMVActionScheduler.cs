@@ -12,7 +12,7 @@ namespace SmvLibrary
     /// </summary>
     /// <param name="results">The results of all the actions that have been executed as a result of this action.</param>
     /// <param name="context">Context object passed to the callback.</param>
-    public delegate void SMVActionCompleteCallBack(IEnumerable<SMVActionResult> results, object context);
+    public delegate void SMVActionCompleteCallBack(SMVAction action, IEnumerable<SMVActionResult> results, object context);
 
     /// <summary>
     /// Defines an interface for classes that want to support scheduling SMVActions.

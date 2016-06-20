@@ -48,9 +48,9 @@ namespace SmvLibrary
                         Log.LogInfo("Executing: " + entry.Action.GetFullName());
                         SMVActionResult result = Utility.ExecuteAction(entry.Action);
                         entry.Results.Add(result);
-                        entry.Callback(entry.Results, entry.Context);
+                        entry.Callback(entry.Action, entry.Results, entry.Context);
                     }
-                    Thread.Sleep(2000);
+                    Thread.Sleep(1000);
                 }
             }
             catch(ThreadAbortException)

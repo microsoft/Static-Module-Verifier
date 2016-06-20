@@ -66,8 +66,6 @@ namespace SmvCloudWorker2
         {
             while (acceptingMessages)
             {
-                System.Threading.Thread.Sleep(30 * 1000);
-
                 try
                 {
                     currentMessage = inputQueue.GetMessage(TimeSpan.FromHours(1));
@@ -109,20 +107,6 @@ namespace SmvCloudWorker2
                                 inputQueue.DeleteMessage(currentMessage);
                                 jobBlob.Delete();
                                 continue;
-                            }
-
-                            // Load the plugin.
-                            if (!string.IsNullOrEmpty(tableEntry.PluginPath))
-                            {
-                                string pluginPath = Environment.ExpandEnvironmentVariables(tableEntry.PluginPath);
-                                var assembly = System.Reflection.Assembly.LoadFrom(pluginPath);
-                                string fullName = assembly.ExportedTypes.First().FullName;
-                                Utility.plugin = (ISMVPlugin)assembly.CreateInstance(fullName);
-                                if (Utility.plugin == null)
-                                {
-                                    throw new Exception("Could not load plugin: " + tableEntry.PluginPath);
-                                }
-                                Utility.plugin.Initialize();
                             }
 
                             // Get the module object, if any.
@@ -194,6 +178,7 @@ namespace SmvCloudWorker2
 
                             // Now set the path attribute again because the client needs it.
                             action.Path = path;
+                            action.result.output = action.result.output.Substring(1, 900) + "... (truncated)";
 
                             // Zip up the working directory and upload it as the result.
                             string resultsZipPath = Path.Combine(resultsDirectory, actionGuid + ".zip");
@@ -223,7 +208,6 @@ namespace SmvCloudWorker2
                     {
                         inputQueue.UpdateMessage(currentMessage, TimeSpan.FromSeconds(5), MessageUpdateFields.Visibility);
                     }
-                    System.Threading.Thread.Sleep(5000);
                 }
             }
         }
@@ -362,7 +346,6 @@ namespace SmvCloudWorker2
                     catch (Exception e)
                     {
                         Trace.TraceError("Failure trying to connect to Azure storage: " + e.ToString());
-                        System.Threading.Thread.Sleep(5000);
                     }
                 }
 

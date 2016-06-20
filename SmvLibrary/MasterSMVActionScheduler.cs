@@ -71,7 +71,7 @@ namespace SmvLibrary
                         scheduler.AddAction(action, new SMVActionCompleteCallBack(ActionComplete), entry);
                     }
                 }
-                System.Threading.Thread.Sleep(2000);
+                System.Threading.Thread.Sleep(1000);
             }
         }
 
@@ -80,7 +80,7 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="results">A list of results, one for each action (the action added to the queue and its children).</param>
         /// <param name="context">A context object.</param>
-        private void ActionComplete(IEnumerable<SMVActionResult> results, object context)
+        private void ActionComplete(SMVAction a, IEnumerable<SMVActionResult> results, object context)
         {
             var entry = context as ActionsQueueEntry;
             SMVAction action = entry.Action;
@@ -90,7 +90,8 @@ namespace SmvLibrary
             Log.LogInfo("Completed action: " + action.GetFullName());
 
             // Add result to our global result set.
-            string result = "Failed";
+
+            string result = "Failed: ";// + entry.Results.First().output;
             if(action.result != null && action.result.isSuccessful)
             {
                 result = "Success";
@@ -104,27 +105,34 @@ namespace SmvLibrary
             // expected to handle the errors by looking at the list of results.
             if (action.result == null || action.result.breakExecution)
             {
-                entry.Callback(entry.Results, entry.Context);
+                entry.Callback(action, entry.Results, entry.Context);
             }
             // Otherwise, add the next action to the queue, if any.
-            else
+            else 
             {
                 SMVAction nextAction = Utility.GetNextAction(action);
 
                 if (nextAction != null)
                 {
                     nextAction.analysisProperty = action.analysisProperty;
-                    nextAction.variables = new Dictionary<string, string>(entry.Action.variables);
-                    //var newEntry = new ActionsQueueEntry(nextAction, entry.Callback, entry.Context);
-                    //newEntry.Results = entry.Results;
-                    //actionsQueue.Enqueue(newEntry);
+                    nextAction.variables = Utility.smvVars.Union(entry.Action.variables).ToDictionary(g => g.Key, g=> g.Value);
                     this.AddAction(nextAction, entry.Callback, entry.Context);
                 }
                 else
                 {
-                    entry.Callback(entry.Results, entry.Context);
+                    entry.Callback(action, entry.Results, entry.Context);
                 }
             }
+        }
+
+        private Dictionary<string, string> m(Dictionary<string, string> d1, Dictionary<string, string> d2)
+        {
+            Dictionary<string, string> r = new Dictionary<string, string>();
+
+
+
+            return r;
+
         }
 
         protected virtual void Dispose(bool disposing)
