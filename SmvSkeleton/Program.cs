@@ -167,7 +167,7 @@ namespace SmvSkeleton
                     {
                         Utility.pluginPath = tokens[1].Replace(Environment.GetEnvironmentVariable("smv"), "%smv%");
                         Assembly assembly = Assembly.LoadFrom(tokens[1]);
-                        string fullName = assembly.ExportedTypes.First().FullName;
+                        string fullName = assembly.ExportedTypes.ToList().Find(t => t.GetInterface(typeof(ISMVPlugin).FullName)!= null).FullName;
                         Utility.plugin = (ISMVPlugin)assembly.CreateInstance(fullName);
 
                         if (Utility.plugin == null)
