@@ -23,7 +23,6 @@ namespace SmvSkeleton
 {
     class Program
     {
-        const int defaultLocalThreadCount = 5;
         static SMVConfig smvConfig;
         const string configXmlFileName = "Config.xml";
         const string configXsdFileName = "Config.xsd";
@@ -270,7 +269,7 @@ namespace SmvSkeleton
             bool buildResult = false;
             bool analysisResult = false;
             double buildTime = 0, analysisTime = 0;
-            int localThreadCount = defaultLocalThreadCount;
+            int localThreadCount = Environment.ProcessorCount;
 
             if(Utility.GetSmvVar("localThreads") != null)
             {

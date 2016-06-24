@@ -91,7 +91,7 @@ namespace SmvLibrary
 
             // Add result to our global result set.
 
-            string result = "Failed: ";// + entry.Results.First().output;
+            string result = "Failed";
             if(action.result != null && action.result.isSuccessful)
             {
                 result = "Success";
@@ -115,6 +115,10 @@ namespace SmvLibrary
                 if (nextAction != null)
                 {
                     nextAction.analysisProperty = action.analysisProperty;
+
+                    DebugUtility.DumpVariables(entry.Action.variables, "entry.action");
+                    DebugUtility.DumpVariables(Utility.smvVars, "smvvars");
+
                     nextAction.variables = Utility.smvVars.Union(entry.Action.variables).ToDictionary(g => g.Key, g=> g.Value);
                     this.AddAction(nextAction, entry.Callback, entry.Context);
                 }

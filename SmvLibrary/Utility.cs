@@ -708,12 +708,9 @@ namespace SmvLibrary
 
                 if(debugMode)
                 {
-                    Log.LogInfo(output);
+                    Log.WriteToFile(Path.Combine(actionPath, string.Format("smvexecute-{0}.log", action.name)), output, false);
                 }
-
-                // Write logs to file if log argument is provided to SMV.
-                Log.WriteToFile(Path.Combine(actionPath, "smvexecute.log"), output, false);
-
+                                
                 action.result = new SMVActionResult(action.name, output, (process.ExitCode == 0),
                     process.ExitCode != 0 && action.breakOnError);
 
@@ -747,7 +744,14 @@ namespace SmvLibrary
                 {
                     // are we sure we want to exit here... the cloud worker instance becomes 
                     // unhealthy after exiting here...
-                    Log.LogFatalError(String.Format("Action: {0}, failed.", name));
+                    if (action.breakOnError)
+                    {
+                        Log.LogFatalError(String.Format("Action: {0}, failed.", name));
+                    }
+                    else
+                    {
+                        Log.LogError(String.Format("Action: {0}, failed.", name));
+                    }
                 }
 
                 return action.result;

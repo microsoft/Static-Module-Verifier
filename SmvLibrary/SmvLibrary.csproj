@@ -69,6 +69,7 @@
     </Compile>
     <Compile Include="CloudConstants.cs" />
     <Compile Include="CloudSMVActionScheduler.cs" />
+    <Compile Include="DebugUtility.cs" />
     <Compile Include="LocalSMVActionScheduler.cs" />
     <Compile Include="MasterSMVActionScheduler.cs" />
     <Compile Include="config.cs">
