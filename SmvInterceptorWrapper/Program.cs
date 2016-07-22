@@ -98,7 +98,7 @@ namespace SmvInterceptorWrapper
                 psi.RedirectStandardOutput = true;
                 psi.UseShellExecute = false;
 
-
+                Console.WriteLine("starting " + psi.ToString());
 
                 if (!psi.EnvironmentVariables.ContainsKey("esp.cfgpersist.persistfile"))
                 {
@@ -107,7 +107,7 @@ namespace SmvInterceptorWrapper
                     psi.EnvironmentVariables.Add("ESP.BplFilesDir", outDir);
                 }
                 
-                //Console.WriteLine("iwrap: cl.exe --> " + psi.FileName + " " + psi.Arguments);
+                Console.WriteLine("iwrap: cl.exe --> " + psi.FileName + " " + psi.Arguments);
 
                 Process p = System.Diagnostics.Process.Start(psi);
                 using(System.IO.StreamWriter sw = new System.IO.StreamWriter(outDir + "\\smvcl.log", true))
