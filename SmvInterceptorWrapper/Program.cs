@@ -86,6 +86,7 @@ namespace SmvInterceptorWrapper
                 Regex fileNameRegex = new Regex(@"(\w+\.c)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                 rspFileContent = fileNameRegex.Replace(rspFileContent, String.Empty);
 
+                File.Copy(Path.Combine(outDir, "sdv_cl.rsp"), Path.Combine(outDir, "sdv_cl.rsp.orig"));
                 using (System.IO.StreamWriter str = new StreamWriter(Path.Combine(outDir, "sdv_cl.rsp"), false))
                 {
                     str.Write(rspFileContent);
