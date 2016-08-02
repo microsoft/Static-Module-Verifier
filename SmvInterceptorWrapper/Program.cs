@@ -46,7 +46,7 @@ namespace SmvInterceptorWrapper
                 }                              
 
                 // remove unsupported flags. currently we are not removing anything.
-                Regex[] unsupportedFlags = {//new Regex(@"\s+\/Yu[^\s]+\s{1}", System.Text.RegularExpressions.RegexOptions.IgnoreCase),
+                Regex[] unsupportedFlags = {new Regex(@"\s+\/Yu[^\s]+\s{1}", System.Text.RegularExpressions.RegexOptions.IgnoreCase),
                                                //new Regex(@"\s+\/Fp[^\s]+\s{1}", System.Text.RegularExpressions.RegexOptions.IgnoreCase),
                                                //new Regex(@"\s+\/Yc[^\s]+\s{1}", System.Text.RegularExpressions.RegexOptions.IgnoreCase),
                                                //new Regex(@"\s+(\/d1nodatetime)", System.Text.RegularExpressions.RegexOptions.IgnoreCase),
@@ -83,10 +83,13 @@ namespace SmvInterceptorWrapper
                 
                 // Persist the RSP file 
                 // Remove file names (*.c) from the content
-                Regex fileNameRegex = new Regex(@"(\w+\.c)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                Regex fileNameRegex = new Regex(@"([\w\.\\$-]+\.[c|cpp|cxx])", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                foreach (Match m in fileNameRegex.Matches(rspContents))
+                {
+                    Console.WriteLine("match: " + m.Value);
+                }
                 rspFileContent = fileNameRegex.Replace(rspFileContent, String.Empty);
 
-                File.Copy(Path.Combine(outDir, "sdv_cl.rsp"), Path.Combine(outDir, "sdv_cl.rsp.orig"));
                 using (System.IO.StreamWriter str = new StreamWriter(Path.Combine(outDir, "sdv_cl.rsp"), false))
                 {
                     str.Write(rspFileContent);
