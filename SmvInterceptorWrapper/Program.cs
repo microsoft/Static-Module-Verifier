@@ -194,12 +194,9 @@ namespace SmvInterceptorWrapper
                 // get out dir
                 string outDir = smvOutDir;
                 Console.WriteLine("iwrap: link.exe --> outdir is " + outDir);
-                
+
                 // get rid of previous LI files, log files etc. 
-                foreach (string liFile in Directory.GetFiles(outDir, "*.li"))
-                {
-                    File.Delete(liFile);
-                }
+                Directory.GetFiles(outDir, "*.li").ToList().ForEach(f => File.Delete(f));
                 if(File.Exists(Path.Combine(outDir, "smvlink.log")))
                 {
                     File.Delete(Path.Combine(outDir, "smvlink.log"));
@@ -216,9 +213,9 @@ namespace SmvInterceptorWrapper
                 // the obj files are specified in the link rsp or command line and can 
                 // be extracted using a regex, similar to how we extract lib files and locations.
 
-                string[] files = System.IO.Directory.GetFiles(outDir, "*.rawcfgf");
+                string[] rawcfgfFiles = System.IO.Directory.GetFiles(outDir, "*.rawcfgf");
 
-                files = files.Select(x => System.IO.Path.GetFileNameWithoutExtension(System.IO.Path.GetFileName(x))).ToArray();
+                string[] files = rawcfgfFiles.Select(x => System.IO.Path.GetFileNameWithoutExtension(System.IO.Path.GetFileName(x))).ToArray();
 
                 files = files.Where(x => !x.Contains(".obj")).ToArray();
 
@@ -305,6 +302,9 @@ namespace SmvInterceptorWrapper
                         File.Copy(outDir + "\\slam.lib.li", outDir + "\\slam.li", true);
                     }
                 }
+
+                // remove rawcfgf files and their corresponding LI files
+                rawcfgfFiles.ToList().ForEach(f => { File.Delete(f); File.Delete(f + ".obj.li"); });
 
                 // create copy for linking with libs
                 if (File.Exists(outDir + "\\slam.li"))
