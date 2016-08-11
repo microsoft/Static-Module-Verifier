@@ -83,7 +83,7 @@ namespace SmvInterceptorWrapper
                 
                 // Persist the RSP file 
                 // Remove file names (*.c) from the content
-                Regex fileNameRegex = new Regex(@"([\w\.\\$-]+\.[c|cpp|cxx])", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                Regex fileNameRegex = new Regex(@"([\w\.\\$-]+\.[c|cpp|cxx]\s)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                 foreach (Match m in fileNameRegex.Matches(rspContents))
                 {
                     Console.WriteLine("match: " + m.Value);
@@ -96,8 +96,8 @@ namespace SmvInterceptorWrapper
                 }
 
                 // call CL.exe
-                ProcessStartInfo psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%")), 
-                    Environment.ExpandEnvironmentVariables(rspContents));
+                Console.WriteLine("Using analysis compiler: " + Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%"));
+                ProcessStartInfo psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%")), Environment.ExpandEnvironmentVariables(rspContents));
                 psi.RedirectStandardError = true;
                 psi.RedirectStandardOutput = true;
                 psi.UseShellExecute = false;
@@ -114,12 +114,10 @@ namespace SmvInterceptorWrapper
                 Console.WriteLine("iwrap: cl.exe --> " + psi.FileName + " " + psi.Arguments);
 
                 Process p = System.Diagnostics.Process.Start(psi);
-                using(System.IO.StreamWriter sw = new System.IO.StreamWriter(outDir + "\\smvcl.log", true))
-                {
-                    sw.Write(p.StandardOutput.ReadToEnd());
-                    sw.Write(p.StandardError.ReadToEnd());
-                }
 
+                string smvclLog = Path.Combine(outDir, "smvcl.log");
+                File.WriteAllText(smvclLog, p.StandardOutput.ReadToEnd());
+                File.AppendAllText(smvclLog, p.StandardError.ReadToEnd());
                 File.AppendAllText(outDir + "\\smvcl.log", psi.Arguments);
             }
             #endregion
@@ -304,7 +302,7 @@ namespace SmvInterceptorWrapper
                 }
 
                 // remove rawcfgf files and their corresponding LI files
-                rawcfgfFiles.ToList().ForEach(f => { File.Delete(f); File.Delete(f + ".obj.li"); });
+                //rawcfgfFiles.ToList().ForEach(f => { File.Delete(f); File.Delete(f + ".obj.li"); });
 
                 // create copy for linking with libs
                 if (File.Exists(outDir + "\\slam.li"))
