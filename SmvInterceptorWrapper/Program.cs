@@ -83,17 +83,14 @@ namespace SmvInterceptorWrapper
                 
                 // Persist the RSP file 
                 // Remove file names (*.c) from the content
-                Regex fileNameRegex = new Regex(@"([\w\.\\$-]+\.[c|cpp|cxx]\s)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                Regex fileNameRegex = new Regex(@"([\s]+[\w\.-\\]+\.(c|cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 foreach (Match m in fileNameRegex.Matches(rspContents))
                 {
                     Console.WriteLine("match: " + m.Value);
                 }
                 rspFileContent = fileNameRegex.Replace(rspFileContent, String.Empty);
 
-                using (System.IO.StreamWriter str = new StreamWriter(Path.Combine(outDir, "sdv_cl.rsp"), false))
-                {
-                    str.Write(rspFileContent);
-                }
+                File.WriteAllText(Path.Combine(outDir, "sdv_cl.rsp"), rspFileContent);
 
                 // call CL.exe
                 Console.WriteLine("Using analysis compiler: " + Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%"));
