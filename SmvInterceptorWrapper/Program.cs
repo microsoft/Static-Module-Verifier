@@ -83,7 +83,7 @@ namespace SmvInterceptorWrapper
                 
                 // Persist the RSP file 
                 // Remove file names (*.c) from the content
-                Regex fileNameRegex1 = new Regex(@"([\s]+[\w\.-\\]+\.(c|))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
+                Regex fileNameRegex1 = new Regex(@"([\s]+[\w\.-\\]+\.c)", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 Regex fileNameRegex2 = new Regex(@"([\s]+[\w\.-\\]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 foreach (Match m in fileNameRegex1.Matches(rspContents))
                 {
