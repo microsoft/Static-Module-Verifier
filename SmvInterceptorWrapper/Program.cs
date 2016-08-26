@@ -83,12 +83,18 @@ namespace SmvInterceptorWrapper
                 
                 // Persist the RSP file 
                 // Remove file names (*.c) from the content
-                Regex fileNameRegex = new Regex(@"([\s]+[\w\.-\\]+\.(c|cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
-                foreach (Match m in fileNameRegex.Matches(rspContents))
+                Regex fileNameRegex1 = new Regex(@"([\s]+[\w\.-\\]+\.(c|))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
+                Regex fileNameRegex2 = new Regex(@"([\s]+[\w\.-\\]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
+                foreach (Match m in fileNameRegex1.Matches(rspContents))
                 {
-                    Console.WriteLine("match: " + m.Value);
+                    Console.WriteLine("match1: " + m.Value);
                 }
-                rspFileContent = fileNameRegex.Replace(rspFileContent, String.Empty);
+                foreach (Match m in fileNameRegex2.Matches(rspContents))
+                {
+                    Console.WriteLine("match2: " + m.Value);
+                }
+                rspFileContent = fileNameRegex1.Replace(rspFileContent, String.Empty);
+                rspFileContent = fileNameRegex2.Replace(rspFileContent, String.Empty);
 
                 File.WriteAllText(Path.Combine(outDir, "sdv_cl.rsp"), rspFileContent);
 
@@ -227,7 +233,7 @@ namespace SmvInterceptorWrapper
                 Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
 
                 p = System.Diagnostics.Process.Start(psi);
-                using (sw = new System.IO.StreamWriter(outDir + "\\smvlink.log", true))
+                using (sw = new System.IO.StreamWriter(outDir + "\\smvlink1.log", true))
                 {
                     sw.Write(p.StandardOutput.ReadToEnd());
                     sw.Write(p.StandardError.ReadToEnd());
@@ -285,11 +291,8 @@ namespace SmvInterceptorWrapper
                     psi.Arguments = " --lib " + string.Join(" ", files);
                     Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
                     slamLinkProcess = System.Diagnostics.Process.Start(psi);
-                    using (sw = new System.IO.StreamWriter(outDir + "\\smvlink.log", true))
-                    {
-                        sw.Write(slamLinkProcess.StandardOutput.ReadToEnd());
-                        sw.Write(slamLinkProcess.StandardError.ReadToEnd());
-                    }
+                    File.AppendAllText(Path.Combine(outDir, "smvlink2.log"), slamLinkProcess.StandardOutput.ReadToEnd());
+                    File.AppendAllText(Path.Combine(outDir, "smvlink2.log"), slamLinkProcess.StandardError.ReadToEnd());
 
                     // copy the slam.lib.li produced by slamlink to slam.li
                     if (File.Exists(outDir + "\\slam.lib.li"))
