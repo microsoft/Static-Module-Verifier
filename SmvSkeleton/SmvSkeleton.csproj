@@ -110,13 +110,6 @@
     <None Include="Resources\HelpTextWithoutUsageString.txt" />
     <None Include="Resources\UsageString.txt" />
     <Content Include="Samples\MSBuild-Build.xml" />
-    <Content Include="Samples\NMake-OpenSSL.xml" />
-    <Content Include="Samples\NoBuild-SlamScan.xml">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="Samples\NoBuild-UnstableCodeAnalysis.xml" />
-    <Content Include="Samples\Razzle-Build.xml" />
-    <Content Include="Samples\SymDiff.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

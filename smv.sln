@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvInterceptorWrapper", "SmvInterceptorWrapper\SmvInterceptorWrapper.csproj", "{8F9EA492-E86B-4F1C-ADC5-BF407466F448}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvInterceptor", "SmvInterceptor\SmvInterceptor.csproj", "{2422E37E-3DC7-4B6C-8246-317AB656D788}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvSkeleton", "SmvSkeleton\SmvSkeleton.csproj", "{E016F57D-68E9-48F9-ABCE-B0C3D7714C84}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvLibrary", "SMVLibrary\SmvLibrary.csproj", "{E03DC0DF-84CC-420C-91B1-2A937E88FF31}"
@@ -32,10 +30,6 @@ Global
 		{8F9EA492-E86B-4F1C-ADC5-BF407466F448}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F9EA492-E86B-4F1C-ADC5-BF407466F448}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F9EA492-E86B-4F1C-ADC5-BF407466F448}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E016F57D-68E9-48F9-ABCE-B0C3D7714C84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E016F57D-68E9-48F9-ABCE-B0C3D7714C84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E016F57D-68E9-48F9-ABCE-B0C3D7714C84}.Release|Any CPU.ActiveCfg = Release|Any CPU
