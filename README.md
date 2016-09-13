@@ -1,3 +1,5 @@
+# UNDER CONSTRUCTION - TARGET DATE 9/15/2016
+
 SMV - Static Module Verifier
 ============================
 
