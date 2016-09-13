@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
-using SmvAccessor;
 using System.Configuration;
 using System.Globalization;
 using System.Threading;
@@ -22,8 +21,6 @@ namespace SmvLibrary
 {
     public class Utility
     {
-        public static SmvAccessor.Module smvModule = null;                                 /// The module if a module and plugin is provided.
-        public static ISmvAccessor accessor;                                               /// Accessor object used to interact with the data source.
         public static ISMVPlugin plugin = null;                                            /// The plugin used for this run of SMV.
         public static string pluginPath = string.Empty;                                    /// Name of the plugin. Used for cloud scheduling.
         public static MasterSMVActionScheduler scheduler;                                  /// Used to schedule actions.
@@ -356,167 +353,6 @@ namespace SmvLibrary
         }
 
         /// <summary>
-        /// Sets certain SMV variables related to a module's attributes.
-        /// </summary>
-        /// <param name="module">The module whose attributes will be used.</param>
-        /// <param name="dict">The dictionary where the variables will be set. If this is null, the global variables dictionary is used.</param>
-        static void SetModuleVariables(SmvAccessor.Module module, IDictionary<string, string> dict = null)
-        {
-            List<char> invalidChars = Path.GetInvalidFileNameChars().ToList();
-            // We need to remove % characters from the paths to prevent environment variable expansion when trying to access these paths from the command line.
-            invalidChars.Add('%');
-            string moduleName = module.Name;
-            foreach (char ch in invalidChars)
-            {
-                moduleName = moduleName.Replace(ch.ToString(), ".");
-            }
-            string dateCreated = module.DateCreated.ToString().Replace("/", "-").Replace(":", ".").Replace(" ", ".");
-            string lastModified = module.LastModified.ToString().Replace("/", "-").Replace(":", ".").Replace(" ", ".");
-
-            if(dict == null)
-            {
-                dict = smvVars;
-            }
-
-            dict["ModuleName"] = moduleName;
-            dict["ModuleDateCreated"] = dateCreated;
-            dict["ModuleId"] = module.Id.ToString(CultureInfo.InvariantCulture);
-            dict["ModuleLastModified"] = lastModified;
-        }
-
-        /// <summary>
-        /// Gets the list of artifacts associated with the compilation units of a module.
-        /// </summary>
-        /// <param name="accessor">The accessor object used to interact with the data source.</param>
-        /// <param name="module">The module whose artifacts we'll be getting.</param>
-        /// <param name="type">The type of artifacts to get.</param>
-        /// <returns>A list of artifacts for compilation units of a certain module.</returns>
-        static IEnumerable<Artifact> GetCompilationUnitArtifactsForModule(ISmvAccessor accessor, SmvAccessor.Module module, string type)
-        {
-            var artifacts = new List<Artifact>();
-            IEnumerable<CompilationUnit> cus = accessor.GetCompilationUnitsByModuleId(module.Id);
-            foreach (var cu in cus)
-            {
-                IEnumerable<Artifact> cuArtifacts = accessor.GetArtifactsForCompilationUnit(cu).Where(artifact => artifact.Type == type);
-                artifacts.InsertRange(0, cuArtifacts);
-            }
-            return artifacts;
-        }
-
-        /// <summary>
-        /// Gets the list of artifacts associated with the function units of a module.
-        /// </summary>
-        /// <param name="accessor">The accessor object used to interact with the data source.</param>
-        /// <param name="module">The module whose artifacts we'll be getting.</param>
-        /// <param name="type">The type of artifacts to get.</param>
-        /// <returns>A list of artifacts for function units of a certain module.</returns>
-        static IEnumerable<Artifact> GetFunctionUnitArtifactsForModule(ISmvAccessor accessor, SmvAccessor.Module module, string type)
-        {
-            var artifacts = new List<Artifact>();
-            IEnumerable<FunctionUnit> fus = accessor.GetFunctionUnitsByModuleId(module.Id);
-            foreach (var fu in fus)
-            {
-                IEnumerable<Artifact> fuArtifacts = accessor.GetArtifactsForFunctionUnit(fu).Where(artifact => artifact.Type == type);
-                artifacts.InsertRange(0, fuArtifacts);
-            }
-            return artifacts;
-        }
-
-        /// <summary>
-        /// Copies artifacts for a module into a directory.
-        /// </summary>
-        /// <param name="module">The module whose artifacts are to be copied.</param>
-        /// <param name="type">The type of artifact to be copied, e.g., "li", "bpl", "rawcfgf"</param>
-        /// <param name="entity">The entity whose artifacts will be copied, e.g., "module", "compilationunit", "functionunit".</param>
-        /// <param name="destDir">The directory the artifacts will be copied to.</param>
-        public static void CopyArtifacts(Module module, string type, string entity, string destDir, TextWriter logger = null)
-        {
-            Log.LogInfo("Copying files of type: " + type, logger);
-            Log.LogInfo("Copying files for entity: " + entity, logger);
-
-            // Delete all files in the artifact directories before copying. Don't delete config.xml.
-            Directory.CreateDirectory(destDir);
-            Log.LogInfo(String.Format(CultureInfo.InvariantCulture, "Using {0} as destination directory..", destDir), logger);
-            Log.LogInfo("Deleting all files in " + destDir, logger);
-            foreach (string file in Directory.EnumerateFiles(destDir))
-            {
-                Utility.DeleteFile(file, logger);
-            }
-
-            // Copy artifacts based on entity type.
-            ISmvAccessor dbAccessor = GetSmvSQLAccessor();
-            IEnumerable<Artifact> artifacts = null;
-            switch (entity)
-            {
-                case "module":
-                    artifacts = dbAccessor.GetArtifactsForModule(module).Where(artifact => artifact.Type == type);
-                    break;
-
-                case "compilationunit":
-                    artifacts = GetCompilationUnitArtifactsForModule(dbAccessor, module, type);
-                    break;
-
-                case "functionunit":
-                    artifacts = GetFunctionUnitArtifactsForModule(dbAccessor, module, type);
-                    break;
-            }
-            foreach (var artifact in artifacts)
-            {
-                string destPath = Path.Combine(destDir, artifact.Name);
-                Utility.CopyFile(artifact.Path, destPath, logger);
-            }
-        }
-
-        /// <summary>
-        /// Copies artifacts based on a list of COPYARTIFACT nodes.
-        /// </summary>
-        /// <param name="copyArtifactNodes">The list of COPYARTIFACT nodes.</param>
-        /// <param name="module">The module whose artifacts will be copied.</param>
-        /// <param name="workingDir">The directory the artifacts will be copied to.</param>
-        /// <param name="variables">Variables dictionary for the action that is the parent of the copy artifact nodes currently being processed.</param>
-        static void CopyArtifacts(CopyArtifactType[] copyArtifactNodes, SmvAccessor.Module module, string workingDir, IDictionary<string, string> variables,
-            TextWriter logger)
-        {
-            if (copyArtifactNodes != null)
-            {
-                Log.LogInfo("Copying artifacts for module: " + module.Name, logger);
-                foreach (CopyArtifactType node in copyArtifactNodes)
-                {
-                    Log.LogInfo("Processing CopyArtifact node..", logger);
-
-                    // Get attributes from the node.
-                    string name = Environment.ExpandEnvironmentVariables(node.name).ToLowerInvariant();
-                    string type = Environment.ExpandEnvironmentVariables(node.type).ToLowerInvariant();
-                    string entity = Environment.ExpandEnvironmentVariables(node.entity.ToString()).ToLowerInvariant();
-                    string dir = node.to;
-
-                    if (dir == null)
-                    {
-                        dir = String.Empty;
-                    }
-
-                    dir = Environment.ExpandEnvironmentVariables(dir);
-
-                    // Set a variable with the name of the node as the key and the directory as the value; we'll need this
-                    // when we run commands for this action.
-                    string destDir = Path.Combine(workingDir, dir);
-                    destDir = Utility.ExpandVariables(destDir, variables);
-
-                    string copyArtifactVar = string.Empty;
-                    if (variables.ContainsKey(name))
-                    {
-                        copyArtifactVar = variables[name];
-                    }
-                    copyArtifactVar += " " + destDir;
-                    variables[name] = copyArtifactVar;
-
-                    // Copy the artifacts.
-                    CopyArtifacts(module, type, entity, destDir, logger);
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets the child action for an action.
         /// </summary>
         /// <param name="action">The parent action.</param>
@@ -574,22 +410,6 @@ namespace SmvLibrary
 
             var countDownEvent = context as CountdownEvent;
             countDownEvent.Signal();
-        }
-
-        /// <summary>
-        /// Returns a singleton accessor object.
-        /// </summary>
-        /// <returns>The accessor object.</returns>
-        public static ISmvAccessor GetSmvSQLAccessor()
-        {
-            if (accessor == null)
-            {
-                // Connect to the database.
-                string connectionString = ConfigurationManager.ConnectionStrings["SmvDbConnectionString"].ConnectionString;
-                Log.LogInfo("Connecting to database with connection string: " + connectionString);
-                accessor = new SmvSqlAccessor(connectionString);
-            }
-            return accessor;
         }
 
         /// <summary>
@@ -656,13 +476,6 @@ namespace SmvLibrary
                     Log.LogMessage(e.Data, logger);
                     actionOutput += e.Data + Environment.NewLine;
                 };
-
-                // Copy artifacts and set module variables if there's a module involved.
-                if (smvModule != null)
-                {
-                    SetModuleVariables(smvModule, variables);
-                    CopyArtifacts(action.CopyArtifact, smvModule, variables["workingDir"], variables, logger);
-                }
 
                 // Run the commands.
                 if (action.Command != null)

@@ -87,10 +87,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SmvAccessor\SmvAccessor.csproj">
-      <Project>{5a923bec-71fc-48e3-b076-2a2aa81ebd03}</Project>
-      <Name>SmvAccessor</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SMVActionsTable\SMVActionsTable.csproj">
       <Project>{6f655d35-3867-4351-8929-23b4578e5190}</Project>
       <Name>SMVActionsTable</Name>

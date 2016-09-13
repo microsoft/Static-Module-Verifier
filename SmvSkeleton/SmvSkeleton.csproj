@@ -80,10 +80,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SmvAccessor\SmvAccessor.csproj">
-      <Project>{5a923bec-71fc-48e3-b076-2a2aa81ebd03}</Project>
-      <Name>SmvAccessor</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SMVLibrary\SmvLibrary.csproj">
       <Project>{e03dc0df-84cc-420c-91b1-2a937e88ff31}</Project>
       <Name>SmvLibrary</Name>

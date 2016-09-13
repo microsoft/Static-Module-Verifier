@@ -3,29 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SmvDb", "SmvDb\SmvDb.sqlproj", "{824F4A4A-89DA-47BB-95E0-8B3F3375505F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smv2Sql", "Smv2Sql\Smv2Sql.csproj", "{B70DBC28-ED30-4306-8433-2E7B9C383CE7}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvInterceptorWrapper", "SmvInterceptorWrapper\SmvInterceptorWrapper.csproj", "{8F9EA492-E86B-4F1C-ADC5-BF407466F448}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvAccessor", "SmvAccessor\SmvAccessor.csproj", "{5A923BEC-71FC-48E3-B076-2A2AA81EBD03}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvInterceptor", "SmvInterceptor\SmvInterceptor.csproj", "{2422E37E-3DC7-4B6C-8246-317AB656D788}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvAccessorDemo", "SmvAccessorDemo\SmvAccessorDemo.csproj", "{BDC040C9-7918-419B-A6CA-046F1AAA3813}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvSkeleton", "SmvSkeleton\SmvSkeleton.csproj", "{E016F57D-68E9-48F9-ABCE-B0C3D7714C84}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvLibrary", "SMVLibrary\SmvLibrary.csproj", "{E03DC0DF-84CC-420C-91B1-2A937E88FF31}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6F655D35-3867-4351-8929-23B4578E5190} = {6F655D35-3867-4351-8929-23B4578E5190}
-		{5A923BEC-71FC-48E3-B076-2A2AA81EBD03} = {5A923BEC-71FC-48E3-B076-2A2AA81EBD03}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvTest", "SmvTest\SmvTest.csproj", "{55EE08BA-C5E5-40C5-A667-B91D88DABD0D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvLineCounter", "SmvLineCounter\SmvLineCounter.csproj", "{417057CF-9FBD-4732-BE9D-42875EBA61C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMVActionsTable", "SMVActionsTable\SMVActionsTable.csproj", "{6F655D35-3867-4351-8929-23B4578E5190}"
 EndProject
@@ -39,30 +28,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{824F4A4A-89DA-47BB-95E0-8B3F3375505F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{824F4A4A-89DA-47BB-95E0-8B3F3375505F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{824F4A4A-89DA-47BB-95E0-8B3F3375505F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{824F4A4A-89DA-47BB-95E0-8B3F3375505F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{824F4A4A-89DA-47BB-95E0-8B3F3375505F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{824F4A4A-89DA-47BB-95E0-8B3F3375505F}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{B70DBC28-ED30-4306-8433-2E7B9C383CE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B70DBC28-ED30-4306-8433-2E7B9C383CE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B70DBC28-ED30-4306-8433-2E7B9C383CE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B70DBC28-ED30-4306-8433-2E7B9C383CE7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8F9EA492-E86B-4F1C-ADC5-BF407466F448}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8F9EA492-E86B-4F1C-ADC5-BF407466F448}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F9EA492-E86B-4F1C-ADC5-BF407466F448}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F9EA492-E86B-4F1C-ADC5-BF407466F448}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A923BEC-71FC-48E3-B076-2A2AA81EBD03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A923BEC-71FC-48E3-B076-2A2AA81EBD03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A923BEC-71FC-48E3-B076-2A2AA81EBD03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A923BEC-71FC-48E3-B076-2A2AA81EBD03}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BDC040C9-7918-419B-A6CA-046F1AAA3813}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BDC040C9-7918-419B-A6CA-046F1AAA3813}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E016F57D-68E9-48F9-ABCE-B0C3D7714C84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E016F57D-68E9-48F9-ABCE-B0C3D7714C84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E016F57D-68E9-48F9-ABCE-B0C3D7714C84}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -75,10 +48,6 @@ Global
 		{55EE08BA-C5E5-40C5-A667-B91D88DABD0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55EE08BA-C5E5-40C5-A667-B91D88DABD0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55EE08BA-C5E5-40C5-A667-B91D88DABD0D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{417057CF-9FBD-4732-BE9D-42875EBA61C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{417057CF-9FBD-4732-BE9D-42875EBA61C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{417057CF-9FBD-4732-BE9D-42875EBA61C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{417057CF-9FBD-4732-BE9D-42875EBA61C9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6F655D35-3867-4351-8929-23B4578E5190}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6F655D35-3867-4351-8929-23B4578E5190}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F655D35-3867-4351-8929-23B4578E5190}.Release|Any CPU.ActiveCfg = Release|Any CPU

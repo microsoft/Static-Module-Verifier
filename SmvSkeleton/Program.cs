@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.IO;
 using System.Configuration;
-using SmvAccessor;
 using System.Xml;
 using System.Xml.Schema;
 using System.Diagnostics;
@@ -67,69 +66,6 @@ namespace SmvSkeleton
                     PrintHelp();
                     break;
                 }
-                #region module
-                if (args[i].StartsWith("/module:", StringComparison.InvariantCulture))
-                {
-                    string path;
-                    string dateTime = String.Empty;
-                    Regex re = new Regex(@"^/module:([^@]+)@?(.+)?$");
-                    Match match = re.Match(args[i].Trim());
-                    if (!match.Success)
-                    {
-                        Log.LogError("Invalid argument: " + args[i]);
-                        PrintUsage();
-                        return false;
-                    }
-
-                    path = match.Groups[1].Value.Trim();
-                    if (match.Groups.Count == 3)
-                    {
-                        dateTime = match.Groups[2].Value;
-                    }
-
-                    DateTime dt = default(DateTime);
-                    if (!String.IsNullOrEmpty(dateTime))
-                    {
-                        try
-                        {
-                            dt = DateTime.ParseExact(dateTime, "yyyyMMddHHmmss", System.Globalization.CultureInfo.InvariantCulture);
-                        }
-                        catch (FormatException)
-                        {
-                            Log.LogError(String.Format(CultureInfo.InvariantCulture, "Could not parse timestamp: {0} from module parameter: {1}", dateTime, args[i]));
-                            return false;
-                        }
-                    }
-
-                    ISmvAccessor dbAccessor = Utility.GetSmvSQLAccessor();
-                    Utility.smvModule = dbAccessor.GetModuleByName(path, dt, true);
-                    if (Utility.smvModule == null)
-                    {
-                        Log.LogError("Module with name: " + path + " does not exist in the data source.");
-                        return false;
-                    }
-                    i++;
-                }
-                #endregion 
-                else if (args[i].Equals("/getavailablemodules", StringComparison.InvariantCulture))
-                {
-                    Log.LogInfo("Printing list of all modules in the data source:");
-                    ISmvAccessor dbAccessor = Utility.GetSmvSQLAccessor();
-                    dbAccessor.PrintModuleStatistics();
-                    i++;
-                    return false;
-                }
-                else if (args[i].StartsWith("/searchmodules:", StringComparison.InvariantCulture))
-                {
-                    string searchText = args[i].Replace("/searchmodules:", String.Empty);
-                    Log.LogInfo(String.Format(CultureInfo.InvariantCulture, "INFO: Searching for modules with \"{0}\" in either the name field..", searchText));
-                    ISmvAccessor dbAccessor = Utility.GetSmvSQLAccessor();
-                    IEnumerable<SmvAccessor.Module> ms = dbAccessor.SearchModules(searchText);
-                    dbAccessor.PrintModuleStatistics(ms);
-                    i++;
-                    return false;
-                }
-
                 else if (args[i].StartsWith("/config:", StringComparison.InvariantCulture) || args[i].StartsWith("/log:", StringComparison.InvariantCulture))
                 {
                     String[] tokens = args[i].Split(new char[] { ':' }, 2);
