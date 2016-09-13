@@ -16,18 +16,23 @@ namespace SmvInterceptorWrapper
         {
             // Get the output dir from the Environment variable set by SMV
             string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
+            string smvclLogPath = Path.Combine(smvOutDir, "smvcl.log");
+            StringBuilder smvclLogContents = new StringBuilder();
 
             List<string> iargs = args.Where(x => !x.Contains("/iwrap:") && !x.Contains(".rsp") && !x.Contains("/plugin:")).ToList();
 
-            #region cl.exe
+            #region cl.exe            
             if (args.Contains("/iwrap:cl.exe"))
             {
-                Console.WriteLine("iwrap: cl.exe called with args " + string.Join(",", args));
-                string[] unsupportedClExtensions = {".inf", ".mof", ".src", ".pdb" };
+                smvclLogContents.Append("iwrap: cl.exe called with args " + string.Join(",", args));
+                string[] unsupportedClExtensions = {".inf", ".mof", ".src", ".pdb", ".def", "~" };
 
                 // check for inf and other unsupported files and skip
-                if (args.Where(a => unsupportedClExtensions.Any(b => a.Contains(b))).Count() > 0)
+                List<string> unsupportedArgs = args.Where(a => unsupportedClExtensions.Any(b => a.ToLowerInvariant().Contains(b))).ToList();
+                if (unsupportedArgs.Count() > 0)
                 {
+                    smvclLogContents.Append("iwrap: cl.exe unsupported extension:" + string.Join(",", unsupportedArgs));
+                    File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
                     return;
                 }
 
@@ -78,25 +83,22 @@ namespace SmvInterceptorWrapper
                 rspContents = Environment.ExpandEnvironmentVariables(" /nologo /w /Y- /analyze:only /analyze:plugin \"" + plugin +
                               "\" /errorReport:none" + " " + string.Join(" ", iargs)) + " " + rspContents;
 
-                // get out dir
-                string outDir = smvOutDir;
-                
                 // Persist the RSP file 
                 // Remove file names (*.c) from the content
                 Regex fileNameRegex1 = new Regex(@"([\s]+[\w\.-\\]+\.c)", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 Regex fileNameRegex2 = new Regex(@"([\s]+[\w\.-\\]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 foreach (Match m in fileNameRegex1.Matches(rspContents))
                 {
-                    Console.WriteLine("match1: " + m.Value);
+                    smvclLogContents.Append("match1: " + m.Value);
                 }
                 foreach (Match m in fileNameRegex2.Matches(rspContents))
                 {
-                    Console.WriteLine("match2: " + m.Value);
+                    smvclLogContents.Append("match2: " + m.Value);
                 }
                 rspFileContent = fileNameRegex1.Replace(rspFileContent, String.Empty);
                 rspFileContent = fileNameRegex2.Replace(rspFileContent, String.Empty);
 
-                File.WriteAllText(Path.Combine(outDir, "sdv_cl.rsp"), rspFileContent);
+                File.WriteAllText(Path.Combine(smvOutDir, "sdv_cl.rsp"), rspFileContent);
 
                 // call CL.exe
                 Console.WriteLine("Using analysis compiler: " + Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%"));
@@ -109,19 +111,20 @@ namespace SmvInterceptorWrapper
 
                 if (!psi.EnvironmentVariables.ContainsKey("esp.cfgpersist.persistfile"))
                 {
-                    psi.EnvironmentVariables.Add("esp.cfgpersist.persistfile", outDir + "\\$SOURCEFILE.rawcfgf");
+                    psi.EnvironmentVariables.Add("esp.cfgpersist.persistfile", smvOutDir + "\\$SOURCEFILE.rawcfgf");
                     psi.EnvironmentVariables.Add("Esp.CfgPersist.ExpandLocalStaticInitializer", "1");
-                    psi.EnvironmentVariables.Add("ESP.BplFilesDir", outDir);
+                    psi.EnvironmentVariables.Add("ESP.BplFilesDir", smvOutDir);
                 }
                 
                 Console.WriteLine("iwrap: cl.exe --> " + psi.FileName + " " + psi.Arguments);
 
                 Process p = System.Diagnostics.Process.Start(psi);
 
-                string smvclLog = Path.Combine(outDir, "smvcl.log");
-                File.WriteAllText(smvclLog, p.StandardOutput.ReadToEnd());
-                File.AppendAllText(smvclLog, p.StandardError.ReadToEnd());
-                File.AppendAllText(outDir + "\\smvcl.log", psi.Arguments);
+                
+                smvclLogContents.Append(p.StandardOutput.ReadToEnd());
+                smvclLogContents.Append(p.StandardError.ReadToEnd());
+                File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
+
             }
             #endregion
             #region smv2sql.exe
@@ -180,6 +183,7 @@ namespace SmvInterceptorWrapper
             {
                 Console.WriteLine("iwrap: link.exe called with args " + string.Join(" ", iargs));
                 Console.WriteLine("iwrap: link.exe --> " + Environment.ExpandEnvironmentVariables("slamcl_writer.exe"));
+
 
                 // get rsp contents
                 string rspContents = string.Empty;
