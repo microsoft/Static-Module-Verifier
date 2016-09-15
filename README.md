@@ -1,7 +1,4 @@
-# UNDER CONSTRUCTION - TARGET DATE 9/15/2016
-
 # Static Module Verifier 
-============================
 
 Static Module Verifier enables two things at it's core:
 
@@ -10,27 +7,58 @@ Static Module Verifier enables two things at it's core:
 
 StaticModuleVerifier supports multiple build environments, and can
 produce IR based on any toolchain that you specify. Examples of such
-toolchains are the [SMACK] {https://github.com/smackers/smack/}
+toolchains are the [SMACK] (https://github.com/smackers/smack/)
 toolchain and the [SLAM]
-{https://www.microsoft.com/en-us/research/project/slam/} toolchain,
+(https://www.microsoft.com/en-us/research/project/slam/) toolchain,
 which is also used as the frontend in the [Static Driver Verifier]
-{https://msdn.microsoft.com/en-us/library/windows/hardware/ff552808(v=vs.85).aspx}
+(https://msdn.microsoft.com/en-us/library/windows/hardware/ff552808(v=vs.85).aspx)
 project.
 
-# Building
+StaticModuleVerifier takes as input a configuration file that
+specifies the series of actions to execute for building, intercepting,
+and then performing analysis. Details of the configurations can be
+found in the documentation folder.
+
+# Build
+
+## Windows
 - Prerequisites:
   + Visual Studio 2015
   + Microsoft Azure SDK for VS 2015: version 2.9 .NET
   + NuGet with default configurations
-- Please clone the SMV sources from https://staticmoduleverifier.visualstudio.com/SMV/_git/SMV
 - After cloning, you should be able to open the smv.sln file in your repository in VS2015
-- The solution should build as is for all configurations and platforms
+- The smv.sln solution should build in VS2015
 
-# Installing
-Installing SMV requires that the relevant binaries are gathered in a
-single folder. For this purpose, the deployment folder contains
-scripts to create such deployments. After gathering the relevant
-binaries, SMV expects that analysis plugins are created in an
+## Linux
+- Prerequisites
+  + Mono complete installation
+  + NuGet for Linux
+- After cloning, you will need to install the following packages
+    + nuget install Microsoft.Data.Edm
+    + nuget install WindowsAzure.ServiceBus
+    + nuget install WindowsAzure.Storage
+    + nuget install WindowsAzure.ServiceBus
+    + nuget install WindowsAzure.WindowsAzure.ServiceRuntime
+    + nuget install WindowsAzure.ServiceBus
+    + nuget install AzureSDK2.2DLLs
+    + nuget install WindowsAzure.Storage
+    + nuget install WindowsAzure.Storage
+    + nuget install WindowsAzure.Storage -Version 4.3.0
+    + nuget install WindowsAzure.ServiceBus -Version 3.0.0-preview -Pre
+    + nuget install WindowsAzure.ServiceBus -Version 3.0.0
+    + Note that nuget will place them in the current working
+    directory. It is suggested that you create a packages folder and
+    run nuget within that folder to have the packages be centrally
+    located.
+- Edit the following files and make sure the Azure references point to the correct locations (hintpaths):
+    + SMVActionsTable/SMVActionsTable.csproj
+    + SmvCloudWorker/SmvCloudWorker.csproj
+    + SmvLibrary/SmvLibrary.csproj
+    + SmvSkeleton/SmvSkeleton.csproj
+- Now you should be able to do xbuild at the top level to build smv.sln
+
+# Usage
+StaticModuleVerifier expects that analysis plugins are created in an
 analysisPlugins folder which resides at the same level as the bin
 folder (where you placed all the binaries).
 
