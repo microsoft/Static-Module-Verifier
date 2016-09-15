@@ -1,15 +1,21 @@
 # UNDER CONSTRUCTION - TARGET DATE 9/15/2016
 
-SMV - Static Module Verifier
+# Static Module Verifier 
 ============================
 
-This is the core project that enables users to build and verify their
-modules using SMV. Currently SMV supports multiple build environments,
-and produces IR that is based on the SLAM toolchain. Currently, SMV is
-capable of producing IR in the LI format for C/C++ projects that are
-using the following build environments: Razzle, MSBuild, CoreXT, and
-Make. SMV can be easily configured to use any other toolchain in mind
-for producing different IR.
+Static Module Verifier enables two things at it's core:
+
+  - Building IR for a module to perform full program analysis
+  - Scaling the analysis using the Azure cloud
+
+StaticModuleVerifier supports multiple build environments, and can
+produce IR based on any toolchain that you specify. Examples of such
+toolchains are the [SMACK] {https://github.com/smackers/smack/}
+toolchain and the [SLAM]
+{https://www.microsoft.com/en-us/research/project/slam/} toolchain,
+which is also used as the frontend in the [Static Driver Verifier]
+{https://msdn.microsoft.com/en-us/library/windows/hardware/ff552808(v=vs.85).aspx}
+project.
 
 # Building
 - Prerequisites:
