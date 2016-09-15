@@ -34,8 +34,8 @@ found in the documentation folder.
   + Mono complete installation
   + NuGet for Linux
 - After cloning, you will need to install the following packages
-    + nuget install Microsoft.Data.Edm
-    + nuget install WindowsAzure.ServiceBus
+```
+    + nuget install Microsoft.Data.Edm WindowsAzure.ServiceBus
     + nuget install WindowsAzure.Storage
     + nuget install WindowsAzure.ServiceBus
     + nuget install WindowsAzure.WindowsAzure.ServiceRuntime
@@ -46,6 +46,7 @@ found in the documentation folder.
     + nuget install WindowsAzure.Storage -Version 4.3.0
     + nuget install WindowsAzure.ServiceBus -Version 3.0.0-preview -Pre
     + nuget install WindowsAzure.ServiceBus -Version 3.0.0
+```
     + Note that nuget will place them in the current working
     directory. It is suggested that you create a packages folder and
     run nuget within that folder to have the packages be centrally
@@ -58,15 +59,12 @@ found in the documentation folder.
 - Now you should be able to do xbuild at the top level to build smv.sln
 
 # Usage
-StaticModuleVerifier expects that analysis plugins are created in an
-analysisPlugins folder which resides at the same level as the bin
-folder (where you placed all the binaries).
-
-Interception can be performed based on an intercept.xml file that
-needs to be present in the same folder as the interceptor
-binaries. For example, if you are intercepting cl.exe, you need to
-copy interceptor.exe to cl.exe and have an intercept.xml file in the
-same folder.
+## Packaging
+StaticModuleVerifier expects the following directory structure for plugins:
+  - bin: all StaticModuleVerifier core binaries are placed here (including external dependencies)
+  - analysisPlugins:  analysis plugins are created in an analysisPlugins folder which resides at the same level as the bin folder (where you placed all the binaries).
+    + bin: anlaysis plugin specific binaries (your checker etc.) and top level script for invoking StaticModuleVerifier
+    + configurations: configurations that are to be used for StaticModuleVerifier.exe
 
 The final directory structure should look as follows:
 
@@ -79,6 +77,12 @@ The final directory structure should look as follows:
     - configurations: SMV configurations for build and analysis
       - ...: any other folders you need for your plugin
 
+## Plugin
+Coming soon...
+
+## Interception
+Coming Soon...
+
 # SMV and the Azure Cloud
 - Deploying to Azure
   + You will need a valid subscription in Azure
@@ -86,12 +90,11 @@ The final directory structure should look as follows:
     * A storage account
     * A service bus namespace
   + Once those are created, you can deploy the SMV Worker Role project directly from VS2015. Before that, create the following services in Azure:
-    * Storage service with your name of choice (name)
-    * Service bus with the same name and a queue called smvactions
-    * Cloud service with same name
+    * Storage service with your name of choice (for example, MySmvCloud)
+    * Service bus with the same name as the service (MySmvCloud) and a queue called smvactions
+    * Cloud service with same name as the service (MySmvCloud)
   + Edit the following files for the connection strings for your newly created services:
     * SmvCloud\ServiceConfiguration.Cloud.cscfg
     * SmvLibrary\CloudConfig.xml
     * SmvCloudWorkerContent\CloudConfig.xml
-- To use the cloud, you can add *executeOn="cloud"* to any action tag,
-  and it will execute using the SMV cloud
+- To use the cloud, you can add *executeOn="cloud"* to any action tag,  and it will execute using the SMV cloud
