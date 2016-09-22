@@ -29,6 +29,7 @@ namespace SmvSkeleton
         const string cloudConfigXsdFileName = "CloudConfig.xsd";
         private static bool doAnalysis = false;
         private static string buildLogFileNamePrefix = "smvbuild";
+        private static bool cloud = false;
 
         /// <summary>
         /// Prints the usage string to the console.
@@ -57,14 +58,17 @@ namespace SmvSkeleton
             bool help = false;
             bool unsupportedArgument = false;
 
-            for (int i = 0; i < args.Length; )
+            for (int i = 0; i < args.Length;)
             {
-                args[i] = args[i].ToLowerInvariant();
-                if (args[i].Equals("/help") || args[i].Equals("/?")) 
+                if (args[i].Equals("/help", StringComparison.InvariantCultureIgnoreCase) || args[i].Equals("/?"))
                 {
                     help = true;
                     PrintHelp();
                     break;
+                }
+                else if(args[i].Equals("/cloud", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    cloud = true;
                 }
                 else if (args[i].StartsWith("/config:", StringComparison.InvariantCulture) || args[i].StartsWith("/log:", StringComparison.InvariantCulture))
                 {
@@ -102,7 +106,7 @@ namespace SmvSkeleton
                     {
                         Utility.pluginPath = tokens[1].Replace(Environment.GetEnvironmentVariable("smv"), "%smv%");
                         Assembly assembly = Assembly.LoadFrom(tokens[1]);
-                        string fullName = assembly.ExportedTypes.ToList().Find(t => t.GetInterface(typeof(ISMVPlugin).FullName)!= null).FullName;
+                        string fullName = assembly.ExportedTypes.ToList().Find(t => t.GetInterface(typeof(ISMVPlugin).FullName) != null).FullName;
                         Utility.plugin = (ISMVPlugin)assembly.CreateInstance(fullName);
 
                         if (Utility.plugin == null)
@@ -160,7 +164,7 @@ namespace SmvSkeleton
         {
             Utility.SetSmvVar("workingDir", Directory.GetCurrentDirectory());
             Utility.SetSmvVar("logFilePath", null);
-            Utility.SetSmvVar("assemblyDir", Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));  
+            Utility.SetSmvVar("assemblyDir", Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
             Utility.SetSmvVar("configFilePath", Path.Combine(Utility.GetSmvVar("workingDir"), configXmlFileName));
             Utility.SetSmvVar("smvLogFileNamePrefix", buildLogFileNamePrefix);
 
@@ -170,16 +174,16 @@ namespace SmvSkeleton
             if (!ProcessArgs(args))
             {
                 return;
-            } 
-            
+            }
+
             // Get the SMV version name.
             string smvVersionTxtPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), "SmvVersionName.txt");
-            if(!File.Exists(smvVersionTxtPath))
+            if (!File.Exists(smvVersionTxtPath))
             {
                 Log.LogFatalError("SmvVersionName.txt must exist in the SMV bin directory.");
             }
             string[] lines = File.ReadAllLines(smvVersionTxtPath);
-            if(lines.Length < 1)
+            if (lines.Length < 1)
             {
                 Log.LogFatalError("SmvVersionName.txt is empty.");
             }
@@ -198,7 +202,7 @@ namespace SmvSkeleton
 
             // Project file value from command line overrides the Config value
             if (!String.IsNullOrEmpty(Utility.GetSmvVar("projectFileArg")))
-            { 
+            {
                 Utility.SetSmvVar("projectFile", Utility.GetSmvVar("projectFileArg"));
             }
 
@@ -207,88 +211,90 @@ namespace SmvSkeleton
             double buildTime = 0, analysisTime = 0;
             int localThreadCount = Environment.ProcessorCount;
 
-            if(Utility.GetSmvVar("localThreads") != null)
+            if (Utility.GetSmvVar("localThreads") != null)
             {
                 localThreadCount = int.Parse(Utility.GetSmvVar("localThreads"));
             }
             Log.LogInfo(String.Format("Running local scheduler with {0} threads", localThreadCount));
 
             // Load the cloud config from an XML file.
-            
+
             SMVCloudConfig cloudConfig = GetSMVCloudConfig();
 
             // Set up the schedulers.
-            using (Utility.scheduler = new MasterSMVActionScheduler())
-            using (var localScheduler = new LocalSMVActionScheduler(localThreadCount))
-            using (var cloudScheduler = new CloudSMVActionScheduler(cloudConfig))
+            Utility.scheduler = new MasterSMVActionScheduler();
+            LocalSMVActionScheduler localScheduler = new LocalSMVActionScheduler(localThreadCount);
+            CloudSMVActionScheduler cloudScheduler = null;
+            if(cloud) cloudScheduler = new CloudSMVActionScheduler(cloudConfig);
+            Utility.scheduler.AddScheduler("local", localScheduler);
+            Utility.scheduler.AddScheduler("cloud", cloudScheduler);
+            // Do build if specified in the configuration file
+            if (smvConfig.Build != null)
             {
-                Utility.scheduler.AddScheduler("local", localScheduler);
-                Utility.scheduler.AddScheduler("cloud", cloudScheduler);
-                // Do build if specified in the configuration file
-                if (smvConfig.Build != null)
+                Stopwatch sw = Stopwatch.StartNew();
+
+                // Populate the actions dictionary that will be used by the schedulers.
+                Utility.PopulateActionsDictionary(smvConfig.Build);
+
+                if (string.IsNullOrEmpty(Utility.GetSmvVar("projectFile")))
                 {
-                    Stopwatch sw = Stopwatch.StartNew();
-
-                    // Populate the actions dictionary that will be used by the schedulers.
-                    Utility.PopulateActionsDictionary(smvConfig.Build);
-
-                    if (string.IsNullOrEmpty(Utility.GetSmvVar("projectFile")))
-                    {
-                        Log.LogFatalError("Project file not set");
-                    }
-
-                    List<SMVActionResult> buildActionsResult = Utility.ExecuteActions(Utility.GetRootActions(smvConfig.Build));
-                    buildResult = Utility.IsExecuteActionsSuccessful(buildActionsResult);
-
-                    if (Utility.plugin != null)
-                    {
-                        Utility.plugin.PostBuild(smvConfig.Build);
-                    }
-                    sw.Stop();
-                    buildTime = sw.Elapsed.TotalSeconds;
+                    Log.LogFatalError("Project file not set");
                 }
 
-                // If build succeeded or it was not specified, do analysis (if specified and called)
-                if (smvConfig.Build == null || buildResult)
+                List<SMVActionResult> buildActionsResult = Utility.ExecuteActions(Utility.GetRootActions(smvConfig.Build));
+                buildResult = Utility.IsExecuteActionsSuccessful(buildActionsResult);
+
+                if (Utility.plugin != null)
                 {
-                    if (smvConfig.Analysis != null)
+                    Utility.plugin.PostBuild(smvConfig.Build);
+                }
+                sw.Stop();
+                buildTime = sw.Elapsed.TotalSeconds;
+            }
+
+            // If build succeeded or it was not specified, do analysis (if specified and called)
+            if (smvConfig.Build == null || buildResult)
+            {
+                if (smvConfig.Analysis != null)
+                {
+                    if (doAnalysis)
                     {
-                        if (doAnalysis)
+                        Stopwatch sw = Stopwatch.StartNew();
+                        Utility.PopulateActionsDictionary(smvConfig.Analysis);
+
+                        if (Utility.plugin != null)
                         {
-                            Stopwatch sw = Stopwatch.StartNew();
-                            Utility.PopulateActionsDictionary(smvConfig.Analysis);
+                            Log.LogInfo("Using plugin " + Utility.plugin + " for analysis.");
+                            analysisResult = Utility.plugin.DoPluginAnalysis(smvConfig.Analysis);
 
-                            if (Utility.plugin != null)
-                            {                                
-                                Log.LogInfo("Using plugin " + Utility.plugin + " for analysis.");
-                                analysisResult = Utility.plugin.DoPluginAnalysis(smvConfig.Analysis);
-
-                                Utility.plugin.PostAnalysis(smvConfig.Analysis);
-                            }
-                            else
-                            {
-                                List<SMVActionResult> analysisActionsResult = Utility.ExecuteActions(Utility.GetRootActions(smvConfig.Analysis));
-                                analysisResult = Utility.IsExecuteActionsSuccessful(analysisActionsResult);
-                            }
-
-                            if (!analysisResult)
-                            {
-                                Log.LogFatalError("Analysis failed.");
-                            }
-
-                            sw.Stop();
-                            analysisTime = sw.Elapsed.TotalSeconds;
+                            Utility.plugin.PostAnalysis(smvConfig.Analysis);
                         }
+                        else
+                        {
+                            List<SMVActionResult> analysisActionsResult = Utility.ExecuteActions(Utility.GetRootActions(smvConfig.Analysis));
+                            analysisResult = Utility.IsExecuteActionsSuccessful(analysisActionsResult);
+                        }
+
+                        if (!analysisResult)
+                        {
+                            Log.LogFatalError("Analysis failed.");
+                        }
+
+                        sw.Stop();
+                        analysisTime = sw.Elapsed.TotalSeconds;
                     }
                 }
-                else
-                {
-                    Log.LogFatalError("Build failed, skipping Analysis.");
-                }
+            }
+            else
+            {
+                Log.LogFatalError("Build failed, skipping Analysis.");
             }
 
             Utility.PrintResult(Utility.result, (int)buildTime, (int)analysisTime);
             Log.LogInfo(String.Format("Total time taken {0} seconds", (int)(buildTime + analysisTime)));
+
+            localScheduler.Dispose();
+            if(cloud) cloudScheduler.Dispose();
         }
 
         /// <summary>
@@ -297,34 +303,41 @@ namespace SmvSkeleton
         /// <returns>The SMVCloudConfig object containing the cloud configuration.</returns>
         static SMVCloudConfig GetSMVCloudConfig()
         {
-            string cloudConfigXmlPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXmlFileName);
-            string contents = Utility.ReadFile(cloudConfigXmlPath);
-            if (!String.IsNullOrEmpty(contents))
+            try
             {
-                bool isXMLValid = false;
-                string schemaPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXsdFileName);
-
-                using (StringReader configContent = new StringReader(contents))
+                string cloudConfigXmlPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXmlFileName);
+                string contents = Utility.ReadFile(cloudConfigXmlPath);
+                if (!String.IsNullOrEmpty(contents))
                 {
-                    isXMLValid = Utility.ValidateXmlFile(schemaPath, configContent);
+                    bool isXMLValid = false;
+                    string schemaPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXsdFileName);
+
+                    using (StringReader configContent = new StringReader(contents))
+                    {
+                        isXMLValid = Utility.ValidateXmlFile(schemaPath, configContent);
+                    }
+
+                    if (!isXMLValid)
+                    {
+                        Log.LogError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                        return null;
+                    }
+
+                    XmlSerializer serializer = new XmlSerializer(typeof(SMVCloudConfig));
+                    SMVCloudConfig config = null;
+                    using (TextReader reader = new StringReader(contents))
+                    {
+                        config = (SMVCloudConfig)serializer.Deserialize(reader);
+                    }
+
+                    return config;
                 }
-
-                if (!isXMLValid)
+                else
                 {
-                    Log.LogError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
                     return null;
                 }
-
-                XmlSerializer serializer = new XmlSerializer(typeof(SMVCloudConfig));
-                SMVCloudConfig config = null;
-                using (TextReader reader = new StringReader(contents))
-                {
-                    config = (SMVCloudConfig)serializer.Deserialize(reader);
-                }
-
-                return config;
             }
-            else
+            catch(Exception e)
             {
                 return null;
             }
@@ -334,7 +347,7 @@ namespace SmvSkeleton
         /// Load the configuration from the config file and store it in an SMVConfig object.
         /// </summary>
         /// <returns>The configuration as an SMVConfig object.</returns>
-        static SMVConfig GetSMVConfig() 
+        static SMVConfig GetSMVConfig()
         {
             string configFileContent = Utility.ReadFile(Utility.GetSmvVar("configFilePath"));
 

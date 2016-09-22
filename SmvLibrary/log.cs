@@ -30,7 +30,7 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="type">The type of message.</param>
         /// <param name="message">The message to log.</param>
-        public static void WriteLog(string type, string message, TextWriter logger)
+        public static void WriteLog(string type, string message, TextWriter logger = null)
         {
             string result = String.Empty;
 

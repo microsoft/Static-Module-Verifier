@@ -15,17 +15,24 @@ namespace SmvInterceptorWrapper
         static void Main(string[] args)
         {
             // Get the output dir from the Environment variable set by SMV
-            string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
-            string smvclLogPath = Path.Combine(smvOutDir, "smvcl.log");
-            StringBuilder smvclLogContents = new StringBuilder();
 
+            string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
+            if (string.IsNullOrWhiteSpace(smvOutDir))
+            {
+                smvOutDir = Environment.CurrentDirectory;
+            }
+            string smvclLogPath = Path.Combine(smvOutDir, "smvcl.log");
+            string smvRecordLogPath = Path.Combine(smvOutDir, "record.log");
+            StringBuilder smvclLogContents = new StringBuilder();
             List<string> iargs = args.Where(x => !x.Contains("/iwrap:") && !x.Contains(".rsp") && !x.Contains("/plugin:")).ToList();
+
 
             #region cl.exe            
             if (args.Contains("/iwrap:cl.exe"))
             {
+                if (args.Contains("/E")) return;
                 smvclLogContents.Append("iwrap: cl.exe called with args " + string.Join(",", args));
-                string[] unsupportedClExtensions = {".inf", ".mof", ".src", ".pdb", ".def", "~" };
+                string[] unsupportedClExtensions = {".inf", ".mof", ".src", ".pdb", ".def", "~", ".rc" };
 
                 // check for inf and other unsupported files and skip
                 List<string> unsupportedArgs = args.Where(a => unsupportedClExtensions.Any(b => a.ToLowerInvariant().Contains(b))).ToList();
@@ -89,11 +96,11 @@ namespace SmvInterceptorWrapper
                 Regex fileNameRegex2 = new Regex(@"([\s]+[\w\.-\\]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 foreach (Match m in fileNameRegex1.Matches(rspContents))
                 {
-                    smvclLogContents.Append("match1: " + m.Value);
+                    smvclLogContents.Append("match1: " + m.Value + Environment.NewLine);
                 }
                 foreach (Match m in fileNameRegex2.Matches(rspContents))
                 {
-                    smvclLogContents.Append("match2: " + m.Value);
+                    smvclLogContents.Append("match2: " + m.Value + Environment.NewLine);
                 }
                 rspFileContent = fileNameRegex1.Replace(rspFileContent, String.Empty);
                 rspFileContent = fileNameRegex2.Replace(rspFileContent, String.Empty);
@@ -125,57 +132,6 @@ namespace SmvInterceptorWrapper
                 smvclLogContents.Append(p.StandardError.ReadToEnd());
                 File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
 
-            }
-            #endregion
-            #region smv2sql.exe
-            else if (args.Contains("/iwrap:smv2sql.exe"))
-            {
-                // get rsp contents
-                string rspContents = string.Empty;
-                string rspFile = args.ToList().Find(x => x.Contains(".rsp") || x.StartsWith("@", StringComparison.OrdinalIgnoreCase));
-                if (!string.IsNullOrEmpty(rspFile))
-                {
-                    rspFile = rspFile.Replace("@", "");
-                    rspContents = System.IO.File.ReadAllText(rspFile);
-                    rspContents = rspContents.Replace("\r", " ");
-                    rspContents = rspContents.Replace("\n", " ");
-                }
-
-                // get directory where build artifacts are being placed
-                // Note: for Link, this is not just getting the /out:<ARG> 
-                // since Link is using inputs, and the location of the inputs 
-                // is the real location where rawcfgf/li files are going to 
-                // TODO: think about whether the LI files should be placed
-                // in the outdir
-                string outDir = smvOutDir;
-                Console.WriteLine("iwrap: smv2sql.exe --> outdir is " + outDir);
-
-                // May not be the best way to get the source dir.
-                File.Copy(Environment.ExpandEnvironmentVariables(@"%SMV%\bin\smv2sql.exe.config"), Path.Combine(outDir, "smv2sql.exe.config"), true);
-                File.Copy(Environment.ExpandEnvironmentVariables(@"%SMV%\bin\smvaccessor.dll"), Path.Combine(outDir, "smvaccessor.dll"), true);
-
-                // Don't let the Smv2Sql phase run twice.
-                if (File.Exists(Path.Combine(outDir, "smv2sql.log")))
-                {
-                    Console.WriteLine("iwrap: link.exe --> quitting since this phase is already complete");
-                    return;
-                }
-
-                // Run Smv2Sql to put the LI and BPL files into a DB.
-                Process smv2SqlProcess;
-                var psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables(@"%SMV%\bin\smv2sql.exe")));
-                psi.RedirectStandardError = true;
-                psi.RedirectStandardOutput = true;
-                psi.UseShellExecute = false;
-                psi.WorkingDirectory = outDir;
-                psi.Arguments = outDir + " /log verbose";
-                Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
-                smv2SqlProcess = System.Diagnostics.Process.Start(psi);
-                using (StreamWriter sw = new System.IO.StreamWriter(outDir + "\\smv2sql.log", true))
-                {
-                    sw.Write(smv2SqlProcess.StandardOutput.ReadToEnd());
-                    sw.Write(smv2SqlProcess.StandardError.ReadToEnd());
-                }
             }
             #endregion
             #region link.exe
@@ -369,6 +325,23 @@ namespace SmvInterceptorWrapper
             else if (args.Contains("/iwrap:lib.exe"))
             {
                 Console.WriteLine("iwrap: Currently unimplemented. In general link functionality should be used.");
+            }
+            #endregion
+            #region record
+            if (args.Any(a => a.Contains("/iwrap:record")))
+            {
+                string currentProcessName = args.First(a => a.Contains("/iwrap:record")).Split('-')[1];
+                string[] calls = { };
+                if (File.Exists(smvRecordLogPath))
+                {
+                    calls = File.ReadAllLines(smvRecordLogPath);
+                }
+                string content = currentProcessName + " " + string.Join(",", args) + Environment.NewLine;
+                if (!calls.Contains(content))
+                {
+                    File.AppendAllText(smvRecordLogPath, content);
+                }
+                return;
             }
             #endregion
         }

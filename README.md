@@ -34,6 +34,7 @@ found in the documentation folder.
   + Mono complete installation
   + NuGet for Linux
 - After cloning, you will need to install the following packages
+```
     + nuget install Microsoft.Data.Edm
     + nuget install WindowsAzure.ServiceBus
     + nuget install WindowsAzure.Storage
@@ -46,6 +47,7 @@ found in the documentation folder.
     + nuget install WindowsAzure.Storage -Version 4.3.0
     + nuget install WindowsAzure.ServiceBus -Version 3.0.0-preview -Pre
     + nuget install WindowsAzure.ServiceBus -Version 3.0.0
+```
     + Note that nuget will place them in the current working
     directory. It is suggested that you create a packages folder and
     run nuget within that folder to have the packages be centrally

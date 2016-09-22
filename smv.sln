@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMVActionsTable", "SMVActio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvCloudWorker", "SmvCloudWorker\SmvCloudWorker.csproj", "{00D32586-D675-4EF4-B4F3-06DC45BBF079}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvLineCounter", "SmvLineCounter\SmvLineCounter.csproj", "{4D4F3A7B-1E75-4904-9AD1-E5EC730981ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,10 @@ Global
 		{00D32586-D675-4EF4-B4F3-06DC45BBF079}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00D32586-D675-4EF4-B4F3-06DC45BBF079}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00D32586-D675-4EF4-B4F3-06DC45BBF079}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D4F3A7B-1E75-4904-9AD1-E5EC730981ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D4F3A7B-1E75-4904-9AD1-E5EC730981ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D4F3A7B-1E75-4904-9AD1-E5EC730981ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D4F3A7B-1E75-4904-9AD1-E5EC730981ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
