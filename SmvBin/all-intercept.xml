@@ -1,0 +1,42 @@
+﻿<INTERCEPT>
+
+  <SETTINGS reason="SMV" debug_spew="false" />
+
+  <REASON name="SMV">
+
+    <!-- CL.EXE -->
+    <BINARY name="cl.exe">
+
+      <LAUNCH filename="%smv%\bin\smvinterceptorwrapper.exe" use_return_value="false" inherit_command_line="true">
+        <ADD text="/w /iwrap:record-cl"  />
+      </LAUNCH>
+      
+      <LAUNCH filename="cl.exe" use_return_value="true" inherit_command_line="true">
+      </LAUNCH>
+
+    </BINARY>
+
+    <!-- LINK.EXE -->
+    <BINARY name="link.exe">
+
+      <LAUNCH filename="%smv%\bin\smvinterceptorwrapper.exe" use_return_value="false" inherit_command_line="true">
+        <ADD text="/iwrap:record-link" />
+      </LAUNCH>
+
+      <LAUNCH filename="link.exe" use_return_value="true" inherit_command_line="true"/>
+
+    </BINARY>
+
+    <!-- LIB.EXE -->
+    <BINARY name="lib.exe">
+
+      <LAUNCH filename="%smv%\bin\smvinterceptorwrapper.exe" use_return_value="false" inherit_command_line="true">
+        <ADD text="/iwrap:record" />
+      </LAUNCH>
+      <LAUNCH filename="lib.exe" use_return_value="true" inherit_command_line="true"/>
+
+    </BINARY>
+
+    
+  </REASON>
+</INTERCEPT>
