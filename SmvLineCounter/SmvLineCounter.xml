@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SMVConfig  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xsi:noNamespaceSchemaLocation="Config.xsd">
+  <Variables>
+    <SetVar key="dev14" value="&quot;%VCINSTALLDIR%&quot;" />
+    <SetVar key="sourcesdirectory" value="[$workingDir]" />
+    <SetVar key="BE" value="all" />
+  </Variables>
+  <Build>
+    <Action name="NormalBuild" breakOnError="true" nextAction="InterceptedBuild">
+      <Command value="[$dev14]\vc\vcvarsall.bat" arguments="x86" />
+      <Command value="set" arguments="sdk_include_dir=C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Include" />
+      <Command value="set" arguments="PATH=%smv%\bin\;%PATH%"/>
+      <Command value="set" arguments="SMV_OUTPUT_DIR=[$outputDir]" />
+      <Command value="set" arguments="BE=[$BE]"/>
+      <Command value="nmake" arguments="clean > clean.log"/>
+      <Command value="nmake" arguments="> smvbuild.log"/>
+    </Action>
+  </Build>
+  <Analysis>
+    
+  </Analysis>
+</SMVConfig>
