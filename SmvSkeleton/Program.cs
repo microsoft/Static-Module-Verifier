@@ -60,7 +60,6 @@ namespace SmvSkeleton
 
             for (int i = 0; i < args.Length;)
             {
-	        args[i] = args[i].ToLowerInvariant();
                 if (args[i].Equals("/help", StringComparison.InvariantCultureIgnoreCase) || args[i].Equals("/?"))
                 {
                     help = true;
@@ -69,7 +68,9 @@ namespace SmvSkeleton
                 }
                 else if(args[i].Equals("/cloud", StringComparison.InvariantCultureIgnoreCase))
                 {
+                    Log.LogInfo("Using cloud.");
                     cloud = true;
+                    i++;
                 }
                 else if (args[i].StartsWith("/config:", StringComparison.InvariantCulture) || args[i].StartsWith("/log:", StringComparison.InvariantCulture))
                 {

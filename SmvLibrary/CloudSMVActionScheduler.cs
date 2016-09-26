@@ -61,13 +61,11 @@ namespace SmvLibrary
             serviceBusConnectionString = config.ServiceBusConnectionString.value;
             if (string.IsNullOrEmpty(storageConnectionString))
             {
-                throw new Exception("Connection string \"Microsoft.WindowsAzure.Storage.ConnectionString\" is not set. Please contact rahulku@microsoft.com for a " +
-                    "valid connection string.");
+                throw new Exception("Connection string \"Microsoft.WindowsAzure.Storage.ConnectionString\" is not set.");
             }
             if (string.IsNullOrEmpty(serviceBusConnectionString))
             {
-                throw new Exception("Connection string \"Microsoft.ServiceBus.ConnectionString\" is not set. Please contact rahulku@microsoft.com for a " +
-                    "valid connection string.");
+                throw new Exception("Connection string \"Microsoft.ServiceBus.ConnectionString\" is not set.");
             }
 
             int retriesLeft = CloudConstants.MaxRetries;

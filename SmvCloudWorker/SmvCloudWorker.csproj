@@ -59,10 +59,6 @@
       <HintPath>..\packages\WindowsAzure.Storage.7.2.0\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Services.Client" />
@@ -85,12 +81,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SMVActionsTable\SMVActionsTable.csproj">
+    <ProjectReference Include="..\SMVActionsTable\SmvActionsTable.csproj">
       <Project>{6f655d35-3867-4351-8929-23b4578e5190}</Project>
-      <Name>SMVActionsTable</Name>
+      <Name>SmvActionsTable</Name>
     </ProjectReference>
     <ProjectReference Include="..\SMVLibrary\SmvLibrary.csproj">
       <Project>{e03dc0df-84cc-420c-91b1-2a937e88ff31}</Project>

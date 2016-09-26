@@ -12,11 +12,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvLibrary", "SMVLibrary\Sm
 		{6F655D35-3867-4351-8929-23B4578E5190} = {6F655D35-3867-4351-8929-23B4578E5190}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMVActionsTable", "SMVActionsTable\SMVActionsTable.csproj", "{6F655D35-3867-4351-8929-23B4578E5190}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvActionsTable", "SMVActionsTable\SmvActionsTable.csproj", "{6F655D35-3867-4351-8929-23B4578E5190}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvCloudWorker", "SmvCloudWorker\SmvCloudWorker.csproj", "{00D32586-D675-4EF4-B4F3-06DC45BBF079}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvLineCounter", "SmvLineCounter\SmvLineCounter.csproj", "{4D4F3A7B-1E75-4904-9AD1-E5EC730981ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvInterceptor", "SmvInterceptor\SmvInterceptor.csproj", "{2422E37E-3DC7-4B6C-8246-317AB656D788}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +50,10 @@ Global
 		{4D4F3A7B-1E75-4904-9AD1-E5EC730981ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D4F3A7B-1E75-4904-9AD1-E5EC730981ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D4F3A7B-1E75-4904-9AD1-E5EC730981ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
