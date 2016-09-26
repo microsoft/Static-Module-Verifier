@@ -60,6 +60,7 @@ namespace SmvSkeleton
 
             for (int i = 0; i < args.Length;)
             {
+	        args[i] = args[i].ToLowerInvariant();
                 if (args[i].Equals("/help", StringComparison.InvariantCultureIgnoreCase) || args[i].Equals("/?"))
                 {
                     help = true;

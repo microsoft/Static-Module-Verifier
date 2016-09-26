@@ -61,11 +61,13 @@ namespace SmvLibrary
             serviceBusConnectionString = config.ServiceBusConnectionString.value;
             if (string.IsNullOrEmpty(storageConnectionString))
             {
-                throw new Exception("Connection string \"Microsoft.WindowsAzure.Storage.ConnectionString\" is not set.");
+                throw new Exception("Connection string \"Microsoft.WindowsAzure.Storage.ConnectionString\" is not set. Please contact rahulku@microsoft.com for a " +
+                    "valid connection string.");
             }
             if (string.IsNullOrEmpty(serviceBusConnectionString))
             {
-                throw new Exception("Connection string \"Microsoft.ServiceBus.ConnectionString\" is not set.");
+                throw new Exception("Connection string \"Microsoft.ServiceBus.ConnectionString\" is not set. Please contact rahulku@microsoft.com for a " +
+                    "valid connection string.");
             }
 
             int retriesLeft = CloudConstants.MaxRetries;
@@ -159,7 +161,7 @@ namespace SmvLibrary
             ZipFile.CreateFromDirectory(actionPath, zipPath);
 
             CloudBlockBlob blob = inputContainer.GetBlockBlobReference(actionGuid + ".zip");
-            blob.UploadFromFile(zipPath, FileMode.Open);
+            blob.UploadFromFile(zipPath);
             File.Delete(zipPath);
 
             // Add entry to table storage.
@@ -167,7 +169,7 @@ namespace SmvLibrary
             // TODO: Due to constraints on sizes of properties in Azure table entities, serializedAction cannot be larger
             // than 64kB. Fix this if this becomes an issue.
             byte[] serializedAction = Utility.ObjectToByteArray(action);
-            string moduleHash = string.Empty;
+            string moduleHash = Utility.smvModule == null ? string.Empty : Utility.smvModule.Hash;
             ActionsTableEntry entry = new ActionsTableEntry(action.name, actionGuid, schedulerInstanceGuid, serializedAction,
                 Utility.version, null, moduleHash);
             tableDataSource.AddEntry(entry);

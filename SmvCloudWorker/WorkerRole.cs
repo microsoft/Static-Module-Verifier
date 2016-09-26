@@ -109,6 +109,17 @@ namespace SmvCloudWorker2
                                 continue;
                             }
 
+                            // Get the module object, if any.
+                            if (!string.IsNullOrEmpty(tableEntry.ModuleHash))
+                            {
+                                SmvAccessor.ISmvAccessor accessor = Utility.GetSmvSQLAccessor();
+                                Utility.smvModule = accessor.GetModuleByHash(tableEntry.ModuleHash);
+                                if(Utility.smvModule == null)
+                                {
+                                    throw new Exception("Could not load module with hash: " + tableEntry.ModuleHash);
+                                }
+                            }
+
                             // Download the job and extract it to the working directory.
                             Utility.ClearDirectory(workingDirectory);
                             string jobZipPath = Path.Combine(workingDirectory, "job.zip");
@@ -173,7 +184,7 @@ namespace SmvCloudWorker2
                             string resultsZipPath = Path.Combine(resultsDirectory, actionGuid + ".zip");
                             ZipFile.CreateFromDirectory(workingDirectory, resultsZipPath);
                             CloudBlockBlob resultsBlob = resultsContainer.GetBlockBlobReference(actionGuid + ".zip");
-                            resultsBlob.UploadFromFile(resultsZipPath, FileMode.Open);
+                            resultsBlob.UploadFromFile(resultsZipPath);
                             File.Delete(resultsZipPath);
 
                             // Job done!

@@ -17,6 +17,7 @@ namespace SMVActionsTable
         public ActionsTableDataSource(CloudTable table)
         {
             actionsTable = table;
+            if (actionsTable.Exists()) return;
             actionsTable.CreateIfNotExists();
         }
 
