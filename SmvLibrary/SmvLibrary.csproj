@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -100,10 +100,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SmvAccessor\SmvAccessor.csproj">
-      <Project>{5a923bec-71fc-48e3-b076-2a2aa81ebd03}</Project>
-      <Name>SmvAccessor</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SMVActionsTable\SMVActionsTable.csproj">
       <Project>{6f655d35-3867-4351-8929-23b4578e5190}</Project>
       <Name>SMVActionsTable</Name>

@@ -338,7 +338,7 @@ namespace SmvSkeleton
                     return null;
                 }
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return null;
             }

@@ -169,7 +169,7 @@ namespace SmvLibrary
             // TODO: Due to constraints on sizes of properties in Azure table entities, serializedAction cannot be larger
             // than 64kB. Fix this if this becomes an issue.
             byte[] serializedAction = Utility.ObjectToByteArray(action);
-            string moduleHash = Utility.smvModule == null ? string.Empty : Utility.smvModule.Hash;
+            string moduleHash = string.Empty;
             ActionsTableEntry entry = new ActionsTableEntry(action.name, actionGuid, schedulerInstanceGuid, serializedAction,
                 Utility.version, null, moduleHash);
             tableDataSource.AddEntry(entry);
