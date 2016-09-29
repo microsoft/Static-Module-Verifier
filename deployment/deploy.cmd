@@ -30,11 +30,11 @@ mkdir %targetdir%\analysisPlugins\
 rem interception
 call copy /y /v %smvsrc%\smvinterceptorwrapper\bin\%config%\smvinterceptorwrapper.exe %targetdir%\bin\ || goto :END
 call copy /y /v %smvsrc%\smvinterceptorwrapper\bin\%config%\smvinterceptorwrapper.pdb %targetdir%\bin\ || goto :END
-call copy /y /v %smvsrc%\smvbin\all-intercept.xml %targetdir%\bin\ || goto :END
-call copy /y /v %smvsrc%\smvbin\interceptor.exe %targetdir%\bin\cl.exe || goto :END
-call copy /y /v %smvsrc%\smvbin\interceptor.pdb %targetdir%\bin\cl.pdb || goto :END
-call copy /y /v %smvsrc%\smvbin\interceptor.exe %targetdir%\bin\link.exe || goto :END
-call copy /y /v %smvsrc%\smvbin\interceptor.pdb %targetdir%\bin\link.pdb || goto :END
+call copy /y /v %smvsrc%\smvinterceptor\all-intercept.xml %targetdir%\bin\ || goto :END
+call copy /y /v %smvsrc%\smvinterceptor\bin\%config%\smvinterceptor.exe %targetdir%\bin\cl.exe || goto :END
+call copy /y /v %smvsrc%\smvinterceptor\bin\%config%\smvinterceptor.pdb %targetdir%\bin\cl.pdb || goto :END
+call copy /y /v %smvsrc%\smvinterceptor\bin\%config%\smvinterceptor.exe %targetdir%\bin\link.exe || goto :END
+call copy /y /v %smvsrc%\smvinterceptor\bin\%config%\smvinterceptor.pdb %targetdir%\bin\link.pdb || goto :END
 
 rem basic binaries etc.
 call copy /y /v %smvsrc%\smvskeleton\bin\%config%\* %targetdir%\bin\ || goto :END

@@ -72,6 +72,7 @@ namespace SmvLibrary
                     result.Add(action);
                 }
             }
+            
 
             return result.ToArray();
         }
@@ -802,7 +803,7 @@ namespace SmvLibrary
                 output = output.Replace("\r\n", Environment.NewLine);
 
                 // Razzle
-                Match match = Regex.Match(output, @"cl.exe @(.*?)$", RegexOptions.Multiline);
+                Match match = Regex.Match(output, @"cl(.exe)? @(.*?)$", RegexOptions.Multiline);
                 string path = String.Empty;
 
                 try
@@ -854,8 +855,9 @@ namespace SmvLibrary
                         }
                         else
                         {
-                            Log.LogFatalError("Regex match failed, could not extract build path");
-                            return string.Empty;
+                            //Log.LogFatalError("Regex match failed, could not extract build path");
+                            //return string.Empty;
+                            return Environment.CurrentDirectory;
                         }
                     }
                 }
