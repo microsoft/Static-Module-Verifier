@@ -803,7 +803,7 @@ namespace SmvLibrary
                 output = output.Replace("\r\n", Environment.NewLine);
 
                 // Razzle
-                Match match = Regex.Match(output, @"cl(.exe)? @(.*?)$", RegexOptions.Multiline);
+                Match match = Regex.Match(output, @"cl.exe @(.*?)$", RegexOptions.Multiline);
                 string path = String.Empty;
 
                 try
