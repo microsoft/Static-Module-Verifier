@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ServiceConfiguration serviceName="SmvService" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="4" osVersion="*" schemaVersion="2015-04.2.6">
+  <Role name="SmvCloudWorker">
+    <Instances count="1" />
+    <ConfigurationSettings>
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="true" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="SmvAdmin" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEEkbdXEzeeGyRKTyqVfz+r8wDQYJKoZIhvcNAQEBBQAEggEAScxFVTyS0I/mM2ybLs50KoM85eauUJ3VEsBWBwTxZAoeo5dJaBbyUIJ8fAJ6N+i8xwXBZBmVRWT/+77j+jbl4sFVwcQgsz45qChLJYM/Tl8UJ0mEpDM7kEN4+hy7F1/Ihn2iPkJ78iOdsPn8kzs/QicCYDj4YzdTTGV63bxH/1B0ffuzf+1Pn667ODWE3FyQxdRHcX7LmjFVDxG6BUhd4QLcPjJs0MiXWITyyutFnF4hKLo/P/5ZAkZDGOKxod+JiWWWrT0uczi26vH6+U3+SXC5F//Di9y9VcaEV+CW3cJQvOBVw0gDPC3jgwUAN7MSdjXPljpWg3PB5ZyytWRKvjAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECCVIUJwfaKv/gBA6pgoxnm2XF7t7XFvY5Ifs" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2017-10-21T23:59:59.0000000-07:00" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
+      <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="a2b813b0-d12c-4e28-b336-9b109be7d1fe" />
+    </ConfigurationSettings>
+    <Certificates>
+      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="75FFBA2520661DD3B7F932DC4228B99BD7C351F8" thumbprintAlgorithm="sha1" />
+    </Certificates>
+  </Role>
+</ServiceConfiguration>
