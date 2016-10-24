@@ -22,6 +22,10 @@ set config=Debug
 set targetdir=%1
 popd
 
+echo SMVSRC=%smvsrc%
+echo Config=%config%
+echo Target=%targetdir%
+
 rem create directories
 rmdir /s /q %targetdir%
 mkdir %targetdir%\bin

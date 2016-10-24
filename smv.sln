@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvLineCounter", "SmvLineCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvInterceptor", "SmvInterceptor\SmvInterceptor.csproj", "{2422E37E-3DC7-4B6C-8246-317AB656D788}"
 EndProject
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "SmvService", "SmvService\SmvService.ccproj", "{18237F03-4135-43C4-BB8D-DDBD0C8C5763}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,10 @@ Global
 		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2422E37E-3DC7-4B6C-8246-317AB656D788}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18237F03-4135-43C4-BB8D-DDBD0C8C5763}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18237F03-4135-43C4-BB8D-DDBD0C8C5763}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18237F03-4135-43C4-BB8D-DDBD0C8C5763}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18237F03-4135-43C4-BB8D-DDBD0C8C5763}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
