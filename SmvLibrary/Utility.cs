@@ -459,6 +459,7 @@ namespace SmvLibrary
                 variables["actionPath"] = actionPath;
 
                 // Launch a cmd.exe process to run commands in.
+                DateTime startTime = DateTime.Now;
                 Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
 
                 if (process == null)
@@ -520,13 +521,12 @@ namespace SmvLibrary
                 var sr = new StreamReader(stream);
                 output = sr.ReadToEnd();
 
-                if(debugMode)
-                {
-                    Log.WriteToFile(Path.Combine(actionPath, string.Format("smvexecute-{0}.log", action.name)), output, false);
-                }
+                DateTime endTime = DateTime.Now;
+
+                Log.WriteToFile(Path.Combine(actionPath, string.Format("smvexecute-{0}.log", action.name)), output, false);
                                 
                 action.result = new SMVActionResult(action.name, output, (process.ExitCode == 0),
-                    process.ExitCode != 0 && action.breakOnError);
+                    process.ExitCode != 0 && action.breakOnError, (int)(endTime - startTime).TotalSeconds);
 
                 // Call plugin post action only if we were successful in executing the action.
                 if (process.ExitCode == 0)
@@ -672,9 +672,9 @@ namespace SmvLibrary
         /// Prints the result of the Build Actions.
         /// </summary>
         /// <param name="result">List of the action names and if they succeeded.</param>
-        public static void PrintResult(IDictionary result, double buildTime, double analysisTime)
+        public static void PrintResult(IDictionary result, double buildTime, double analysisTime, bool abbreviated)
         {
-            if (result != null)
+            if (result != null && !abbreviated)
             {
                 Log.LogMessage(Environment.NewLine);
                 Log.LogMessage("=============================================================");
@@ -688,15 +688,8 @@ namespace SmvLibrary
                 Log.LogMessage("=============================================================");
                 Log.LogMessage(Environment.NewLine);
 
-                if (buildTime > 0)
-                {
-                    Log.LogMessage("Build time: " + buildTime + " seconds.");
-                }
-
-                if (analysisTime > 0)
-                {
-                    Log.LogMessage("Analysis time: " + analysisTime + " seconds.");
-                }
+                Log.LogMessage("Build time: " + buildTime + " seconds.");
+                Log.LogMessage("Analysis time: " + analysisTime + " seconds.");
             }            
         }
 
