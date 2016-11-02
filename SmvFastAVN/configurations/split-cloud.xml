@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SMVConfig
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="Config.xsd"
+>
+  <!-- Please don't add any comments with double hyphens in them.                                                                              -->
+  <!-- XML does not support a double hyphen within a comment, since it is a delimiter.                                                         -->
+  <!-- Available variables which can be used inside actions :                                                                                  -->
+  <!-- $assemblyDir         : Directory where SMV binaries are located            [Available in all actions]                                   -->
+  <!-- $workingDir          : Directory where SMV is run                          [Available in all actions]                                   -->
+  <!-- $actionName          : Name of the current action                          [Available in all actions]                                   -->
+  <!-- $actionPath          : Path where the current action is run                [Available in all actions]                                   -->
+  <!-- $configFilePath      : Path of the config file provided to SMV             [Available in all actions]                                   -->
+  <!-- $logFilePath         : Path to the log file                                [Available in all actions, if SMV is run with /log:<path>]   -->
+  <!-- $ModuleName          : Name of the module                                  [Available if SMV is run with /module:<name>]                -->
+  <!-- $ModuleDateCreated   : Date created timestamp of the module                [Available if SMV is run with /module:<name>]                -->
+  <!-- $ModuleId            : Id of the module                                    [Available if SMV is run with /module:<name>]                -->
+  <!-- $ModuleLastModified  : Last modified timestamp of the module               [Available if SMV is run with /module:<name>]                -->
+  <!-- $driverType          : Driver type                                         [Available in all actions following normal build]            -->
+  <!-- $outputDir           : Directory where the build files are generated       [Available in all actions following InterceptedBuild]        -->
+  <!-- $analysisDir         : $outputDir\SMV                                      [Available in all actions following InterceptedBuild]        -->
+  <!-- $ruleDir             : Directory of the rule currently being checked       [Available in all Analysis actions if rules are checked]     -->
+  <!-- Run the normal build, intercepted build and the scan step -->
+
+  <Variables>
+    <SetVar key="projectFile" value="%FILE%" />
+  </Variables>
+
+  <Build>
+  </Build>
+  
+  <Analysis>
+
+    <Action name="CreateEntryPoints" nextAction="CheckEntryPoints">
+      <Path value="[$workingDir]" /> <!-- where smv.exe is executing -->
+      <Env key="AVN" value="%SMV%\analysisplugins\avn" />
+      <Env key="PATH" value="%AVN%\bin\engine\;%PATH%" />
+      <Command value="fastavn" arguments="%FILE% /splitFirst /createEntrypointBplsOnly /hopt:useEntryPoints /hopt:unknownProc:__HAVOC_malloc /aopt:sdv /aopt:blockOnFreeVars /aopt:timeout:100 /aopt:noEbasic /aopt:EE:ignoreAllAssumes+ /aopt:dontGeneralize" />
+    </Action>
+    
+    <Action name="CheckEntryPoints" nextAction="MergeResults" executeOn="cloud">
+      <Path value="[$epDir]" />
+      <Env key="AVN" value="%SMV%\analysisplugins\avn" />
+      <Env key="PATH" value="%AVN%\bin\engine\;%PATH%" />
+      <Command value="avharnessinstrumentation" arguments="pruneSlice.bpl hinst.bpl /entryPointProc:[$epDirName] /sdv /blockOnFreeVars /timeoutEE:1000 /timeout:1000 /noEbasic /EE:ignoreAllAssumes+ /dontGeneralize /dumpResults:results.txt /EE:onlySlicAssumes+ /EE:ignoreAllAssumes-" />
+      <Command value="angelicverifiernull" arguments="hinst.bpl /sdv /blockOnFreeVars /timeoutEE:1000 /timeout:1000 /noEbasic /EE:ignoreAllAssumes+ /dontGeneralize /dumpResults:results.txt /EE:onlySlicAssumes+ /EE:ignoreAllAssumes-" />
+      <Command value="del" arguments="/f /q *.bpl" />
+    </Action>
+    
+    <Action name="MergeResults">
+      <Path value="[$workingDir]" />
+      <Env key="PATH" value="%AVN%\bin\engine\;%PATH%" />
+      <Env key="AVN" value="%SMV%\analysisplugins\avn" />
+      <Command value="fastavn" arguments="%FILE% /hopt:useEntryPoints /hopt:unknownProc:__HAVOC_malloc /aopt:sdv /aopt:blockOnFreeVars /aopt:timeout:100 /aopt:noEbasic /aopt:EE:ignoreAllAssumes+ /aopt:dontGeneralize  /mergeEntrypointBugsOnly" />
+    </Action>
+    
+  </Analysis>
+  
+</SMVConfig>
+
+  
+

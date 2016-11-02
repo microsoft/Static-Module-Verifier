@@ -4,6 +4,8 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Diagnostics;
 
 namespace SmvLibrary
 {
@@ -15,6 +17,9 @@ namespace SmvLibrary
         private bool disposed = false;
         private bool done = false;
 
+        private ConcurrentDictionary<string, int> counters = new ConcurrentDictionary<string, int>();
+        private ConcurrentBag<int> times = new ConcurrentBag<int>();
+
         private delegate void ExecuteDelegate();
 
         /// <summary>
@@ -22,7 +27,14 @@ namespace SmvLibrary
         /// </summary>
         public MasterSMVActionScheduler()
         {
-            new ExecuteDelegate(this.Execute).BeginInvoke(null, null);
+            try
+            {
+                new ExecuteDelegate(this.Execute).BeginInvoke(null, null);
+            }
+            catch(Exception e)
+            {
+                Log.LogFatalError("Exception in delegate!" + e.ToString());
+            }
         }
 
         /// <summary>
@@ -34,12 +46,17 @@ namespace SmvLibrary
         {
             schedulers[type] = scheduler;
         }
+        public int Count()
+        {
+            return actionsQueue.Count;
+        }
 
         public void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context)
         {
-            Log.LogInfo("Queuing action: " + action.GetFullName());
+            //Log.LogInfo("Queuing action: " + action.GetFullName() + " on " + action.executeOn);
             var entry = new ActionsQueueEntry(action, callback, context);
             actionsQueue.Enqueue(entry);
+            counters.AddOrUpdate("queued", 1, (k, v) => v + 1);
         }
 
         /// <summary>
@@ -55,7 +72,6 @@ namespace SmvLibrary
                 {
                     SMVAction action = entry.Action;
                     string schedulerType = action.executeOn;
-
                     if (!schedulers.ContainsKey(schedulerType))
                     {
                         Log.LogFatalError("Could not find scheduler of type: " + schedulerType +
@@ -63,6 +79,7 @@ namespace SmvLibrary
                     }
                     else
                     {
+
                         ISMVActionScheduler scheduler = schedulers[schedulerType];
                         lock (Utility.lockObject)
                         {
@@ -71,7 +88,7 @@ namespace SmvLibrary
                         scheduler.AddAction(action, new SMVActionCompleteCallBack(ActionComplete), entry);
                     }
                 }
-                System.Threading.Thread.Sleep(1000);
+                //System.Threading.Thread.Sleep(1000);
             }
         }
 
@@ -87,7 +104,19 @@ namespace SmvLibrary
             SMVActionCompleteCallBack callback = entry.Callback;
             entry.Results.AddRange(results);
 
-            Log.LogInfo("Completed action: " + action.GetFullName());
+            counters.AddOrUpdate("completed", 1, (k, v) => v + 1);
+            times.Add(action.result.time);
+
+            File.WriteAllText(Path.Combine(Utility.GetActionDirectory(action), "smvstats.txt"),
+                string.Format("Time: {0}", action.result.time));
+
+            string resultString = string.Format("{0} of {1} jobs remaining. Avg(s): {2}. Std.Dev(s): {3}",
+                counters["queued"] - counters["completed"], counters["queued"],
+                times.Average().ToString("F2"), Math.Sqrt(times.Average(v => Math.Pow(v - times.Average(), 2))).ToString("F2"));
+            Console.Write("\r" + resultString);
+
+            if (counters["queued"] == counters["completed"])
+                Console.WriteLine();
 
             // Add result to our global result set.
 

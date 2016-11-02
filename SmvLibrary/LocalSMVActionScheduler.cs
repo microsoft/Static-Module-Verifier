@@ -36,6 +36,11 @@ namespace SmvLibrary
             actionsQueue.Enqueue(entry);
         }
 
+        public int Count()
+        {
+            return actionsQueue.Count;
+        }
+
         private void Execute()
         {
             try
@@ -45,7 +50,7 @@ namespace SmvLibrary
                     ActionsQueueEntry entry;
                     while(actionsQueue.TryDequeue(out entry))
                     {
-                        Log.LogInfo("Executing: " + entry.Action.GetFullName());
+                        //Log.LogInfo("Executing: " + entry.Action.GetFullName());
                         SMVActionResult result = Utility.ExecuteAction(entry.Action);
                         entry.Results.Add(result);
                         entry.Callback(entry.Action, entry.Results, entry.Context);

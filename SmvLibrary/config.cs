@@ -165,17 +165,19 @@ namespace SmvLibrary
     [Serializable]
     public class SMVActionResult
     {
-        public SMVActionResult(string name, string output, bool isSuccessful, bool breakExecution)
+        public SMVActionResult(string name, string output, bool isSuccessful, bool breakExecution, int processorTime)
         {
             this.name = name;
             this.output = output;
             this.isSuccessful = isSuccessful;
             this.breakExecution = breakExecution;
+            this.time = processorTime;
         }
 
         public string name { get; private set; }
         public string output { get; set; }
         public bool isSuccessful { get; private set; }
         public bool breakExecution { get; private set; }
+        public int time { get; set; }
     }
 }
