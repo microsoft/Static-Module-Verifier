@@ -221,13 +221,17 @@ namespace SmvSkeleton
 
             // Load the cloud config from an XML file.
 
-            SMVCloudConfig cloudConfig = GetSMVCloudConfig();
+            SMVCloudConfig cloudConfig = null;
 
             // Set up the schedulers.
             Utility.scheduler = new MasterSMVActionScheduler();
             LocalSMVActionScheduler localScheduler = new LocalSMVActionScheduler(localThreadCount);
             CloudSMVActionScheduler cloudScheduler = null;
-            if(cloud) cloudScheduler = new CloudSMVActionScheduler(cloudConfig);
+            if (cloud)
+            {
+                cloudConfig = GetSMVCloudConfig();
+                cloudScheduler = new CloudSMVActionScheduler(cloudConfig);
+            }
             Utility.scheduler.AddScheduler("local", localScheduler);
             Utility.scheduler.AddScheduler("cloud", cloudScheduler);
             // Do build if specified in the configuration file
@@ -321,7 +325,7 @@ namespace SmvSkeleton
 
                     if (!isXMLValid)
                     {
-                        Log.LogError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                        Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
                         return null;
                     }
 
@@ -336,11 +340,13 @@ namespace SmvSkeleton
                 }
                 else
                 {
+                    Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
                     return null;
                 }
             }
             catch(Exception)
             {
+                Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
                 return null;
             }
         }
