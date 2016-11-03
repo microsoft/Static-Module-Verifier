@@ -459,6 +459,11 @@ namespace SmvLibrary
                 variables["actionPath"] = actionPath;
 
                 // Launch a cmd.exe process to run commands in.
+                if (Console.InputEncoding.Equals(Encoding.UTF8))
+                {
+                    Console.InputEncoding = new UTF8Encoding(false);
+                }
+
                 Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
 
                 if (process == null)
