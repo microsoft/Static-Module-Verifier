@@ -222,6 +222,7 @@ namespace SmvLibrary
             {
                 Log.LogError(string.Format("Failed to complete action: {0} ({1})", actionGuid, context.action.name));
                 context.callback(context.action, new SMVActionResult[] { context.action.result }, context.context);
+                return; // we can improve this!
             }
 
             // Download and extract the results.
