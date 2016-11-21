@@ -28,13 +28,13 @@ REM
 REM Main work for SMV given conifguration etc.
 REM
 IF "%2" == "" (
-   "%smv%\bin\smv" /plugin:"%smv%\analysisplugins\avn\bin\fastavn.dll" /config:"%avn%\configurations\split.xml" /analyze /debug
+   "%smv%\bin\smv" /plugin:"%smv%\analysisplugins\avn\bin\fastavn.dll" /config:"%avn%\configurations\split.xml" /analyze
    GOTO EXIT
 )
 
 IF "%2" == "/cloud" (
    ECHO [INFO] Running using cloud...
-   "%smv%\bin\smv" /plugin:"%smv%\analysisplugins\avn\bin\fastavn.dll" /config:"%avn%\configurations\split-cloud.xml" /analyze /cloud /debug
+   "%smv%\bin\smv" /plugin:"%smv%\analysisplugins\avn\bin\fastavn.dll" /config:"%avn%\configurations\split-cloud.xml" /analyze /cloud 
    GOTO EXIT
 )
 
