@@ -50,7 +50,7 @@ namespace SmvLibrary
                     ActionsQueueEntry entry;
                     while(actionsQueue.TryDequeue(out entry))
                     {
-                        //Log.LogInfo("Executing: " + entry.Action.GetFullName());
+                        Log.LogDebug("Executing: " + entry.Action.GetFullName());
                         SMVActionResult result = Utility.ExecuteAction(entry.Action);
                         entry.Results.Add(result);
                         entry.Callback(entry.Action, entry.Results, entry.Context);

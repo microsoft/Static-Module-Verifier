@@ -53,7 +53,7 @@ namespace SmvLibrary
 
         public void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context)
         {
-            //Log.LogInfo("Queuing action: " + action.GetFullName() + " on " + action.executeOn);
+            Log.LogDebug("Queuing action: " + action.GetFullName() + " on " + action.executeOn);
             var entry = new ActionsQueueEntry(action, callback, context);
             actionsQueue.Enqueue(entry);
             counters.AddOrUpdate("queued", 1, (k, v) => v + 1);
@@ -79,7 +79,7 @@ namespace SmvLibrary
                     }
                     else
                     {
-
+                        Log.LogDebug("scheduler found for " + schedulerType);
                         ISMVActionScheduler scheduler = schedulers[schedulerType];
                         lock (Utility.lockObject)
                         {
@@ -88,7 +88,7 @@ namespace SmvLibrary
                         scheduler.AddAction(action, new SMVActionCompleteCallBack(ActionComplete), entry);
                     }
                 }
-                //System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(10000);
             }
         }
 

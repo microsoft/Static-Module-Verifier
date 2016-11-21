@@ -154,6 +154,7 @@ namespace SmvLibrary
 
         public void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context)
         {
+            Log.LogDebug("Adding action " + action.GetFullName());
             string actionGuid = Guid.NewGuid().ToString();
             // Upload action directory to blob storage.
 
@@ -222,7 +223,6 @@ namespace SmvLibrary
             {
                 Log.LogError(string.Format("Failed to complete action: {0} ({1})", actionGuid, context.action.name));
                 context.callback(context.action, new SMVActionResult[] { context.action.result }, context.context);
-                return; // we can improve this!
             }
 
             // Download and extract the results.
