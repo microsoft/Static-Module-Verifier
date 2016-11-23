@@ -50,4 +50,7 @@
 /SmvCloud/csx/
 /SmvCloud/ecf
 /SmvDb/SmvDb.dbmdl
+/SmvService/bin
+/SmvService/obj
+/SmvService/rcf
 .vs
