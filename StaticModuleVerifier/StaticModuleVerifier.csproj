@@ -7,7 +7,7 @@
     <ProjectGuid>{E016F57D-68E9-48F9-ABCE-B0C3D7714C84}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SmvSkeleton</RootNamespace>
+    <RootNamespace>StaticModuleVerifier</RootNamespace>
     <AssemblyName>smv</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
