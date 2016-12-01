@@ -41,7 +41,7 @@ call copy /y /v %smvsrc%\smvinterceptor\bin\%config%\smvinterceptor.exe %targetd
 call copy /y /v %smvsrc%\smvinterceptor\bin\%config%\smvinterceptor.pdb %targetdir%\bin\link.pdb || goto :END
 
 rem basic binaries etc.
-call copy /y /v %smvsrc%\smvskeleton\bin\%config%\* %targetdir%\bin\ || goto :END
+call copy /y /v %smvsrc%\staticmoduleverifier\bin\%config%\* %targetdir%\bin\ || goto :END
 
 rem copy config schemas and config xmls
 call copy /y /v %smvsrc%\smvlibrary\bin\%config%\config.xsd %targetdir%\bin\Config.xsd || goto :END
