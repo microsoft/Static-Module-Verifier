@@ -524,6 +524,7 @@ namespace SmvLibrary
 
                 var sr = new StreamReader(stream);
                 output = sr.ReadToEnd();
+                output += string.Format("Exit code: {0}", process.ExitCode);
 
                 if(debugMode)
                 {
