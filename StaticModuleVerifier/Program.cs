@@ -13,7 +13,7 @@ using System.Web;
 using System.Collections.Specialized;
 using System.Collections;
 using System.Xml.Serialization;
-using SmvSkeleton.Properties;
+using StaticModuleVerifier.Properties;
 using SmvLibrary;
 using System.Reflection;
 using System.Globalization;

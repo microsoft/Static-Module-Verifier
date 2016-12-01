@@ -28,8 +28,8 @@
 /SmvLineCounter/bin/Release
 /SmvLineCounter/obj
 /SmvSdv/bin/Release
-/SmvSkeleton/bin
-/SmvSkeleton/obj
+/StaticModuleVerifier/bin
+/StaticModuleVerifier/obj
 /SmvTest/bin/Release
 /SmvTest/obj
 /Smv2Sql/bin/Debug
