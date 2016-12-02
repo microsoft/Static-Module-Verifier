@@ -12,7 +12,7 @@ namespace SmvInterceptorWrapper
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             // Get the output dir from the Environment variable set by SMV
 
@@ -30,7 +30,7 @@ namespace SmvInterceptorWrapper
             #region cl.exe            
             if (args.Contains("/iwrap:cl.exe"))
             {
-                if (args.Contains("/E")) return;
+                if (args.Contains("/E")) return 0;
                 smvclLogContents.Append("iwrap: cl.exe called with args " + string.Join(",", args));
                 string[] unsupportedClExtensions = {".inf", ".mof", ".src", ".pdb", ".def", "~", ".rc" };
 
@@ -40,7 +40,7 @@ namespace SmvInterceptorWrapper
                 {
                     smvclLogContents.Append("iwrap: cl.exe unsupported extension:" + string.Join(",", unsupportedArgs));
                     File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
-                    return;
+                    return 1;
                 }
 
                 // get the name of the plugin
@@ -127,11 +127,11 @@ namespace SmvInterceptorWrapper
 
                 Process p = System.Diagnostics.Process.Start(psi);
 
-                
                 smvclLogContents.Append(p.StandardOutput.ReadToEnd());
                 smvclLogContents.Append(p.StandardError.ReadToEnd());
                 File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
-
+                p.WaitForExit();
+                return p.ExitCode;
             }
             #endregion
             #region link.exe
@@ -139,7 +139,6 @@ namespace SmvInterceptorWrapper
             {
                 Console.WriteLine("iwrap: link.exe called with args " + string.Join(" ", iargs));
                 Console.WriteLine("iwrap: link.exe --> " + Environment.ExpandEnvironmentVariables("slamcl_writer.exe"));
-
 
                 // get rsp contents
                 string rspContents = string.Empty;
@@ -199,42 +198,11 @@ namespace SmvInterceptorWrapper
                     sw.Write(p.StandardError.ReadToEnd());
                 }
 
+                p.WaitForExit();
+                if (p.ExitCode != 0) return p.ExitCode;
+
                 files = files.Select(x => x + ".rawcfgf.obj").ToArray();
-
-                #region BPL for compilation units
-                /*
-                 * IF WE WANT TO PRODUCE BPLs for each compilation unit then we uncommend the following section
-                // Produce BPL files from the LI files.
-                Process li2BplProcess;
-                File.Copy(Environment.ExpandEnvironmentVariables(@"%SMV%\bin\liConversion.txt"), Path.Combine(outDir, "liConversion.txt"), true);
-                psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables(@"%SMV%\bin\li2bpl.exe")));
-                psi.RedirectStandardError = true;
-                psi.RedirectStandardOutput = true;
-                psi.UseShellExecute = false;
-                psi.WorkingDirectory = outDir;
-                sw = new System.IO.StreamWriter(outDir + "\\smvli2bpl.log", true);
-                foreach(string file in files)
-                {
-                    psi.Arguments = " -liFile " + Path.Combine(outDir, file);
-                    Console.WriteLine("iwrap: li2bpl.exe --> " + psi.FileName + " " + psi.Arguments);
-                    li2BplProcess = System.Diagnostics.Process.Start(psi);
-                    sw.Write(li2BplProcess.StandardOutput.ReadToEnd());
-                    sw.Write(li2BplProcess.StandardError.ReadToEnd());
-                    // Rename all the BPL files, appending "compilationunit." to the name of each file. 
-                    // Can li2bpl be modified to take the name of the output bpl file as an argument?
-                    string oldBplPath = Path.Combine(outDir, "li2c_prog.bpl");
-                    string newBplPath = Path.Combine(outDir, "compilationunit." + file + ".bpl");
-                    if (File.Exists(oldBplPath))
-                    {
-                        File.Copy(oldBplPath, newBplPath, true);
-                    }
-                }
-                sw.Close();
-                */
-                #endregion
-
-                Process slamLinkProcess;
-
+                
                 // if only 1 li file then just copy that to slam.li
                 if (files.Length == 1)
                 {
@@ -250,7 +218,7 @@ namespace SmvInterceptorWrapper
                     psi.WorkingDirectory = outDir;
                     psi.Arguments = " --lib " + string.Join(" ", files);
                     Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
-                    slamLinkProcess = System.Diagnostics.Process.Start(psi);
+                    Process slamLinkProcess = System.Diagnostics.Process.Start(psi);
                     File.AppendAllText(Path.Combine(outDir, "smvlink2.log"), slamLinkProcess.StandardOutput.ReadToEnd());
                     File.AppendAllText(Path.Combine(outDir, "smvlink2.log"), slamLinkProcess.StandardError.ReadToEnd());
 
@@ -259,6 +227,8 @@ namespace SmvInterceptorWrapper
                     {
                         File.Copy(outDir + "\\slam.lib.li", outDir + "\\slam.li", true);
                     }
+                    slamLinkProcess.WaitForExit();
+                    if (slamLinkProcess.ExitCode != 0) return slamLinkProcess.ExitCode;
                 }
 
                 // remove rawcfgf files and their corresponding LI files
@@ -289,6 +259,8 @@ namespace SmvInterceptorWrapper
 
                         foreach (string liFile in liFilesInLibDir)
                         {
+                            Process slamLinkProcess;
+
                             Console.WriteLine("iwrap: Linking " + liFile + " " + outDir + "\\slam.obj.li");
 
                             File.Copy(liFile, outDir + "\\slamlib.obj.li", true);
@@ -306,6 +278,8 @@ namespace SmvInterceptorWrapper
                                 sw.Write(slamLinkProcess.StandardOutput.ReadToEnd());
                                 sw.Write(slamLinkProcess.StandardError.ReadToEnd());
                             }
+                            slamLinkProcess.WaitForExit();
+                            if (slamLinkProcess.ExitCode != 0) return slamLinkProcess.ExitCode;
                         }
                     }
                     catch(Exception e)
@@ -317,14 +291,17 @@ namespace SmvInterceptorWrapper
                     {
                         File.Copy(outDir + "\\slamout.obj.li", outDir + "\\slam.li", true);
                     }
-                
+
+                    return 0;
                 }
+                return 0;
             }
             #endregion
             #region lib.exe
             else if (args.Contains("/iwrap:lib.exe"))
             {
-                Console.WriteLine("iwrap: Currently unimplemented. In general link functionality should be used.");
+                Console.WriteLine("iwrap: Currently unimplemented. Consider using link functionality.");
+                return 1;
             }
             #endregion
             #region record
@@ -341,9 +318,10 @@ namespace SmvInterceptorWrapper
                 {
                     File.AppendAllText(smvRecordLogPath, content);
                 }
-                return;
+                return 0;
             }
             #endregion
+            return 0;
         }
 
         /// <summary>
