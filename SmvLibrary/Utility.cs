@@ -344,7 +344,12 @@ namespace SmvLibrary
                     Log.LogInfo("PATH: " + startDirectory, logger);
                 }
 
-                return Process.Start(psi);
+                var p = Process.Start(psi);
+                if (p == null)
+                {
+                    Log.LogFatalError(String.Format(CultureInfo.InvariantCulture, "Could not create process: {0} with args {1}, working directory: {2}", cmd, args, startDirectory));
+                }
+                return p;
             }
             catch (Exception)
             {
@@ -440,6 +445,7 @@ namespace SmvLibrary
                 IDictionary<string, string> variables = action.variables;
                 string actionPath = variables["workingDir"];
                 string actionOutput = string.Empty;
+                int cumulativeExitCode = 0;
 
                 // Get the name of the action.
                 string name = action.name;
@@ -464,30 +470,15 @@ namespace SmvLibrary
                     Console.InputEncoding = new UTF8Encoding(false);
                 }
 
-                Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
-
-                if (process == null)
-                {
-                    Log.LogFatalError("Could not launch process.");
-                }
-
-                process.OutputDataReceived += (sender, e) =>
-                {
-                    Log.LogMessage(e.Data, logger);
-                    actionOutput += e.Data + Environment.NewLine;
-                };
-
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    Log.LogMessage(e.Data, logger);
-                    actionOutput += e.Data + Environment.NewLine;
-                };
-
                 // Run the commands.
                 if (action.Command != null)
                 {
                     foreach (SMVCommand cmd in action.Command)
                     {
+                        Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
+                        process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
+                        process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
+
                         // Get the command and arguments, and expand all environment as well as SMV variables.
                         string cmdAttr = ExpandVariables(Environment.ExpandEnvironmentVariables(cmd.value), variables);
                         string argumentsAttr = string.Empty;
@@ -500,6 +491,13 @@ namespace SmvLibrary
                         {
                             Log.LogInfo(String.Format(CultureInfo.InvariantCulture, "Launching {0} with arguments: {1}", cmdAttr, argumentsAttr), logger);
                             process.StandardInput.WriteLine(String.Join(" ", new String[] { cmdAttr, argumentsAttr }));
+                            process.StandardInput.WriteLine("Exit %errorlevel%");
+                            process.StandardInput.Close();
+                            process.BeginOutputReadLine();
+                            process.BeginErrorReadLine();
+                            process.WaitForExit();
+                            Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
+                            cumulativeExitCode += Math.Abs(process.ExitCode);
                         }
                         catch (Exception e)
                         {
@@ -510,32 +508,22 @@ namespace SmvLibrary
                     }
                 }
 
-                process.StandardInput.WriteLine("Exit %errorlevel%");
-                process.StandardInput.Close();
-
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                process.WaitForExit();
-
                 logger.Flush();
                 stream.Position = 0;
-                string output = string.Empty;
-
-                var sr = new StreamReader(stream);
-                output = sr.ReadToEnd();
-                output += string.Format("Exit code: {0}", process.ExitCode);
+                string output = new StreamReader(stream).ReadToEnd();
 
                 if(debugMode)
                 {
                     Log.WriteToFile(Path.Combine(actionPath, string.Format("smvexecute-{0}.log", action.name)), output, false);
                 }
-                                
-                action.result = new SMVActionResult(action.name, output, (process.ExitCode == 0),
-                    process.ExitCode != 0 && action.breakOnError);
+
+                Log.LogDebug("cumulative exit code is " + cumulativeExitCode);
+                     
+                action.result = new SMVActionResult(action.name, output, cumulativeExitCode == 0,
+                    (cumulativeExitCode > 0) && action.breakOnError);
 
                 // Call plugin post action only if we were successful in executing the action.
-                if (process.ExitCode == 0)
+                if (cumulativeExitCode == 0)
                 {
                     // get the output directory and set the output of the action from the build log.
                     if (action.name.Equals("NormalBuild"))
