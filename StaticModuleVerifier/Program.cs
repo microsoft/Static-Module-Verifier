@@ -296,7 +296,7 @@ namespace SmvSkeleton
                 Log.LogFatalError("Build failed, skipping Analysis.");
             }
 
-            Utility.PrintResult(Utility.result, (int)buildTime, (int)analysisTime);
+            Utility.PrintResult(Utility.result, (int)buildTime, (int)analysisTime, true);
             Log.LogInfo(String.Format("Total time taken {0} seconds", (int)(buildTime + analysisTime)));
 
             localScheduler.Dispose();

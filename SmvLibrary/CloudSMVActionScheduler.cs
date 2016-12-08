@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -49,6 +50,10 @@ namespace SmvLibrary
         /// action that completed when ActionComplete() is called.
         /// </summary>
         private Dictionary<string, CloudActionCompleteContext> contextDictionary = new Dictionary<string, CloudActionCompleteContext>();
+        public int Count()
+        {
+            return actionsQueue.ApproximateMessageCount ?? default(int);
+        }
 
         public CloudSMVActionScheduler(SMVCloudConfig config)
         {
@@ -149,8 +154,8 @@ namespace SmvLibrary
 
         public void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context)
         {
+            Log.LogDebug("Adding action " + action.GetFullName());
             string actionGuid = Guid.NewGuid().ToString();
-            
             // Upload action directory to blob storage.
 
             string actionPath = Utility.GetActionDirectory(action);
@@ -173,7 +178,7 @@ namespace SmvLibrary
             tableDataSource.AddEntry(entry);
 
             // Add message to queue.        
-            Log.LogInfo("Executing: " + action.GetFullName() + " [cloud id:" + actionGuid + "]");
+            //Log.LogInfo("Executing: " + action.GetFullName() + " [cloud id:" + actionGuid + "]");
             string messageString = schedulerInstanceGuid + "," + actionGuid;
             var message = new CloudQueueMessage(messageString);
             actionsQueue.AddMessage(message);
@@ -206,7 +211,7 @@ namespace SmvLibrary
             ActionsTableEntry entry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
             var action = (SMVAction)Utility.ByteArrayToObject(entry.SerializedAction);
 
-            Log.LogInfo("ActionComplete for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
+            //Log.LogInfo("ActionComplete for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
 
             // Populate the original action object so that the master scheduler gets the changes to the action object.
             context.action.analysisProperty = action.analysisProperty;

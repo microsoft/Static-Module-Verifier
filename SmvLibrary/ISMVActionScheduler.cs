@@ -27,5 +27,8 @@ namespace SmvLibrary
         /// <param name="callback">Delegate that will be called once the action has been performed.</param>
         /// <param name="context">Object passed to the delegate when the action has been performed.</param>
         void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context);
+
+        int Count();
+
     }
 }
