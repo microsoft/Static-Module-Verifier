@@ -4,6 +4,8 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Diagnostics;
 
 namespace SmvLibrary
 {
@@ -11,9 +13,12 @@ namespace SmvLibrary
     {
         private ConcurrentQueue<ActionsQueueEntry> actionsQueue = new ConcurrentQueue<ActionsQueueEntry>();
         private IDictionary<string, ISMVActionScheduler> schedulers = new Dictionary<string, ISMVActionScheduler>();
-
+        private static bool updateStatusMode = false;
         private bool disposed = false;
         private bool done = false;
+
+        private static ConcurrentDictionary<string, int> counters = new ConcurrentDictionary<string, int>();
+        private ConcurrentBag<int> times = new ConcurrentBag<int>();
 
         private delegate void ExecuteDelegate();
 
@@ -22,7 +27,19 @@ namespace SmvLibrary
         /// </summary>
         public MasterSMVActionScheduler()
         {
-            new ExecuteDelegate(this.Execute).BeginInvoke(null, null);
+            try
+            {
+                new ExecuteDelegate(this.Execute).BeginInvoke(null, null);
+            }
+            catch (Exception e)
+            {
+                Log.LogFatalError("Exception in delegate!" + e.ToString());
+            }
+        }
+
+        public static void ResetCounters()
+        {
+            counters = new ConcurrentDictionary<string, int>();
         }
 
         /// <summary>
@@ -34,12 +51,17 @@ namespace SmvLibrary
         {
             schedulers[type] = scheduler;
         }
+        public int Count()
+        {
+            return actionsQueue.Count;
+        }
 
         public void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context)
         {
-            Log.LogInfo("Queuing action: " + action.GetFullName());
+            Log.LogDebug("Queuing action: " + action.GetFullName() + " on " + action.executeOn);
             var entry = new ActionsQueueEntry(action, callback, context);
             actionsQueue.Enqueue(entry);
+            counters.AddOrUpdate("queued", 1, (k, v) => v + 1);
         }
 
         /// <summary>
@@ -55,7 +77,6 @@ namespace SmvLibrary
                 {
                     SMVAction action = entry.Action;
                     string schedulerType = action.executeOn;
-
                     if (!schedulers.ContainsKey(schedulerType))
                     {
                         Log.LogFatalError("Could not find scheduler of type: " + schedulerType +
@@ -63,6 +84,7 @@ namespace SmvLibrary
                     }
                     else
                     {
+                        Log.LogDebug("scheduler found for " + schedulerType);
                         ISMVActionScheduler scheduler = schedulers[schedulerType];
                         lock (Utility.lockObject)
                         {
@@ -71,7 +93,7 @@ namespace SmvLibrary
                         scheduler.AddAction(action, new SMVActionCompleteCallBack(ActionComplete), entry);
                     }
                 }
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(2000);
             }
         }
 
@@ -85,47 +107,77 @@ namespace SmvLibrary
             var entry = context as ActionsQueueEntry;
             SMVAction action = entry.Action;
             SMVActionCompleteCallBack callback = entry.Callback;
-            entry.Results.AddRange(results);
-
-            Log.LogInfo("Completed action: " + action.GetFullName());
-
-            // Add result to our global result set.
-
-            string result = "Failed";
-            if(action.result != null && action.result.isSuccessful)
+            try
             {
-                result = "Success";
-            }
-            lock (Utility.lockObject)
-            {
-                Utility.result[action.GetFullName()] = result;
-            }
-
-            // If there was an error, simply call the callback function with whatever results we have, the callback is
-            // expected to handle the errors by looking at the list of results.
-            if (action.result == null || action.result.breakExecution)
-            {
-                entry.Callback(action, entry.Results, entry.Context);
-            }
-            // Otherwise, add the next action to the queue, if any.
-            else 
-            {
-                SMVAction nextAction = Utility.GetNextAction(action);
-
-                if (nextAction != null)
+                if (action.result == null)
                 {
-                    nextAction.analysisProperty = action.analysisProperty;
-
-                    DebugUtility.DumpVariables(entry.Action.variables, "entry.action");
-                    DebugUtility.DumpVariables(Utility.smvVars, "smvvars");
-
-                    nextAction.variables = Utility.smvVars.Union(entry.Action.variables).ToDictionary(g => g.Key, g=> g.Value);
-                    this.AddAction(nextAction, entry.Callback, entry.Context);
+                    action.result = new SMVActionResult(action.name, "NO OUTPUT?", false, false, 0);
                 }
-                else
+
+                entry.Results.AddRange(results);
+                counters.AddOrUpdate("completed", 1, (k, v) => v + 1);
+                times.Add(action.result.time);
+
+                File.WriteAllText(Path.Combine(Utility.GetActionDirectory(action), "smvstats.txt"),
+                    string.Format("Time: {0}", action.result.time));                
+
+                // Add result to our global result set.
+                string result = "Failed";
+                if (action.result != null && action.result.isSuccessful)
+                {
+                    result = "Success";
+                }
+                lock (Utility.lockObject)
+                {
+                    Utility.result[action.GetFullName()] = result;
+                }
+
+                // If there was an error, simply call the callback function with whatever results we have, the callback is
+                // expected to handle the errors by looking at the list of results.
+                if (action.result == null || action.result.breakExecution)
                 {
                     entry.Callback(action, entry.Results, entry.Context);
                 }
+                // Otherwise, add the next action to the queue, if any.
+                else
+                {
+                    SMVAction nextAction = Utility.GetNextAction(action);
+
+                    if (nextAction != null)
+                    {
+                        nextAction.analysisProperty = action.analysisProperty;
+
+                        DebugUtility.DumpVariables(entry.Action.variables, "entry.action");
+                        DebugUtility.DumpVariables(Utility.smvVars, "smvvars");
+
+                        nextAction.variables = Utility.smvVars.Union(entry.Action.variables).ToDictionary(g => g.Key, g => g.Value);
+                        this.AddAction(nextAction, entry.Callback, entry.Context);
+                    }
+                    else
+                    {
+                        entry.Callback(action, entry.Results, entry.Context);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.LogError("Error processing finalization for action " + action.GetFullName());
+
+                action.result.output = e.ToString();
+                entry.Callback(action, entry.Results, entry.Context);
+            }
+
+            // upate status line
+            if (updateStatusMode)
+            {
+                string resultString = string.Format("\r[INFO] {0} of {1} jobs remaining. Avg(s): {2}. Std.Dev(s): {3}",
+                        counters["queued"] - counters["completed"], counters["queued"],
+                        times.Average().ToString("F2"),
+                        Math.Sqrt(times.Average(v => Math.Pow(v - times.Average(), 2))).ToString("F2"));
+                Console.Write(resultString);
+
+                if (counters["queued"] == counters["completed"])
+                    Console.WriteLine();
             }
         }
 
@@ -141,9 +193,9 @@ namespace SmvLibrary
 
         protected virtual void Dispose(bool disposing)
         {
-            if(!disposed)
+            if (!disposed)
             {
-                if(disposing)
+                if (disposing)
                 {
                     // Clean up managed resources.
                     done = true;

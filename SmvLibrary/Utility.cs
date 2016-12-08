@@ -443,6 +443,7 @@ namespace SmvLibrary
                 // may be running in multiple threads).
                 StreamWriter logger = new StreamWriter(stream);
                 IDictionary<string, string> variables = action.variables;
+                DateTime startTime = DateTime.Now;
                 string actionPath = variables["workingDir"];
                 string actionOutput = string.Empty;
                 int cumulativeExitCode = 0;
@@ -470,6 +471,7 @@ namespace SmvLibrary
                     Console.InputEncoding = new UTF8Encoding(false);
                 }
 
+                
                 // Run the commands.
                 if (action.Command != null)
                 {
@@ -512,15 +514,16 @@ namespace SmvLibrary
                 stream.Position = 0;
                 string output = new StreamReader(stream).ReadToEnd();
 
-                if(debugMode)
+                if (debugMode)
                 {
                     Log.WriteToFile(Path.Combine(actionPath, string.Format("smvexecute-{0}.log", action.name)), output, false);
                 }
-
                 Log.LogDebug("cumulative exit code is " + cumulativeExitCode);
                      
-                action.result = new SMVActionResult(action.name, output, cumulativeExitCode == 0,
-                    (cumulativeExitCode > 0) && action.breakOnError);
+                DateTime endTime = DateTime.Now;
+
+                action.result = new SMVActionResult(action.name, output, (cumulativeExitCode == 0),
+                    cumulativeExitCode != 0 && action.breakOnError, (int)(endTime - startTime).TotalSeconds);
 
                 // Call plugin post action only if we were successful in executing the action.
                 if (cumulativeExitCode == 0)
@@ -666,9 +669,9 @@ namespace SmvLibrary
         /// Prints the result of the Build Actions.
         /// </summary>
         /// <param name="result">List of the action names and if they succeeded.</param>
-        public static void PrintResult(IDictionary result, double buildTime, double analysisTime)
+        public static void PrintResult(IDictionary result, double buildTime, double analysisTime, bool abbreviated)
         {
-            if (result != null)
+            if (result != null && !abbreviated)
             {
                 Log.LogMessage(Environment.NewLine);
                 Log.LogMessage("=============================================================");
@@ -682,15 +685,8 @@ namespace SmvLibrary
                 Log.LogMessage("=============================================================");
                 Log.LogMessage(Environment.NewLine);
 
-                if (buildTime > 0)
-                {
-                    Log.LogMessage("Build time: " + buildTime + " seconds.");
-                }
-
-                if (analysisTime > 0)
-                {
-                    Log.LogMessage("Analysis time: " + analysisTime + " seconds.");
-                }
+                Log.LogMessage("Build time: " + buildTime + " seconds.");
+                Log.LogMessage("Analysis time: " + analysisTime + " seconds.");
             }            
         }
 
