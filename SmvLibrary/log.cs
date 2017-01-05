@@ -68,18 +68,12 @@ namespace SmvLibrary
                 if (!String.IsNullOrEmpty(logPath))
                 {
                     string path = Path.Combine(logPath, fileName + ".txt");
-                    using (StreamWriter sw = new StreamWriter(path))
-                    {
-                        sw.WriteLine(text);
-                    }
+                    File.WriteAllText(path, text);
                 }
             }
             else
             {
-                using (StreamWriter sw = new StreamWriter(fileName))
-                {
-                    sw.WriteLine(text);
-                }
+                File.WriteAllText(fileName, text);
             }
         }
 

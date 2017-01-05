@@ -181,7 +181,6 @@ namespace SmvInterceptorWrapper
 
                 ProcessStartInfo psi;
                 Process p;
-                StreamWriter sw;
 
                 psi = new ProcessStartInfo(Environment.ExpandEnvironmentVariables("slamcl_writer.exe"), "--smv *");
                 psi.RedirectStandardError = true;
@@ -192,11 +191,8 @@ namespace SmvInterceptorWrapper
                 Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
 
                 p = System.Diagnostics.Process.Start(psi);
-                using (sw = new System.IO.StreamWriter(outDir + "\\smvlink1.log", true))
-                {
-                    sw.Write(p.StandardOutput.ReadToEnd());
-                    sw.Write(p.StandardError.ReadToEnd());
-                }
+                File.WriteAllText(outDir + "\\smvlink1.log", p.StandardOutput.ReadToEnd());
+                File.AppendAllText(outDir + "\\smvlink1.log", p.StandardOutput.ReadToEnd());
 
                 p.WaitForExit();
                 if (p.ExitCode != 0) return p.ExitCode;
@@ -273,12 +269,10 @@ namespace SmvInterceptorWrapper
                             psi.WorkingDirectory = outDir;
                             psi.Arguments = " --lib slamorig.obj slamlib.obj /out:slamout.obj";
                             slamLinkProcess = System.Diagnostics.Process.Start(psi);
-                            using (sw = new System.IO.StreamWriter(outDir + "\\smvlink.log", true))
-                            {
-                                sw.Write(slamLinkProcess.StandardOutput.ReadToEnd());
-                                sw.Write(slamLinkProcess.StandardError.ReadToEnd());
-                            }
-                            slamLinkProcess.WaitForExit();
+
+                            File.WriteAllText(outDir + "\\smvlink.log", slamLinkProcess.StandardOutput.ReadToEnd());
+                            File.AppendAllText(outDir + "\\smvlink.log", slamLinkProcess.StandardError.ReadToEnd());
+
                             if (slamLinkProcess.ExitCode != 0) return slamLinkProcess.ExitCode;
                         }
                     }
