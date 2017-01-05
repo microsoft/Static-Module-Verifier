@@ -183,15 +183,8 @@ namespace SmvLibrary
             var message = new CloudQueueMessage(messageString);
             actionsQueue.AddMessage(message);
 
-            // Start listening for a message from the service bus.
-
             contextDictionary[actionGuid] = new CloudActionCompleteContext(action, callback, context);
-            OnMessageOptions options = new OnMessageOptions();
-            options.AutoComplete = false;
-            options.AutoRenewTimeout = TimeSpan.FromHours(CloudConstants.BeginReceiveTimeoutInHours);
             
-            //subscriptionClient.BeginReceive(TimeSpan.FromHours(CloudConstants.BeginReceiveTimeoutInHours), 
-              //  new AsyncCallback(ActionComplete), null);
         }
 
         /// <summary>
@@ -237,12 +230,10 @@ namespace SmvLibrary
             File.Delete(zipPath);
 
             // Write to the cloudstats.txt file.
-            using (StreamWriter writer = File.AppendText(Path.Combine(actionDirectory, "cloudstats.txt")))
-            {
-                writer.WriteLine("Wait Time: " + waitTime.ToString());
-                writer.WriteLine("Dequeue Count: " + dequeueCount);
-                writer.WriteLine("Output" + Environment.NewLine + results.First().output);
-            }
+            var contents = new string[] { "Wait Time: " + waitTime.ToString() ,
+                "Dequeue Count: " + dequeueCount ,
+                "Output" + Environment.NewLine + results.First().output };
+            File.AppendAllLines(Path.Combine(actionDirectory, "cloudstats.txt"), contents);
 
             context.callback(context.action, results, context.context);
         }

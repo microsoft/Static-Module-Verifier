@@ -13,7 +13,7 @@ namespace SmvLibrary
     {
         private ConcurrentQueue<ActionsQueueEntry> actionsQueue = new ConcurrentQueue<ActionsQueueEntry>();
         private IDictionary<string, ISMVActionScheduler> schedulers = new Dictionary<string, ISMVActionScheduler>();
-        private static bool updateStatusMode = false;
+        public static bool updateStatusMode = false;
         private bool disposed = false;
         private bool done = false;
 
@@ -175,7 +175,6 @@ namespace SmvLibrary
                         times.Average().ToString("F2"),
                         Math.Sqrt(times.Average(v => Math.Pow(v - times.Average(), 2))).ToString("F2"));
                 Console.Write(resultString);
-
                 if (counters["queued"] == counters["completed"])
                     Console.WriteLine();
             }
