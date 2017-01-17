@@ -129,8 +129,10 @@ namespace SmvLibrary
                         {
                             ActionComplete(msg);
                         }
-                        catch (Exception)
+                        catch (Exception e)
                         {
+                            Log.LogError("Exception when completing action for " + msg.MessageId);
+                            Log.LogFatalError(e.ToString());
                             msg.Abandon();
                         }
                     });
@@ -159,13 +161,17 @@ namespace SmvLibrary
             // Upload action directory to blob storage.
 
             string actionPath = Utility.GetActionDirectory(action);
-            string zipPath = Path.GetTempFileName();
-            File.Delete(zipPath);
+            string zipPath = Path.Combine(Path.GetTempPath(), actionGuid);
+            if(File.Exists(zipPath)) File.Delete(zipPath);
             ZipFile.CreateFromDirectory(actionPath, zipPath);
 
+            Log.LogDebug("Created zip for " + actionPath);
+            
             CloudBlockBlob blob = inputContainer.GetBlockBlobReference(actionGuid + ".zip");
             blob.UploadFromFile(zipPath);
             File.Delete(zipPath);
+
+            Log.LogDebug("Uploaded blob " + blob.Name);
 
             // Add entry to table storage.
 
@@ -177,14 +183,19 @@ namespace SmvLibrary
                 Utility.version, null, moduleHash);
             tableDataSource.AddEntry(entry);
 
+            Log.LogDebug("Added to table " + entry.PartitionKey + "," + entry.RowKey);
+            
             // Add message to queue.        
             //Log.LogInfo("Executing: " + action.GetFullName() + " [cloud id:" + actionGuid + "]");
             string messageString = schedulerInstanceGuid + "," + actionGuid;
             var message = new CloudQueueMessage(messageString);
             actionsQueue.AddMessage(message);
 
-            contextDictionary[actionGuid] = new CloudActionCompleteContext(action, callback, context);
+            Log.LogDebug("Adding to queue " + message.Id);
             
+            contextDictionary[actionGuid] = new CloudActionCompleteContext(action, callback, context);
+
+            Log.LogDebug("Done adding.");   
         }
 
         /// <summary>
@@ -193,7 +204,6 @@ namespace SmvLibrary
         /// <param name="ar"></param>
         private void ActionComplete(BrokeredMessage message)
         {
-
             var actionGuid = (string)message.Properties["ActionGuid"];
             var waitTime = (TimeSpan)message.Properties["WaitTime"];    // The amount of time the rule had to wait before it started being processed.
             var dequeueCount = (int)message.Properties["DequeueCount"]; // The number of times the message we sent was dequeued by the workers.
@@ -204,7 +214,7 @@ namespace SmvLibrary
             ActionsTableEntry entry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
             var action = (SMVAction)Utility.ByteArrayToObject(entry.SerializedAction);
 
-            //Log.LogInfo("ActionComplete for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
+            Log.LogDebug("ActionComplete for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
 
             // Populate the original action object so that the master scheduler gets the changes to the action object.
             context.action.analysisProperty = action.analysisProperty;
@@ -220,14 +230,19 @@ namespace SmvLibrary
 
             // Download and extract the results.
             CloudBlockBlob resultsBlob = outputContainer.GetBlockBlobReference(actionGuid + ".zip");
-            string zipPath = Path.GetTempFileName();
-            File.Delete(zipPath);
+            string zipPath = Path.Combine(Path.GetTempPath(), actionGuid);
+            if(File.Exists(zipPath)) File.Delete(zipPath);
             resultsBlob.DownloadToFile(zipPath, FileMode.CreateNew);
             resultsBlob.Delete();
             string actionDirectory = Utility.GetActionDirectory(context.action);
-            Utility.ClearDirectory(actionDirectory);
-            ZipFile.ExtractToDirectory(zipPath, actionDirectory);
+            string resultDirectory = Path.Combine(actionDirectory, "result");
+            Directory.CreateDirectory(resultDirectory);
+            ZipFile.ExtractToDirectory(zipPath, resultDirectory);
             File.Delete(zipPath);
+            Utility.CopyDirectory(resultDirectory, actionDirectory, true);
+            //Directory.Delete(resultDirectory, true);
+
+            Log.LogDebug("download results for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
 
             // Write to the cloudstats.txt file.
             var contents = new string[] { "Wait Time: " + waitTime.ToString() ,
