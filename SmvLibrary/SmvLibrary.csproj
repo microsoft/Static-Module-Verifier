@@ -55,6 +55,7 @@
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -85,7 +86,9 @@
     <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="CloudConfig.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -108,7 +111,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(ProjectDir)Config.xsd $(TargetDir)
+    <PostBuildEvent>copy $(ProjectDir)Transform.xsl $(TargetDir)copy $(ProjectDir)Config.xsd $(TargetDir)
 copy $(ProjectDir)CloudConfig.xsd $(TargetDir)
 copy $(ProjectDir)CloudConfig.xml $(TargetDir)</PostBuildEvent>
   </PropertyGroup>

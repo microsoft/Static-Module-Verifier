@@ -12,14 +12,11 @@ using System.Diagnostics;
 using System.Web;
 using System.Collections.Specialized;
 using System.Collections;
-using System.Xml.Serialization;
 using StaticModuleVerifier.Properties;
 using SmvLibrary;
 using System.Reflection;
 using System.Globalization;
-using GotDotNet.XInclude;
-using System.Xml.XPath;
-using System.Xml.Xsl;
+
 
 
 namespace SmvSkeleton
@@ -28,10 +25,6 @@ namespace SmvSkeleton
     {
         static SMVConfig smvConfig;
         const string configXmlFileName = "Config.xml";
-        const string configXsdFileName = "Config.xsd";
-        const string xsltFileName = "Transform.xsl";
-        const string cloudConfigXmlFileName = "CloudConfig.xml";
-        const string cloudConfigXsdFileName = "CloudConfig.xsd";
         private static bool doAnalysis = false;
         private static string buildLogFileNamePrefix = "smvbuild";
         private static bool cloud = false;
@@ -196,7 +189,7 @@ namespace SmvSkeleton
             Utility.version = lines[0];
             
             // Consume specified configuration file
-            smvConfig = GetSMVConfig();
+            smvConfig = Utility.GetSMVConfig();
             if (smvConfig == null)
             {
                 Log.LogFatalError("Could not load Config file");
@@ -231,7 +224,7 @@ namespace SmvSkeleton
              CloudSMVActionScheduler cloudScheduler = null;
              if (cloud)
              {
-                 cloudConfig = GetSMVCloudConfig();
+                 cloudConfig = Utility.GetSMVCloudConfig();
                  cloudScheduler = new CloudSMVActionScheduler(cloudConfig);
              }
              Utility.scheduler.AddScheduler("local", localScheduler);
@@ -303,137 +296,6 @@ namespace SmvSkeleton
 
              localScheduler.Dispose();
              if(cloud) cloudScheduler.Dispose();
-        }
-
-        /// <summary>
-        /// Load the cloud configuration from an XML file and store it in an SMVCloudConfig object.
-        /// </summary>
-        /// <returns>The SMVCloudConfig object containing the cloud configuration.</returns>
-        static SMVCloudConfig GetSMVCloudConfig()
-        {
-            try
-            {
-                string cloudConfigXmlPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXmlFileName);
-                string contents = Utility.ReadFile(cloudConfigXmlPath);
-                if (!String.IsNullOrEmpty(contents))
-                {
-                    bool isXMLValid = false;
-                    string schemaPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXsdFileName);
-
-                    using (StringReader configContent = new StringReader(contents))
-                    {
-                        isXMLValid = Utility.ValidateXmlFile(schemaPath, configContent);
-                    }
-
-                    if (!isXMLValid)
-                    {
-                        Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
-                        return null;
-                    }
-
-                    XmlSerializer serializer = new XmlSerializer(typeof(SMVCloudConfig));
-                    SMVCloudConfig config = null;
-                    using (TextReader reader = new StringReader(contents))
-                    {
-                        config = (SMVCloudConfig)serializer.Deserialize(reader);
-                    }
-
-                    return config;
-                }
-                else
-                {
-                    Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
-                    return null;
-                }
-            }
-            catch(Exception)
-            {
-                Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Load the configuration from the config file and store it in an SMVConfig object.
-        /// </summary>
-        /// <returns>The configuration as an SMVConfig object.</returns>
-        static SMVConfig GetSMVConfig()
-        {
-            string configFileContent = Transform(Utility.GetSmvVar("configFilePath"));
-            if (!String.IsNullOrEmpty(configFileContent))
-            {
-                bool isXMLValid = false;
-                string schemaPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), configXsdFileName);
-                using (StringReader configContent = new StringReader(configFileContent))
-                {
-                    isXMLValid = Utility.ValidateXmlFile(schemaPath, configContent);
-                }
-
-                if (!isXMLValid)
-                {
-                    Log.LogError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
-                    return null;
-                }
-
-                XmlSerializer serializer = new XmlSerializer(typeof(SMVConfig));
-                using (TextReader reader = new StringReader(configFileContent))
-                {
-                    smvConfig = (SMVConfig)serializer.Deserialize(reader);
-                }
-                return smvConfig;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// XSLT transformation to XML file at the filePath to include its component modules
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        static string Transform(string filePath)
-        {
-            XIncludingReader xir = new XIncludingReader(filePath);
-            XPathDocument doc = null;
-            try
-            {
-                doc = new XPathDocument(xir, XmlSpace.Preserve);
-            }
-            catch (Exception e)
-            {
-                Log.LogError("Exception occurred while looking for modules to dereference XML configuration files" + e);
-                return null;
-            }
-            XslTransform xslTransform = new XslTransform();
-
-            // Get Tranformation file
-            string xsltFilePath = Path.Combine(Utility.GetSmvVar("assemblyDir"), xsltFileName);
-            try
-            {
-                xslTransform.Load(xsltFilePath);
-            }
-            catch (Exception e)
-            {
-                Log.LogError("Exception occurred while looking for the Tranformation XSLT file" + e);
-                return null;
-            }
-
-            // Prepare memory stream
-            Stream memStream = new MemoryStream();
-            StreamWriter streamWriter = new StreamWriter(memStream);
-
-            // Transform input xml to output in memoryStream
-            xslTransform.Transform(doc, null, streamWriter);
-            streamWriter.Flush();
-            memStream.Position = 0;
-
-            // Convert memoryStream to string
-            StreamReader streamReader = new StreamReader(memStream);
-            string xmlContents = streamReader.ReadToEnd();
-            streamWriter.Close();
-            return xmlContents;
         }
 
         /// <summary>
