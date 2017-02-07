@@ -1,109 +1,115 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xs:schema id="SMV"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
->
-  <!-- Please don't add any comments with double hyphens in them.                                                                              -->
-  <!-- XML does not support a double hyphen within a comment, since it is a delimiter.                                                         -->
-  <!-- Available variables which can be used inside actions                                                                                    -->
-  <!-- $assemblyDir         : Directory where SMV binaries are located            [Available in all actions]                                   -->
-  <!-- $workingDir          : Directory where SMV is run                          [Available in all actions]                                   -->
-  <!-- $actionName          : Name of the current action                          [Available in all actions]                                   -->
-  <!-- $actionPath          : Path where the current action is run                [Available in all actions]                                   -->
-  <!-- $configFilePath      : Path of the config file provided to SMV             [Available in all actions]                                   -->
-  <!-- $logFilePath         : Path to the log file                                [Available in all actions, if SMV is run with /log:<path>]   -->
-  <!-- $ModuleName          : Name of the module                                  [Available if SMV is run with /module:<name>]                -->
-  <!-- $ModuleDateCreated   : Date created timestamp of the module                [Available if SMV is run with /module:<name>]                -->
-  <!-- $ModuleId            : Id of the module                                    [Available if SMV is run with /module:<name>]                -->
-  <!-- $ModuleLastModified  : Last modified timestamp of the module               [Available if SMV is run with /module:<name>]                -->
-  <!-- $driverType          : Driver type                                         [Available in all actions following normal build]            -->
-  <!-- $outputDir           : Directory where the build files are generated       [Available in all actions following InterceptedBuild]        -->
-  <!-- $analysisDir         : $outputDir\SMV                                      [Available in all actions following InterceptedBuild]        -->
-  <!-- $ruleDir             : Directory of the rule currently being checked       [Available in all Analysis actions if rules are checked]     -->
-  <xs:element name="SMVConfig">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="Variables" type="GlobalVariablesType" minOccurs="0" maxOccurs="1" />
-        <xs:element name="Build" type="ActionGroupType" minOccurs="0" maxOccurs="unbounded" />
-        <xs:element name="Analysis" type="ActionGroupType" minOccurs="0" maxOccurs="unbounded" />
-      </xs:sequence>
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    > 
+    
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+        schemaLocation="http://www.w3.org/2009/01/xml.xsd"/>
+    <!-- Please don't add any comments with double hyphens in them.                                                                              -->
+    <!-- XML does not support a double hyphen within a comment, since it is a delimiter.                                                         -->
+    <!-- Available variables which can be used inside actions                                                                                    -->
+    <!-- $assemblyDir         : Directory where SMV binaries are located            [Available in all actions]                                   -->
+    <!-- $workingDir          : Directory where SMV is run                          [Available in all actions]                                   -->
+    <!-- $actionName          : Name of the current action                          [Available in all actions]                                   -->
+    <!-- $actionPath          : Path where the current action is run                [Available in all actions]                                   -->
+    <!-- $configFilePath      : Path of the config file provided to SMV             [Available in all actions]                                   -->
+    <!-- $logFilePath         : Path to the log file                                [Available in all actions, if SMV is run with /log:<path>]   -->
+    <!-- $ModuleName          : Name of the module                                  [Available if SMV is run with /module:<name>]                -->
+    <!-- $ModuleDateCreated   : Date created timestamp of the module                [Available if SMV is run with /module:<name>]                -->
+    <!-- $ModuleId            : Id of the module                                    [Available if SMV is run with /module:<name>]                -->
+    <!-- $ModuleLastModified  : Last modified timestamp of the module               [Available if SMV is run with /module:<name>]                -->
+    <!-- $driverType          : Driver type                                         [Available in all actions following normal build]            -->
+    <!-- $outputDir           : Directory where the build files are generated       [Available in all actions following InterceptedBuild]        -->
+    <!-- $analysisDir         : $outputDir\SMV                                      [Available in all actions following InterceptedBuild]        -->
+    <!-- $ruleDir             : Directory of the rule currently being checked       [Available in all Analysis actions if rules are checked]     -->
+    <xs:element name="SMVConfig">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Variables" type="GlobalVariablesType" minOccurs="0" maxOccurs="1" />
+                <xs:element name="Build" type="ActionGroupType" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="Analysis" type="ActionGroupType" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:complexType name="GlobalVariablesType">
+        <xs:sequence>
+            <xs:element ref="SetVar" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute ref="xml:base" use="optional" />
     </xs:complexType>
-  </xs:element>
-
-  <xs:complexType name="GlobalVariablesType">
-    <xs:sequence>
-      <xs:element ref="SetVar" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:complexType>
-  
-  <xs:complexType name="ActionGroupType">
-    <xs:sequence>
-      <xs:element ref="Action" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:element name="Action" type="ActionType" />
-  <xs:complexType name="ActionType">
-    <xs:sequence>
-      <xs:element ref="Path" minOccurs="0" maxOccurs="1" />
-      <xs:element ref="Env" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element ref="CopyArtifact" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element ref="Command" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-    <xs:attribute name="name" use="required" type="xs:string" />
-    <xs:attribute name="breakOnError" default="true" use="optional" type="xs:boolean" />
-    <xs:attribute name="executeOn" use="optional" type="ExecuteOnStringType" />
-    <xs:attribute name="nextAction" use="optional" type="xs:string" />
-  </xs:complexType>
-
-  <xs:simpleType name="ExecuteOnStringType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="local" />
-      <xs:enumeration value="cloud" />
-    </xs:restriction>
-  </xs:simpleType>
-  
-  <xs:element name="SetVar" type="SetVarType" />
-  <xs:complexType name="SetVarType">
-    <xs:attribute name="key" use="required" type="NonEmptyString"/>
-    <xs:attribute name="value" use="required" type="xs:string"/>
-  </xs:complexType>
-
-  <xs:simpleType name="NonEmptyString">
-    <xs:restriction base="xs:string">
-      <xs:minLength value="1"/>
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:element name="Env" type="SMVEnvVar" />
-  <xs:complexType name="SMVEnvVar">
-    <xs:attribute name="key" use="required" type="NonEmptyString"/>
-    <xs:attribute name="value" use="required" type="xs:string"/>
-  </xs:complexType>
-
-  <xs:simpleType name="entityAttrType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="Module" />
-      <xs:enumeration value="CompilationUnit" />
-      <xs:enumeration value="FunctionUnit" />
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:element name="CopyArtifact" type="CopyArtifactType" />
-  <xs:complexType name="CopyArtifactType">
-    <xs:attribute name="name" use="required" type="NonEmptyString" />
-    <xs:attribute name="type" use="required" type="xs:string" />
-    <xs:attribute name="entity" use="required" type="entityAttrType" />
-    <xs:attribute name="to" use="optional" type="xs:string" />
-  </xs:complexType>
-
-  <xs:element name="Command" type="SMVCommand" />
-  <xs:complexType name="SMVCommand">
-    <xs:attribute name="value" use="required" type="NonEmptyString" />
-    <xs:attribute name="arguments" use="optional" type="xs:string" />
-  </xs:complexType>
-
-  <xs:element name="Path" type="PathType" />
-  <xs:complexType name="PathType">
-    <xs:attribute name="value" use="required" type="xs:string"/>
-  </xs:complexType>
+    
+    <xs:complexType name="ActionGroupType">
+        <xs:sequence>
+            <xs:element ref="Action" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:element name="Action" type="ActionType" />
+    <xs:complexType name="ActionType">
+        <xs:sequence>
+            <xs:element ref="Path" minOccurs="0" maxOccurs="1" />
+            <xs:element ref="Env" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element ref="CopyArtifact" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element ref="Command" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute ref="xml:base" use="optional" />
+        <xs:attribute name="name" use="required" type="xs:string" />
+        <xs:attribute name="breakOnError" default="true" use="optional" type="xs:boolean" />
+        <xs:attribute name="executeOn" use="optional" type="ExecuteOnStringType" />
+        <xs:attribute name="nextAction" use="optional" type="xs:string" />
+    </xs:complexType>
+    
+    <xs:simpleType name="ExecuteOnStringType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="local" />
+            <xs:enumeration value="cloud" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:element name="SetVar" type="SetVarType" />
+    <xs:complexType name="SetVarType">
+        <xs:attribute name="key" use="required" type="NonEmptyString"/>
+        <xs:attribute name="value" use="required" type="xs:string"/>
+    </xs:complexType>
+    
+    <xs:simpleType name="NonEmptyString">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:element name="Env" type="SMVEnvVar" />
+    <xs:complexType name="SMVEnvVar">
+        <xs:attribute name="key" use="required" type="NonEmptyString"/>
+        <xs:attribute name="value" use="required" type="xs:string"/>
+    </xs:complexType>
+    
+    <xs:simpleType name="entityAttrType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Module" />
+            <xs:enumeration value="CompilationUnit" />
+            <xs:enumeration value="FunctionUnit" />
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:element name="CopyArtifact" type="CopyArtifactType" />
+    <xs:complexType name="CopyArtifactType">
+        <xs:attribute name="name" use="required" type="NonEmptyString" />
+        <xs:attribute name="type" use="required" type="xs:string" />
+        <xs:attribute name="entity" use="required" type="entityAttrType" />
+        <xs:attribute name="to" use="optional" type="xs:string" />
+    </xs:complexType>
+    
+    <xs:element name="Command" type="SMVCommand" />
+    <xs:complexType name="SMVCommand">
+        <xs:attribute name="value" use="required" type="NonEmptyString" />
+        <xs:attribute name="arguments" use="optional" type="xs:string" />
+    </xs:complexType>
+    
+    <xs:element name="Path" type="PathType" />
+    <xs:complexType name="PathType">
+        <xs:attribute name="value" use="required" type="xs:string"/>
+    </xs:complexType>
 </xs:schema>
