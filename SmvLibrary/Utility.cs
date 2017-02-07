@@ -15,10 +15,10 @@ using System.Configuration;
 using System.Globalization;
 using System.Threading;
 using System.Runtime.Serialization.Formatters.Binary;
-using GotDotNet.XInclude;
 using System.Xml.XPath;
 using System.Xml.Xsl;
 using System.Xml.Serialization;
+using Mvp.Xml.XInclude;
 
 [assembly: CLSCompliant(true)]
 namespace SmvLibrary
