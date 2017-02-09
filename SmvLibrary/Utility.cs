@@ -798,21 +798,21 @@ namespace SmvLibrary
         {
             try
             {
-                string cloudConfigXmlPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXmlFileName);
-                string contents = Utility.ReadFile(cloudConfigXmlPath);
+                string cloudConfigXmlPath = Path.Combine(GetSmvVar("assemblyDir"), cloudConfigXmlFileName);
+                string contents = ReadFile(cloudConfigXmlPath);
                 if (!String.IsNullOrEmpty(contents))
                 {
                     bool isXMLValid = false;
-                    string schemaPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXsdFileName);
+                    string schemaPath = Path.Combine(GetSmvVar("assemblyDir"), cloudConfigXsdFileName);
 
                     using (StringReader configContent = new StringReader(contents))
                     {
-                        isXMLValid = Utility.ValidateXmlFile(schemaPath, configContent);
+                        isXMLValid = ValidateXmlFile(schemaPath, configContent);
                     }
 
                     if (!isXMLValid)
                     {
-                        Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                        Log.LogFatalError("Could not load and validate XML file: " + GetSmvVar("configFilePath"));
                         return null;
                     }
 
@@ -827,13 +827,13 @@ namespace SmvLibrary
                 }
                 else
                 {
-                    Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                    Log.LogFatalError("Could not load and validate XML file: " + GetSmvVar("configFilePath"));
                     return null;
                 }
             }
             catch (Exception)
             {
-                Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                Log.LogFatalError("Could not load and validate XML file: " + GetSmvVar("configFilePath"));
                 return null;
             }
         }
@@ -845,19 +845,19 @@ namespace SmvLibrary
         public static SMVConfig GetSMVConfig()
         {
             SMVConfig smvConfig;
-            string configFileContent = Transform(Utility.GetSmvVar("configFilePath"));
+            string configFileContent = Transform(GetSmvVar("configFilePath"));
             if (!String.IsNullOrEmpty(configFileContent))
             {
                 bool isXMLValid = false;
-                string schemaPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), configXsdFileName);
+                string schemaPath = Path.Combine(GetSmvVar("assemblyDir"), configXsdFileName);
                 using (StringReader configContent = new StringReader(configFileContent))
                 {
-                    isXMLValid = Utility.ValidateXmlFile(schemaPath, configContent);
+                    isXMLValid = ValidateXmlFile(schemaPath, configContent);
                 }
-
+                Log.LogDebug("The validity is " + isXMLValid);
                 if (!isXMLValid)
                 {
-                    Log.LogError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                    Log.LogError("Could not load and validate XML file: " + GetSmvVar("configFilePath"));
                     return null;
                 }
 
@@ -881,24 +881,20 @@ namespace SmvLibrary
         /// <returns></returns>
         static string Transform(string filePath)
         {
-            XIncludingReader xir = new XIncludingReader(filePath);
-            XPathDocument doc = null;
-            try
-            {
-                doc = new XPathDocument(xir, XmlSpace.Preserve);
-            }
-            catch (Exception e)
-            {
-                Log.LogError("Exception occurred while looking for modules to dereference XML configuration files" + e);
-                return null;
-            }
-            XslTransform xslTransform = new XslTransform();
+            // Reading the input XML file
+            XmlDocument document = new XmlDocument();
+            document.Load(filePath);
+            XmlReaderSettings xmlReaderSettings = new XmlReaderSettings();
+            xmlReaderSettings.IgnoreWhitespace = true;
+            XmlReader xmlReader = XmlReader.Create(new StringReader(document.OuterXml), xmlReaderSettings);
 
+            XslCompiledTransform xslTransform = new XslCompiledTransform();
+            XsltSettings xsltSettings = new XsltSettings(true, true);
             // Get Tranformation file
-            string xsltFilePath = Path.Combine(Utility.GetSmvVar("assemblyDir"), xsltFileName);
+            string xsltFilePath = Path.Combine(GetSmvVar("assemblyDir"), xsltFileName);
             try
             {
-                xslTransform.Load(xsltFilePath);
+                xslTransform.Load(xsltFilePath, xsltSettings, new XmlUrlResolver());
             }
             catch (Exception e)
             {
@@ -910,8 +906,21 @@ namespace SmvLibrary
             Stream memStream = new MemoryStream();
             StreamWriter streamWriter = new StreamWriter(memStream);
 
+            // Prepare arguments with path to the modules
+            XsltArgumentList xsltArgumentList = new XsltArgumentList();
+            int index = filePath.LastIndexOf('\\');
+            xsltArgumentList.AddParam("absolute-path", "", filePath.Substring(0, index+1));
+
             // Transform input xml to output in memoryStream
-            xslTransform.Transform(doc, null, streamWriter);
+            try
+            {
+                xslTransform.Transform(xmlReader, xsltArgumentList, streamWriter);
+            } catch(Exception e)
+            {
+                Log.LogError("Exception occurred while transforming modules of XML " + e);
+                return null;
+            }
+            Log.LogDebug("Transformation successful");
             streamWriter.Flush();
             memStream.Position = 0;
 

@@ -3,7 +3,7 @@
     xmlns:xi="http://www.w3.org/2001/XInclude"
     exclude-result-prefixes='xsl xi'>
     <xsl:output method="xml" indent="yes"/>
-    <xsl:preserve-space elements="*"/>
+	<xsl:param name="absolute-path" />
     <xsl:template match="@*|node()">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()"/>
@@ -11,7 +11,8 @@
     </xsl:template>
     
     <xsl:template match="xi:include[@href][@parse='xml' or not(@parse)]">
-        <xsl:apply-templates select="document(@href)" />
+		<xsl:variable name="docurl" select="@href" />
+        <xsl:apply-templates select="document(concat($absolute-path, $docurl))" />
     </xsl:template>
     
     <xsl:template match="xi:include" />
