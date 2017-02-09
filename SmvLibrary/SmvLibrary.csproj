@@ -116,7 +116,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(ProjectDir)Transform.xsl $(TargetDir)copy $(ProjectDir)Config.xsd $(TargetDir)
+    <PostBuildEvent>copy $(ProjectDir)Transform.xsl $(TargetDir)
+copy $(ProjectDir)Config.xsd $(TargetDir)
 copy $(ProjectDir)CloudConfig.xsd $(TargetDir)
 copy $(ProjectDir)CloudConfig.xml $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
