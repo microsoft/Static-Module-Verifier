@@ -19,7 +19,6 @@ using System.Xml.XPath;
 using System.Xml.Xsl;
 using System.Xml.Serialization;
 using Mvp.Xml.XInclude;
-
 [assembly: CLSCompliant(true)]
 namespace SmvLibrary
 {
@@ -40,7 +39,6 @@ namespace SmvLibrary
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
         private static List<SMVActionResult> actionResults;
-         
 
         private Utility() { }
 
@@ -322,7 +320,6 @@ namespace SmvLibrary
                 return bf.Deserialize(ms);
             }
         }
-
         /// <summary>
         /// Launches a process and executes the given command with the args provided.
         /// </summary>
@@ -478,7 +475,7 @@ namespace SmvLibrary
                 {
                     Console.InputEncoding = new UTF8Encoding(false);
                 }
-
+                
                 
                 // Run the commands.
                 if (action.Command != null)
@@ -488,7 +485,7 @@ namespace SmvLibrary
                         Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
                         process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
                         process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
-
+                        
                         // Get the command and arguments, and expand all environment as well as SMV variables.
                         string cmdAttr = ExpandVariables(Environment.ExpandEnvironmentVariables(cmd.value), variables);
                         string argumentsAttr = string.Empty;
@@ -908,7 +905,15 @@ namespace SmvLibrary
 
             // Prepare arguments with path to the modules
             XsltArgumentList xsltArgumentList = new XsltArgumentList();
-            int index = filePath.LastIndexOf('\\');
+            int index = filePath.LastIndexOf(Path.AltDirectorySeparatorChar);
+            if(index == -1)
+            {
+                index = filePath.LastIndexOf(Path.DirectorySeparatorChar);
+            }
+            if (index == -1)
+            {
+                Log.LogFatalError("The path of the configuration module cannot be found");
+            }
             xsltArgumentList.AddParam("absolute-path", "", filePath.Substring(0, index+1));
 
             // Transform input xml to output in memoryStream
