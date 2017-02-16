@@ -54,3 +54,5 @@
 /SmvService/obj
 /SmvService/rcf
 .vs
+.user
+.userosscache
