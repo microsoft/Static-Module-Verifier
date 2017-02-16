@@ -915,6 +915,7 @@ namespace SmvLibrary
                 Log.LogFatalError("The path of the configuration module cannot be found");
             }
             xsltArgumentList.AddParam("absolute-path", "", filePath.Substring(0, index+1));
+            Console.Write("hi");
 
             // Transform input xml to output in memoryStream
             try
