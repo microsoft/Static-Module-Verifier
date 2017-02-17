@@ -19,6 +19,8 @@ using System.Xml.XPath;
 using System.Xml.Xsl;
 using System.Xml.Serialization;
 using Mvp.Xml.XInclude;
+using System.Timers;
+
 [assembly: CLSCompliant(true)]
 namespace SmvLibrary
 {
@@ -39,7 +41,7 @@ namespace SmvLibrary
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
         private static List<SMVActionResult> actionResults;
-
+        private static ProcessTimer processTimer;
         private Utility() { }
 
         /// <summary>
@@ -452,7 +454,6 @@ namespace SmvLibrary
                 string actionPath = variables["workingDir"];
                 string actionOutput = string.Empty;
                 int cumulativeExitCode = 0;
-
                 // Get the name of the action.
                 string name = action.name;
                 if (variables.ContainsKey("analysisProperty"))
@@ -485,7 +486,34 @@ namespace SmvLibrary
                         Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
                         process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
                         process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
-                        
+                        Double maxMemory = Double.MaxValue;
+                        int maxTime = int.MaxValue;
+                        if (cmd.maxTime != null)
+                        {
+
+                            try
+                            {
+                                maxTime = Convert.ToInt32(cmd.maxTime);
+                            }
+                            catch (Exception)
+                            {
+                                Log.LogError("Could not convert maxTime value from String to Int. Removing the time constraint.");
+                            }
+                        }
+                        Log.LogInfo("Maximum time allowed for this command = " + maxTime);
+                        if (cmd.maxMemory != null)
+                        {
+                            try
+                            {
+                                maxMemory = Convert.ToDouble(cmd.maxMemory);
+                            }
+                            catch (Exception)
+                            {
+                                Log.LogError("Could not convert maxMemory value from String to Double. Removing the memory constraint.");
+                            }
+                        }
+                        Log.LogInfo("Maximum memory allowed for this command = " + maxMemory);
+                        SetTimer(ref process, maxMemory);
                         // Get the command and arguments, and expand all environment as well as SMV variables.
                         string cmdAttr = ExpandVariables(Environment.ExpandEnvironmentVariables(cmd.value), variables);
                         string argumentsAttr = string.Empty;
@@ -502,14 +530,24 @@ namespace SmvLibrary
                             process.StandardInput.Close();
                             process.BeginOutputReadLine();
                             process.BeginErrorReadLine();
+                            if (!process.WaitForExit(maxTime))
+                            {
+                                processTimer.Stop();
+                                processTimer.Dispose();
+                                Log.LogFatalError("Time limit exceeded");
+                            }
                             process.WaitForExit();
                             Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
                             cumulativeExitCode += Math.Abs(process.ExitCode);
+                            processTimer.Stop();
+                            processTimer.Dispose();
                         }
                         catch (Exception e)
                         {
                             Log.LogInfo(e.ToString(), logger);
                             Log.LogInfo("Could not start process: " + cmdAttr, logger);
+                            processTimer.Stop();
+                            processTimer.Dispose();
                             return null;
                         }
                     }
@@ -571,6 +609,33 @@ namespace SmvLibrary
                 }
 
                 return action.result;
+            }
+        }
+
+
+        private static void SetTimer(ref Process process, Double maxMemory)
+        {
+            // Create a timer with a two second interval.
+            processTimer = new ProcessTimer(ref process, maxMemory, 2000);
+
+            // Hook up the Elapsed event for the timer. 
+            processTimer.Elapsed += OnTimedEvent;
+            processTimer.AutoReset = true;
+            processTimer.Enabled = true;
+        }
+
+        private static void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            ProcessTimer counter = (ProcessTimer)source;
+            if (counter.process != null && !counter.process.HasExited)
+            {
+                Double memoryUsed = Convert.ToDouble(counter.process.WorkingSet64);
+                Double maxMemory = counter.maxMemory;
+                if (memoryUsed > maxMemory)
+                {
+                    counter.process.Kill();
+                    Log.LogFatalError("Memory limit exceeded by process. Limit - " + maxMemory + ", Used memory - " + memoryUsed);
+                }
             }
         }
 
@@ -914,8 +979,7 @@ namespace SmvLibrary
             {
                 Log.LogFatalError("The path of the configuration module cannot be found");
             }
-            xsltArgumentList.AddParam("absolute-path", "", filePath.Substring(0, index+1));
-            Console.Write("hi");
+            xsltArgumentList.AddParam("absolute-path", "", filePath.Substring(0, index + 1));
 
             // Transform input xml to output in memoryStream
             try

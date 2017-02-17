@@ -77,6 +77,9 @@
     </Compile>
     <Compile Include="CloudConstants.cs" />
     <Compile Include="CloudSMVActionScheduler.cs" />
+    <Compile Include="ProcessTimer.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DebugUtility.cs" />
     <Compile Include="LocalSMVActionScheduler.cs" />
     <Compile Include="MasterSMVActionScheduler.cs" />

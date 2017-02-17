@@ -106,6 +106,8 @@
     <xs:complexType name="SMVCommand">
         <xs:attribute name="value" use="required" type="NonEmptyString" />
         <xs:attribute name="arguments" use="optional" type="xs:string" />
+        <xs:attribute name="maxMemory" use="optional" type="xs:string" />
+        <xs:attribute name="maxTime" use="optional" type="xs:string" />
     </xs:complexType>
     
     <xs:element name="Path" type="PathType" />
