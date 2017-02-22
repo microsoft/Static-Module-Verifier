@@ -66,11 +66,12 @@ namespace SmvLibrary
 
         public void setMaxMemory(int maxMemory)
         {
-            SECURITY_ATTRIBUTES secAttr = new SECURITY_ATTRIBUTES();
+            //trying to set security attributes
+            /*SECURITY_ATTRIBUTES secAttr = new SECURITY_ATTRIBUTES();
             secAttr.lpSecurityDescriptor = new IntPtr(0x0002);
             int secLength = Marshal.SizeOf(typeof(SECURITY_ATTRIBUTES));
             IntPtr secAttrPtr = Marshal.AllocHGlobal(secLength);
-            Marshal.StructureToPtr(secAttr, secAttrPtr, false);
+            Marshal.StructureToPtr(secAttr, secAttrPtr, false);*/
             handle = CreateJobObject(IntPtr.Zero, null);
 
             JOBOBJECT_BASIC_LIMIT_INFORMATION info = new JOBOBJECT_BASIC_LIMIT_INFORMATION();
