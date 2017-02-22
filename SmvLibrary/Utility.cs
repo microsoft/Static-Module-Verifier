@@ -391,7 +391,6 @@ namespace SmvLibrary
         {
             var waitHandle = new CountdownEvent(actions.Length);
             actionResults = new List<SMVActionResult>();
-
             if(callback == null)
             {
                 callback = new SMVActionCompleteCallBack(DoneExecuteAction);
@@ -486,6 +485,7 @@ namespace SmvLibrary
                         Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
                         process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
                         process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
+                        
                         Double maxMemory = Double.MaxValue;
                         int maxTime = int.MaxValue;
                         if (cmd.maxTime != null)
@@ -513,7 +513,10 @@ namespace SmvLibrary
                             }
                         }
                         Log.LogInfo("Maximum memory allowed for this command = " + maxMemory);
-                        SetTimer(ref process, maxMemory);
+                        JobObject jo = new JobObject();
+                        jo.setMaxMemory(2000);
+                        jo.AddProcess(process.Id);
+                        //SetTimer(ref process, maxMemory);
                         // Get the command and arguments, and expand all environment as well as SMV variables.
                         string cmdAttr = ExpandVariables(Environment.ExpandEnvironmentVariables(cmd.value), variables);
                         string argumentsAttr = string.Empty;
@@ -530,24 +533,24 @@ namespace SmvLibrary
                             process.StandardInput.Close();
                             process.BeginOutputReadLine();
                             process.BeginErrorReadLine();
-                            if (!process.WaitForExit(maxTime))
+                            /*if (!process.WaitForExit(maxTime))
                             {
                                 processTimer.Stop();
                                 processTimer.Dispose();
                                 Log.LogFatalError("Time limit exceeded");
-                            }
+                            }*/
                             process.WaitForExit();
                             Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
                             cumulativeExitCode += Math.Abs(process.ExitCode);
-                            processTimer.Stop();
-                            processTimer.Dispose();
+                            //processTimer.Stop();
+                            //processTimer.Dispose();
                         }
                         catch (Exception e)
                         {
                             Log.LogInfo(e.ToString(), logger);
                             Log.LogInfo("Could not start process: " + cmdAttr, logger);
-                            processTimer.Stop();
-                            processTimer.Dispose();
+                            //processTimer.Stop();
+                            //processTimer.Dispose();
                             return null;
                         }
                     }
