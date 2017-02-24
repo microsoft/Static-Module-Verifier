@@ -23,72 +23,113 @@ namespace SmvLibrary
         static extern bool CloseHandle(IntPtr hHandle);
         [DllImport("kernel32.dll")]
         static extern uint GetLastError();
-        // GetLastError is save!
+        [DllImport("kernel32.dll")]
+        static extern bool QueryInformationJobObject(IntPtr hJob, JobObjectInfoType JobObjectInformationClass, IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength, IntPtr lpReturnLength);
 
-        private IntPtr handle;
+        public IntPtr handle { get; set; }
         private bool disposed = false;
 
+        /// <summary>
+        /// Dispose the job object
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Dispose and close the job object
+        /// </summary>
+        /// <param name="disposing"></param>
         private void Dispose(bool disposing)
         {
             if (disposed)
                 return;
 
-            if (disposing)
-            {
-
-            }
+            if (disposing){ }
 
             Close();
             disposed = true;
         }
 
+        /// <summary>
+        /// Close the job object handle
+        /// </summary>
         public void Close()
         {
             CloseHandle(handle);
             handle = IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Add process to job object using handle
+        /// </summary>
+        /// <param name="processHandle"></param>
+        /// <returns></returns>
         public bool AddProcess(IntPtr processHandle)
         {
             return AssignProcessToJobObject(handle, processHandle);
         }
 
+        /// <summary>
+        /// Add process to job object using processId
+        /// </summary>
+        /// <param name="processId"></param>
+        /// <returns></returns>
         public bool AddProcess(int processId)
         {
             return AddProcess(Process.GetProcessById(processId).Handle);
         }
 
+        /// <summary>
+        /// Creates job object with ProcessMemoryLimit as maxMemory
+        /// </summary>
+        /// <param name="maxMemory"></param>
         public void setMaxMemory(int maxMemory)
         {
-            //trying to set security attributes
-            /*SECURITY_ATTRIBUTES secAttr = new SECURITY_ATTRIBUTES();
-            secAttr.lpSecurityDescriptor = new IntPtr(0x0002);
-            int secLength = Marshal.SizeOf(typeof(SECURITY_ATTRIBUTES));
-            IntPtr secAttrPtr = Marshal.AllocHGlobal(secLength);
-            Marshal.StructureToPtr(secAttr, secAttrPtr, false);*/
             handle = CreateJobObject(IntPtr.Zero, null);
 
             JOBOBJECT_BASIC_LIMIT_INFORMATION info = new JOBOBJECT_BASIC_LIMIT_INFORMATION();
-            
-            info.MaximumWorkingSetSize = new UIntPtr((uint)2000);
-            info.MinimumWorkingSetSize = new UIntPtr((uint)24);
-            info.LimitFlags = 0x0001;
+            info.LimitFlags = 0x100;
             JOBOBJECT_EXTENDED_LIMIT_INFORMATION extendedInfo = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION();
             extendedInfo.BasicLimitInformation = info;
-
+            extendedInfo.ProcessMemoryLimit = new UIntPtr((uint)maxMemory);
             int length = Marshal.SizeOf(typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
             IntPtr extendedInfoPtr = Marshal.AllocHGlobal(length);
             Marshal.StructureToPtr(extendedInfo, extendedInfoPtr, false);
 
-            if(!SetInformationJobObject(handle, JobObjectInfoType.ExtendedLimitInformation, extendedInfoPtr, (uint)length))
+            if (!SetInformationJobObject(handle, JobObjectInfoType.ExtendedLimitInformation, extendedInfoPtr, (uint)length))
             {
                 throw new Exception("Cannot set object to extended limit info class " + GetLastError());
+            }
+
+        }
+
+        /// <summary>
+        /// Prints the PeakProcessMemoryUsed
+        /// </summary>
+        public void QueryExtendedLimitInformation()
+        {
+
+            JOBOBJECT_EXTENDED_LIMIT_INFORMATION extendedLimit;
+            int extenedLimitLength = Marshal.SizeOf(typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+            IntPtr extendedLimitPtr = Marshal.AllocHGlobal(extenedLimitLength);
+            try
+            {
+                bool success = QueryInformationJobObject(this.handle, JobObjectInfoType.ExtendedLimitInformation, extendedLimitPtr, (uint)extenedLimitLength, IntPtr.Zero);
+                if (success == false)
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    throw new Win32Exception(error, "QueryInformationJobObject failed.");
+                }
+                extendedLimit = (JOBOBJECT_EXTENDED_LIMIT_INFORMATION)Marshal.PtrToStructure(extendedLimitPtr, typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+                ulong peakProcessMemory = (ulong)extendedLimit.PeakProcessMemoryUsed;
+                Log.LogInfo("Peak process memory :" + peakProcessMemory);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(extendedLimitPtr);
             }
         }
     }
@@ -148,5 +189,4 @@ namespace SmvLibrary
         SecurityLimitInformation = 5,
         GroupInformation = 11
     }
-
 }
