@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmvLibrary
@@ -25,9 +26,33 @@ namespace SmvLibrary
         static extern uint GetLastError();
         [DllImport("kernel32.dll")]
         static extern bool QueryInformationJobObject(IntPtr hJob, JobObjectInfoType JobObjectInformationClass, IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength, IntPtr lpReturnLength);
+        [DllImport("kernel32.dll")]
+        static extern bool GetQueuedCompletionStatus(IntPtr CompletionPort, out uint lpNumberOfBytes, out UIntPtr lpCompletionKey, out IntPtr lpOverlapped, int dwMilliseconds);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern IntPtr CreateIoCompletionPort(IntPtr FileHandle, IntPtr ExistingCompletionPort, UIntPtr CompletionKey, uint NumberOfConcurrentThreads);
+        [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern uint CreateThread(UIntPtr lpThreadAttributes, uint dwStackSize, ThreadStart lpStartAddress, UIntPtr lpParameter, uint dwCreationFlags, out uint lpThreadId);
+
+        const int JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT = 9;
+        const int COMPKEY_JOBOBJECT = 1;
+        const int COMPKEY_TERMINATE = 0;
+
+        IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
         public IntPtr handle { get; set; }
+
         private bool disposed = false;
+
+        /// <summary>
+        /// IO Completion Port
+        /// </summary>
+        IntPtr hiocp;
+
+        /// <summary>
+        /// Thread for completion function
+        /// </summary>
+        uint hThread;
+
 
         /// <summary>
         /// Dispose the job object
@@ -83,13 +108,49 @@ namespace SmvLibrary
         }
 
         /// <summary>
+        /// Configuring the required data structures
+        /// </summary>
+        private void configure()
+        {
+            uint dwThreadId;
+            UIntPtr dwThreadParam = new UIntPtr(0);
+            hThread = CreateThread(UIntPtr.Zero, 0, completionThreadFunction, dwThreadParam, 0, out dwThreadId);
+            handle = CreateJobObject(IntPtr.Zero, null);
+            hiocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, IntPtr.Zero, new UIntPtr(0), 0);
+        }
+
+
+        /// <summary>
+        /// Associating completion port to handle
+        /// </summary>
+        private void associateCompletionPort()
+        {
+            JOBOBJECT_ASSOCIATE_COMPLETION_PORT joacp = new JOBOBJECT_ASSOCIATE_COMPLETION_PORT();
+            joacp.CompletionKey = new IntPtr(COMPKEY_JOBOBJECT);
+            joacp.CompletionPort = hiocp;
+
+            int joacpLength = Marshal.SizeOf(typeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
+            IntPtr joacpPtr = Marshal.AllocHGlobal(joacpLength);
+            Marshal.StructureToPtr(joacp, joacpPtr, false);
+
+            if (!SetInformationJobObject(handle, JobObjectInfoType.AssociateCompletionPortInformation, joacpPtr, (uint)joacpLength))
+            {
+                throw new Exception("Cannot set object to completion port class " + GetLastError());
+            }
+        }
+        /// <summary>
         /// Creates job object with ProcessMemoryLimit as maxMemory
         /// </summary>
         /// <param name="maxMemory"></param>
         public void setMaxMemory(int maxMemory)
         {
-            handle = CreateJobObject(IntPtr.Zero, null);
+            //Configuring the data structures
+            configure();
 
+            //Associating port to handle
+            associateCompletionPort();
+
+            //Setting process memory limit
             JOBOBJECT_BASIC_LIMIT_INFORMATION info = new JOBOBJECT_BASIC_LIMIT_INFORMATION();
             info.LimitFlags = 0x100;
             JOBOBJECT_EXTENDED_LIMIT_INFORMATION extendedInfo = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION();
@@ -104,6 +165,39 @@ namespace SmvLibrary
                 throw new Exception("Cannot set object to extended limit info class " + GetLastError());
             }
 
+        }
+
+        private void completionThreadFunction()
+        {
+            bool fDone = false;
+            while (!fDone)
+            {
+                uint dwBytesXferred;
+                UIntPtr compKey;
+                IntPtr po;
+                GetQueuedCompletionStatus(hiocp, out dwBytesXferred, out compKey, out po, Timeout.Infinite);
+                int value = (int) compKey.ToUInt32();
+                switch (value)
+                {
+                    case COMPKEY_TERMINATE: fDone = true;
+                        break;
+
+                    case COMPKEY_JOBOBJECT:
+                        {
+                            switch (dwBytesXferred)
+                            {
+                                case JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT:
+                                    Log.LogError("Memory limit exceeded");
+                                    fDone = true;
+                                    break;
+                            }
+                            break;
+                        }  
+                    default:
+                        fDone = false;
+                        break;
+                }
+            }
         }
 
         /// <summary>
@@ -125,13 +219,20 @@ namespace SmvLibrary
                 }
                 extendedLimit = (JOBOBJECT_EXTENDED_LIMIT_INFORMATION)Marshal.PtrToStructure(extendedLimitPtr, typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
                 ulong peakProcessMemory = (ulong)extendedLimit.PeakProcessMemoryUsed;
-                Log.LogInfo("Peak process memory :" + peakProcessMemory);
+                Log.LogDebug("Peak process memory :" + peakProcessMemory);
             }
             finally
             {
                 Marshal.FreeHGlobal(extendedLimitPtr);
             }
         }
+    }
+
+
+    struct JOBOBJECT_ASSOCIATE_COMPLETION_PORT
+    {
+        public IntPtr CompletionKey;
+        public IntPtr CompletionPort;
     }
 
     [StructLayout(LayoutKind.Sequential)]

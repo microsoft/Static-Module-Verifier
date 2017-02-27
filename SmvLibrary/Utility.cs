@@ -27,7 +27,6 @@ namespace SmvLibrary
 {
     public class Utility
     {
-        const string stackOverflowCode = "0xc00000fd";
         const string configXsdFileName = "Config.xsd";
         const string xsltFileName = "Transform.xsl";
         const string cloudConfigXmlFileName = "CloudConfig.xml";
@@ -492,13 +491,14 @@ namespace SmvLibrary
                         int maxMemory = int.MaxValue;
                         int maxTime = int.MaxValue;
                         updateAttribute(ref maxTime, cmd.maxTime, "Time");
-                        Log.LogInfo("Maximum time allowed for this command = " + maxTime);
+                        Log.LogDebug("Maximum time allowed for this command = " + maxTime);
                         updateAttribute(ref maxMemory, cmd.maxMemory, "Memory");
-                        if(maxMemory < int.MaxValue)
+                        //Converting memory from MB to bytes, if input is valid
+                        if (maxMemory < int.MaxValue)
                         {
                             maxMemory *= (1024 * 1024);
                         }
-                        Log.LogInfo("Maximum memory allowed for this command = " + maxMemory);
+                        Log.LogDebug("Maximum memory allowed for this command = " + maxMemory);
 
                         //Setting up job object for memory constraint
                         JobObject jobObject = new JobObject();
@@ -586,11 +586,6 @@ namespace SmvLibrary
                 }
                 else
                 {
-
-                    if (output.Contains(stackOverflowCode))
-                    {
-                        Log.LogFatalError("Stack Overflow. Process Memory Limit exceeded.");
-                    }
                     // are we sure we want to exit here... the cloud worker instance becomes 
                     // unhealthy after exiting here...
                     if (action.breakOnError)
