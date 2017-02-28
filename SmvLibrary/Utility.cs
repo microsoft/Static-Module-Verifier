@@ -503,7 +503,7 @@ namespace SmvLibrary
                         Log.LogDebug("Maximum time allowed for this command = " + maxTime);
                         updateAttribute(ref maxMemory, cmd.maxMemory, "Memory");
 
-                        Process process = LaunchProcess("cmd.exe","", actionPath, action.Env, logger, maxMemory);
+                        Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger, maxMemory);
                         process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
                         process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
 
