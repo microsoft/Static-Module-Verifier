@@ -96,6 +96,7 @@
     <Compile Include="ISMVActionScheduler.cs" />
     <Compile Include="ISMVPlugin.cs" />
     <Compile Include="log.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility.cs" />
   </ItemGroup>

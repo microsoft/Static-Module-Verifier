@@ -42,6 +42,7 @@ namespace SmvLibrary
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
         private static List<SMVActionResult> actionResults;
+        private static JobObject jobObject;
         private Utility() { }
 
         /// <summary>
@@ -330,10 +331,16 @@ namespace SmvLibrary
         /// <param name="startDirectory">Directory in which to start the process</param>
         /// <param name="env">Environment variables</param>
         /// <returns>The process on success, null on failure.</returns>
-        public static Process LaunchProcess(String cmd, String args, string startDirectory, SMVEnvVar[] env, TextWriter logger)
+        public static Process LaunchProcess(String cmd, String args, string startDirectory, SMVEnvVar[] env, TextWriter logger, int maxMemory)
         {
             try
             {
+                //Converting memory from MB to bytes, if input is valid
+                if (maxMemory < int.MaxValue)
+                {
+                    maxMemory *= (1024 * 1024);
+                }
+                Log.LogDebug("Maximum memory allowed for this command = " + maxMemory);
                 var psi = new ProcessStartInfo(cmd, args);
                 psi.RedirectStandardError = true;
                 psi.RedirectStandardInput = true;
@@ -351,15 +358,21 @@ namespace SmvLibrary
                     Log.LogInfo("PATH: " + startDirectory, logger);
                 }
 
-                var p = Process.Start(psi);
-                if (p == null)
+                Process process = Process.Start(psi);
+                if (process == null)
                 {
                     Log.LogFatalError(String.Format(CultureInfo.InvariantCulture, "Could not create process: {0} with args {1}, working directory: {2}", cmd, args, startDirectory));
                 }
-                return p;
+
+                //Setting up job object for memory constraint
+                jobObject = new JobObject();
+                jobObject.setMaxMemory(maxMemory);
+                jobObject.AddProcess(process.Id);
+                return process;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Log.LogError(e.Message);
                 Log.LogFatalError(String.Format(CultureInfo.InvariantCulture, "Could not start process: {0} with args {1}, working directory: {2}", cmd, args, startDirectory));
                 return null;
             }
@@ -483,27 +496,16 @@ namespace SmvLibrary
                 {
                     foreach (SMVCommand cmd in action.Command)
                     {
-                        Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
-                        process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
-                        process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
-
                         //Update maxTime and maxMemory allowed
                         int maxMemory = int.MaxValue;
                         int maxTime = int.MaxValue;
                         updateAttribute(ref maxTime, cmd.maxTime, "Time");
                         Log.LogDebug("Maximum time allowed for this command = " + maxTime);
                         updateAttribute(ref maxMemory, cmd.maxMemory, "Memory");
-                        //Converting memory from MB to bytes, if input is valid
-                        if (maxMemory < int.MaxValue)
-                        {
-                            maxMemory *= (1024 * 1024);
-                        }
-                        Log.LogDebug("Maximum memory allowed for this command = " + maxMemory);
 
-                        //Setting up job object for memory constraint
-                        JobObject jobObject = new JobObject();
-                        jobObject.setMaxMemory(maxMemory);
-                        jobObject.AddProcess(process.Id);
+                        Process process = LaunchProcess("cmd.exe","", actionPath, action.Env, logger, maxMemory);
+                        process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
+                        process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
 
                         // Get the command and arguments, and expand all environment as well as SMV variables.
                         string cmdAttr = ExpandVariables(Environment.ExpandEnvironmentVariables(cmd.value), variables);
