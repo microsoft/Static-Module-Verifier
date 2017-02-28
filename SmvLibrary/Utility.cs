@@ -1,26 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
-using System.Configuration;
 using System.Globalization;
 using System.Threading;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Xml.XPath;
 using System.Xml.Xsl;
 using System.Xml.Serialization;
-using Mvp.Xml.XInclude;
-using System.Timers;
-using System.Runtime.InteropServices;
 
 [assembly: CLSCompliant(true)]
 namespace SmvLibrary
