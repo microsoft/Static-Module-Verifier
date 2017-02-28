@@ -13,26 +13,6 @@ namespace SmvLibrary
     class JobObject : IDisposable
     {
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        static extern IntPtr CreateJobObject(IntPtr a, string lpName);
-        [DllImport("kernel32.dll")]
-        static extern bool SetInformationJobObject(IntPtr hJob, JobObjectInfoType jobType, IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength);
-        [DllImport("kernel32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool CloseHandle(IntPtr hHandle);
-        [DllImport("kernel32.dll")]
-        static extern uint GetLastError();
-        [DllImport("kernel32.dll")]
-        static extern bool QueryInformationJobObject(IntPtr hJob, JobObjectInfoType JobObjectInformationClass, IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength, IntPtr lpReturnLength);
-        [DllImport("kernel32.dll")]
-        static extern bool GetQueuedCompletionStatus(IntPtr CompletionPort, out uint lpNumberOfBytes, out UIntPtr lpCompletionKey, out IntPtr lpOverlapped, int dwMilliseconds);
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern IntPtr CreateIoCompletionPort(IntPtr FileHandle, IntPtr ExistingCompletionPort, UIntPtr CompletionKey, uint NumberOfConcurrentThreads);
-        [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern uint CreateThread(UIntPtr lpThreadAttributes, uint dwStackSize, ThreadStart lpStartAddress, UIntPtr lpParameter, uint dwCreationFlags, out uint lpThreadId);
-
         const int JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT = 9;
         const int COMPKEY_JOBOBJECT = 1;
         const int COMPKEY_TERMINATE = 0;
@@ -83,7 +63,7 @@ namespace SmvLibrary
         /// </summary>
         public void Close()
         {
-            CloseHandle(handle);
+            NativeMethods.CloseHandle(handle);
             handle = IntPtr.Zero;
         }
 
@@ -94,7 +74,7 @@ namespace SmvLibrary
         /// <returns></returns>
         public bool AddProcess(IntPtr processHandle)
         {
-            return AssignProcessToJobObject(handle, processHandle);
+            return NativeMethods.AssignProcessToJobObject(handle, processHandle);
         }
 
         /// <summary>
@@ -114,9 +94,9 @@ namespace SmvLibrary
         {
             uint dwThreadId;
             UIntPtr dwThreadParam = new UIntPtr(0);
-            hThread = CreateThread(UIntPtr.Zero, 0, completionThreadFunction, dwThreadParam, 0, out dwThreadId);
-            handle = CreateJobObject(IntPtr.Zero, null);
-            hiocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, IntPtr.Zero, new UIntPtr(0), 0);
+            hThread = NativeMethods.CreateThread(UIntPtr.Zero, 0, completionThreadFunction, dwThreadParam, 0, out dwThreadId);
+            handle = NativeMethods.CreateJobObject(IntPtr.Zero, null);
+            hiocp = NativeMethods.CreateIoCompletionPort(INVALID_HANDLE_VALUE, IntPtr.Zero, new UIntPtr(0), 0);
         }
 
 
@@ -133,9 +113,9 @@ namespace SmvLibrary
             IntPtr joacpPtr = Marshal.AllocHGlobal(joacpLength);
             Marshal.StructureToPtr(joacp, joacpPtr, false);
 
-            if (!SetInformationJobObject(handle, JobObjectInfoType.AssociateCompletionPortInformation, joacpPtr, (uint)joacpLength))
+            if (!NativeMethods.SetInformationJobObject(handle, JobObjectInfoType.AssociateCompletionPortInformation, joacpPtr, (uint)joacpLength))
             {
-                throw new Exception("Cannot set object to completion port class " + GetLastError());
+                throw new Exception("Cannot set object to completion port class " + NativeMethods.GetLastError());
             }
         }
         /// <summary>
@@ -160,9 +140,9 @@ namespace SmvLibrary
             IntPtr extendedInfoPtr = Marshal.AllocHGlobal(length);
             Marshal.StructureToPtr(extendedInfo, extendedInfoPtr, false);
 
-            if (!SetInformationJobObject(handle, JobObjectInfoType.ExtendedLimitInformation, extendedInfoPtr, (uint)length))
+            if (!NativeMethods.SetInformationJobObject(handle, JobObjectInfoType.ExtendedLimitInformation, extendedInfoPtr, (uint)length))
             {
-                throw new Exception("Cannot set object to extended limit info class " + GetLastError());
+                throw new Exception("Cannot set object to extended limit info class " + NativeMethods.GetLastError());
             }
 
         }
@@ -175,7 +155,7 @@ namespace SmvLibrary
                 uint dwBytesXferred;
                 UIntPtr compKey;
                 IntPtr po;
-                GetQueuedCompletionStatus(hiocp, out dwBytesXferred, out compKey, out po, Timeout.Infinite);
+                NativeMethods.GetQueuedCompletionStatus(hiocp, out dwBytesXferred, out compKey, out po, Timeout.Infinite);
                 int value = (int) compKey.ToUInt32();
                 switch (value)
                 {
@@ -211,7 +191,7 @@ namespace SmvLibrary
             IntPtr extendedLimitPtr = Marshal.AllocHGlobal(extenedLimitLength);
             try
             {
-                bool success = QueryInformationJobObject(this.handle, JobObjectInfoType.ExtendedLimitInformation, extendedLimitPtr, (uint)extenedLimitLength, IntPtr.Zero);
+                bool success = NativeMethods.QueryInformationJobObject(this.handle, JobObjectInfoType.ExtendedLimitInformation, extendedLimitPtr, (uint)extenedLimitLength, IntPtr.Zero);
                 if (success == false)
                 {
                     int error = Marshal.GetLastWin32Error();
@@ -259,14 +239,6 @@ namespace SmvLibrary
         public UIntPtr Affinity;
         public UInt32 PriorityClass;
         public UInt32 SchedulingClass;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct SECURITY_ATTRIBUTES
-    {
-        public UInt32 nLength;
-        public IntPtr lpSecurityDescriptor;
-        public Int32 bInheritHandle;
     }
 
     [StructLayout(LayoutKind.Sequential)]
