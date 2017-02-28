@@ -938,7 +938,7 @@ namespace SmvLibrary
             }
             catch (Exception e)
             {
-                Log.LogError("Exception occurred while looking for the Tranformation XSLT file" + e);
+                Log.LogFatalError("Exception occurred while looking for the Tranformation XSLT file" + e);
                 return null;
             }
 
@@ -947,17 +947,8 @@ namespace SmvLibrary
             StreamWriter streamWriter = new StreamWriter(memStream);
 
             // Prepare arguments with path to the modules
-            XsltArgumentList xsltArgumentList = new XsltArgumentList();
-            int index = filePath.LastIndexOf(Path.AltDirectorySeparatorChar);
-            if(index == -1)
-            {
-                index = filePath.LastIndexOf(Path.DirectorySeparatorChar);
-            }
-            if (index == -1)
-            {
-                Log.LogFatalError("The path of the configuration module cannot be found");
-            }
-            xsltArgumentList.AddParam("absolute-path", "", filePath.Substring(0, index + 1));
+            XsltArgumentList xsltArgumentList = new XsltArgumentList();   
+            xsltArgumentList.AddParam("absolute-path", "", Path.GetDirectoryName(filePath) + Path.DirectorySeparatorChar);
 
             // Transform input xml to output in memoryStream
             try
