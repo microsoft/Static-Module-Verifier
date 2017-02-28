@@ -35,13 +35,17 @@ namespace SmvInterceptorWrapper
                 string[] unsupportedClExtensions = {".inf", ".mof", ".src", ".pdb", ".def", "~", ".rc" };
 
                 // check for inf and other unsupported files and skip
-                List<string> unsupportedArgs = args.Where(a => unsupportedClExtensions.Any(b => a.ToLowerInvariant().Contains(b))).ToList();
-                if (unsupportedArgs.Count() > 0)
-                {
-                    smvclLogContents.Append("iwrap: cl.exe unsupported extension:" + string.Join(",", unsupportedArgs));
-                    File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
-                    return 1;
-                }
+                List<string> unsupportedArgs = args.Where(a => unsupportedClExtensions.Any(b => a.ToLowerInvariant().EndsWith(b))).ToList();
+                args = args.Where(a => !unsupportedClExtensions.Any(b => a.ToLowerInvariant().EndsWith(b))).ToArray();
+                iargs = iargs.Where(a => !unsupportedClExtensions.Any(b => a.ToLowerInvariant().EndsWith(b))).ToList();
+                
+                // try to make progress no matter what. 
+                //if (unsupportedArgs.Count() > 0)
+                //{
+                //    smvclLogContents.Append("iwrap: cl.exe unsupported extension:" + string.Join(",", unsupportedArgs));
+                //    File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
+                //    return 1;
+                //}
 
                 // get the name of the plugin
                 string plugin = args.Where(x => x.Contains("/plugin:")).ToList().First().Replace("/plugin:", String.Empty);
@@ -94,12 +98,15 @@ namespace SmvInterceptorWrapper
                 // Remove file names (*.c) from the content
                 Regex fileNameRegex1 = new Regex(@"([\s]+[\w\.-\\]+\.c)", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 Regex fileNameRegex2 = new Regex(@"([\s]+[\w\.-\\]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
+                int count = 0;
                 foreach (Match m in fileNameRegex1.Matches(rspContents))
                 {
+                    count++;
                     smvclLogContents.Append("match1: " + m.Value + Environment.NewLine);
                 }
                 foreach (Match m in fileNameRegex2.Matches(rspContents))
                 {
+                    count++;
                     smvclLogContents.Append("match2: " + m.Value + Environment.NewLine);
                 }
                 rspFileContent = fileNameRegex1.Replace(rspFileContent, String.Empty);
@@ -107,14 +114,17 @@ namespace SmvInterceptorWrapper
 
                 File.WriteAllText(Path.Combine(smvOutDir, "sdv_cl.rsp"), rspFileContent);
 
+                // if no files are left (only .src etc. was given) then just return. nothing to do
+                if(count == 0) { return 0; }
+
                 // call CL.exe
-                Console.WriteLine("Using analysis compiler: " + Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%"));
+                //Console.WriteLine("Using analysis compiler: " + Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%"));
                 ProcessStartInfo psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%")), Environment.ExpandEnvironmentVariables(rspContents));
                 psi.RedirectStandardError = true;
                 psi.RedirectStandardOutput = true;
                 psi.UseShellExecute = false;
 
-                Console.WriteLine("starting " + psi.ToString());
+                //Console.WriteLine("starting " + psi.ToString());
 
                 if (!psi.EnvironmentVariables.ContainsKey("esp.cfgpersist.persistfile"))
                 {
@@ -123,7 +133,7 @@ namespace SmvInterceptorWrapper
                     psi.EnvironmentVariables.Add("ESP.BplFilesDir", smvOutDir);
                 }
                 
-                Console.WriteLine("iwrap: cl.exe --> " + psi.FileName + " " + psi.Arguments);
+                //Console.WriteLine("iwrap: cl.exe --> " + psi.FileName + " " + psi.Arguments);
 
                 Process p = System.Diagnostics.Process.Start(psi);
 
@@ -137,8 +147,8 @@ namespace SmvInterceptorWrapper
             #region link.exe
             else if (args.Contains("/iwrap:link.exe"))
             {
-                Console.WriteLine("iwrap: link.exe called with args " + string.Join(" ", iargs));
-                Console.WriteLine("iwrap: link.exe --> " + Environment.ExpandEnvironmentVariables("slamcl_writer.exe"));
+                //Console.WriteLine("iwrap: link.exe called with args " + string.Join(" ", iargs));
+                //Console.WriteLine("iwrap: link.exe --> " + Environment.ExpandEnvironmentVariables("slamcl_writer.exe"));
 
                 // get rsp contents
                 string rspContents = string.Empty;
@@ -153,7 +163,7 @@ namespace SmvInterceptorWrapper
                 
                 // get out dir
                 string outDir = smvOutDir;
-                Console.WriteLine("iwrap: link.exe --> outdir is " + outDir);
+                //Console.WriteLine("iwrap: link.exe --> outdir is " + outDir);
 
                 // get rid of previous LI files, log files etc. 
                 Directory.GetFiles(outDir, "*.li").ToList().ForEach(f => File.Delete(f));
@@ -188,7 +198,7 @@ namespace SmvInterceptorWrapper
                 psi.UseShellExecute = false;
                 psi.WorkingDirectory = outDir;
 
-                Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
+                //Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
 
                 p = System.Diagnostics.Process.Start(psi);
                 File.WriteAllText(outDir + "\\smvlink1.log", p.StandardOutput.ReadToEnd());
@@ -213,7 +223,7 @@ namespace SmvInterceptorWrapper
                     psi.UseShellExecute = false;
                     psi.WorkingDirectory = outDir;
                     psi.Arguments = " --lib " + string.Join(" ", files);
-                    Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
+                    //Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
                     Process slamLinkProcess = System.Diagnostics.Process.Start(psi);
                     File.AppendAllText(Path.Combine(outDir, "smvlink2.log"), slamLinkProcess.StandardOutput.ReadToEnd());
                     File.AppendAllText(Path.Combine(outDir, "smvlink2.log"), slamLinkProcess.StandardError.ReadToEnd());
@@ -237,7 +247,7 @@ namespace SmvInterceptorWrapper
                 }
                 else
                 {
-                    Console.WriteLine("iwrap: link.exe --> No slam.li found in " + outDir);
+                    //Console.WriteLine("iwrap: link.exe --> No slam.li found in " + outDir);
                 }
 
                 // get any libs that need to be added and the corresponding rawcfgs
@@ -247,7 +257,7 @@ namespace SmvInterceptorWrapper
 
                 foreach (string l in libs)
                 {
-                    Console.WriteLine("lib is " + l);
+                    //Console.WriteLine("lib is " + l);
                     if (l.Equals(outDir)) continue;
                     try
                     {
@@ -257,7 +267,7 @@ namespace SmvInterceptorWrapper
                         {
                             Process slamLinkProcess;
 
-                            Console.WriteLine("iwrap: Linking " + liFile + " " + outDir + "\\slam.obj.li");
+                            //Console.WriteLine("iwrap: Linking " + liFile + " " + outDir + "\\slam.obj.li");
 
                             File.Copy(liFile, outDir + "\\slamlib.obj.li", true);
                             File.Copy(outDir + "\\slamout.obj.li", outDir + "\\slamorig.obj.li");
@@ -278,7 +288,7 @@ namespace SmvInterceptorWrapper
                     }
                     catch(Exception e)
                     {
-                        Console.WriteLine(e.ToString());
+                        //Console.WriteLine(e.ToString());
                     }
 
                     if (File.Exists(outDir + "\\slamout.obj.li"))
@@ -294,7 +304,7 @@ namespace SmvInterceptorWrapper
             #region lib.exe
             else if (args.Contains("/iwrap:lib.exe"))
             {
-                Console.WriteLine("iwrap: Currently unimplemented. Consider using link functionality.");
+                //Console.WriteLine("iwrap: Currently unimplemented. Consider using link functionality.");
                 return 1;
             }
             #endregion
