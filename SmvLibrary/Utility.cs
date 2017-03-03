@@ -35,7 +35,7 @@ namespace SmvLibrary
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
         private static List<SMVActionResult> actionResults;
-        private static JobObject jobObject;
+        
         private Utility() { }
 
         /// <summary>
@@ -324,16 +324,11 @@ namespace SmvLibrary
         /// <param name="startDirectory">Directory in which to start the process</param>
         /// <param name="env">Environment variables</param>
         /// <returns>The process on success, null on failure.</returns>
-        public static Process LaunchProcess(String cmd, String args, string startDirectory, SMVEnvVar[] env, TextWriter logger, int maxMemory)
+        public static Process LaunchProcess(String cmd, String args, string startDirectory, SMVEnvVar[] env, TextWriter logger, JobObject jobObject)
         {
             try
             {
-                //Converting memory from MB to bytes, if input is valid
-                if (maxMemory < int.MaxValue)
-                {
-                    maxMemory *= (1024 * 1024);
-                }
-                Log.LogDebug("Maximum memory allowed for this command = " + maxMemory);
+
                 var psi = new ProcessStartInfo(cmd, args);
                 psi.RedirectStandardError = true;
                 psi.RedirectStandardInput = true;
@@ -357,9 +352,6 @@ namespace SmvLibrary
                     Log.LogFatalError(String.Format(CultureInfo.InvariantCulture, "Could not create process: {0} with args {1}, working directory: {2}", cmd, args, startDirectory));
                 }
 
-                //Setting up job object for memory constraint
-                jobObject = new JobObject();
-                jobObject.setMaxMemory(maxMemory);
                 jobObject.AddProcess(process.Id);
                 return process;
             }
@@ -429,7 +421,7 @@ namespace SmvLibrary
             var countDownEvent = context as CountdownEvent;
             countDownEvent.Signal();
         }
-
+        
         /// <summary>
         /// Called by schedulers to execute an action.
         /// </summary>
@@ -496,7 +488,16 @@ namespace SmvLibrary
                         Log.LogDebug("Maximum time allowed for this command = " + maxTime);
                         updateAttribute(ref maxMemory, cmd.maxMemory, "Memory");
 
-                        Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger, maxMemory);
+                        //Converting memory from MB to bytes, if input is valid
+                        if (maxMemory < int.MaxValue)
+                        {
+                            maxMemory *= (1024 * 1024);
+                        }
+                        Log.LogDebug("Maximum memory allowed for this command = " + maxMemory);
+                        JobObject jobObject = new JobObject();
+                        jobObject.setMaxMemory(maxMemory, maxTime);
+
+                        Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger, jobObject);
                         process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
                         process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
 
@@ -516,12 +517,6 @@ namespace SmvLibrary
                             process.StandardInput.Close();
                             process.BeginOutputReadLine();
                             process.BeginErrorReadLine();
-                            //Kill if time limit exceeded and stop
-                            if (!process.WaitForExit(maxTime))
-                            {
-                                process.Kill();
-                                Log.LogFatalError("Time limit exceeded");
-                            }
                             process.WaitForExit();
                             Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
                             cumulativeExitCode += Math.Abs(process.ExitCode);
@@ -533,9 +528,12 @@ namespace SmvLibrary
                         {
                             Log.LogInfo(e.ToString(), logger);
                             Log.LogInfo("Could not start process: " + cmdAttr, logger);
+                            jobObject.Close();
+                            jobObject.Dispose();
                             return null;
                         }
                     }
+                    
                 }
 
                 logger.Flush();
