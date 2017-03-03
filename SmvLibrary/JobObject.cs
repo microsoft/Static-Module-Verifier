@@ -10,10 +10,11 @@ using System.Threading.Tasks;
 
 namespace SmvLibrary
 {
-    class JobObject : IDisposable
+    public class JobObject : IDisposable
     {
 
         const int JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT = 9;
+        const int JOB_OBJECT_LIMIT_PROCESS_TIME = 2;
         const int COMPKEY_JOBOBJECT = 1;
         const int COMPKEY_TERMINATE = 0;
 
@@ -122,7 +123,7 @@ namespace SmvLibrary
         /// Creates job object with ProcessMemoryLimit as maxMemory
         /// </summary>
         /// <param name="maxMemory"></param>
-        public void setMaxMemory(int maxMemory)
+        public void setMaxMemory(int maxMemory, int maxTime)
         {
             //Configuring the data structures
             configure();
@@ -132,7 +133,10 @@ namespace SmvLibrary
 
             //Setting process memory limit
             JOBOBJECT_BASIC_LIMIT_INFORMATION info = new JOBOBJECT_BASIC_LIMIT_INFORMATION();
-            info.LimitFlags = 0x100;
+            //2 - close processes on job object close, 1 - process memory limit, 2 - process time limit 
+            info.LimitFlags = 0x2102;
+            //converting time from ticks to milliseconds
+            info.PerProcessUserTimeLimit = maxTime * 10000;
             JOBOBJECT_EXTENDED_LIMIT_INFORMATION extendedInfo = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION();
             extendedInfo.BasicLimitInformation = info;
             extendedInfo.ProcessMemoryLimit = new UIntPtr((uint)maxMemory);
@@ -168,6 +172,10 @@ namespace SmvLibrary
                             {
                                 case JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT:
                                     Log.LogError("Memory limit exceeded");
+                                    fDone = true;
+                                    break;
+                                case JOB_OBJECT_LIMIT_PROCESS_TIME:
+                                    Log.LogError("Time limit exceeded");
                                     fDone = true;
                                     break;
                             }
