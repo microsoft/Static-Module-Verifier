@@ -603,38 +603,49 @@ namespace SmvLibrary
         /// <param name="bugFolderPath"></param>
         public static void makeDefectPortable(string bugFolderPath)
         {
-            //for sdv-harness.c
-            string sourcePath = smvVars["workingDir"] + "\\sdv\\sdv-harness.c";
-            string destinationPath = bugFolderPath + "\\src\\sdv-harness.c";
-            CopyFile(sourcePath, destinationPath, null);
-
-            //for rulename.slic file
-            string bugParentFolderPath = Path.GetDirectoryName(bugFolderPath);
-            string ruleName = Path.GetFileNameWithoutExtension(bugParentFolderPath);
-            CopyFile(bugParentFolderPath + "\\" + ruleName + ".slic", bugFolderPath + "\\src\\" + ruleName + ".slic", null);
-
-            //for all the smvsrcfiles
-            string smvSrcFilesPath = smvVars["workingDir"] + "\\sdv\\smvsrcfiles";
-            string smvSrcFilesContent = ReadFile(smvSrcFilesPath);
-            string[] smvSrcFiles = smvSrcFilesContent.Split('\n');
-
-            //to update defect.tt file
-            string defectTtFileContents = File.ReadAllText(bugFolderPath + "\\defect.tt");
-
-            for (int i = 0; i < smvSrcFiles.Length - 1; i++)
+            if (!Directory.Exists(bugFolderPath))
             {
-                Log.LogInfo(smvSrcFiles[i]);
-                string fileName = Path.GetFileName(smvSrcFiles[i].Trim());
-                CopyFile(smvSrcFiles[i].Trim(), bugFolderPath + "\\src\\" + fileName, null);
-                defectTtFileContents = defectTtFileContents.Replace(smvSrcFiles[i].Trim(), "src\\" + fileName);
+                Log.LogFatalError("Bug folder path not found");
             }
-            //for sdv-harness defect.tt update
-            defectTtFileContents = defectTtFileContents.Replace(sourcePath.ToLower(), "src\\sdv-harness.c");
+            try
+            {
+                //for sdv-harness.c
+                string sourcePath = smvVars["workingDir"] + "\\sdv\\sdv-harness.c";
+                string destinationPath = bugFolderPath + "\\src\\sdv-harness.c";
+                CopyFile(sourcePath, destinationPath, null);
 
-            //for rulename.slic defect.tt update
-            string pattern = @"\.\.\\\.\.\\\.\.\\check\\" + ruleName + @"\\" + ruleName + @"\.slic";
-            defectTtFileContents = Regex.Replace(defectTtFileContents, pattern, "src\\" + ruleName + ".slic", RegexOptions.IgnoreCase);
-            File.WriteAllText(bugFolderPath + "\\defect.tt", defectTtFileContents);
+                //for rulename.slic file
+                string bugParentFolderPath = Path.GetDirectoryName(bugFolderPath);
+                string ruleName = Path.GetFileNameWithoutExtension(bugParentFolderPath);
+                CopyFile(bugParentFolderPath + "\\" + ruleName + ".slic", bugFolderPath + "\\src\\" + ruleName + ".slic", null);
+
+                //for all the smvsrcfiles
+                string smvSrcFilesPath = smvVars["workingDir"] + "\\sdv\\smvsrcfiles";
+                string smvSrcFilesContent = ReadFile(smvSrcFilesPath);
+                string[] smvSrcFiles = smvSrcFilesContent.Split('\n');
+
+                //to update defect.tt file
+                string defectTtFileContents = File.ReadAllText(bugFolderPath + "\\defect.tt");
+
+                for (int i = 0; i < smvSrcFiles.Length - 1; i++)
+                {
+                    Log.LogInfo(smvSrcFiles[i]);
+                    string fileName = Path.GetFileName(smvSrcFiles[i].Trim());
+                    CopyFile(smvSrcFiles[i].Trim(), bugFolderPath + "\\src\\" + fileName, null);
+                    defectTtFileContents = defectTtFileContents.Replace(smvSrcFiles[i].Trim(), "src\\" + fileName);
+                }
+                //for sdv-harness defect.tt update
+                defectTtFileContents = defectTtFileContents.Replace(sourcePath.ToLower(), "src\\sdv-harness.c");
+
+                //for rulename.slic defect.tt update
+                string pattern = @"\.\.\\\.\.\\\.\.\\check\\" + ruleName + @"\\" + ruleName + @"\.slic";
+                defectTtFileContents = Regex.Replace(defectTtFileContents, pattern, "src\\" + ruleName + ".slic", RegexOptions.IgnoreCase);
+                File.WriteAllText(bugFolderPath + "\\defect.tt", defectTtFileContents);
+            }
+            catch (Exception e)
+            {
+                Log.LogFatalError("Exception occurred in trying to make defect portable - " + e);
+            }
         }
 
         /// <summary>
