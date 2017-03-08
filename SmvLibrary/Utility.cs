@@ -495,7 +495,7 @@ namespace SmvLibrary
                         }
                         Log.LogDebug("Maximum memory allowed for this command = " + maxMemory);
                         JobObject jobObject = new JobObject();
-                        jobObject.setMaxMemory(maxMemory, maxTime);
+                        jobObject.setConstraints(maxMemory, maxTime);
 
                         Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger, jobObject);
                         process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
@@ -605,7 +605,7 @@ namespace SmvLibrary
                 }
                 catch (Exception)
                 {
-                    Log.LogError(String.Format("Could not convert {0} value from String to Int. Removing the {0} constraint.", attributeName));
+                    Log.LogWarning(String.Format("Could not convert {0} value from String to Int. Removing the {0} constraint.", attributeName));
                 }
             }
         }

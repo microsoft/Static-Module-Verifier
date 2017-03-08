@@ -119,11 +119,13 @@ namespace SmvLibrary
                 throw new Exception("Cannot set object to completion port class " + NativeMethods.GetLastError());
             }
         }
+
         /// <summary>
-        /// Creates job object with ProcessMemoryLimit as maxMemory
+        /// Create job object with the given constraints
         /// </summary>
         /// <param name="maxMemory"></param>
-        public void setMaxMemory(int maxMemory, int maxTime)
+        /// <param name="maxTime"></param>
+        public void setConstraints(int maxMemory, int maxTime)
         {
             //Configuring the data structures
             configure();
