@@ -14,6 +14,8 @@ using System.Threading;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Xml.Xsl;
 using System.Xml.Serialization;
+using System.Data.SqlClient;
+using SmvDb;
 
 [assembly: CLSCompliant(true)]
 namespace SmvLibrary
@@ -31,6 +33,8 @@ namespace SmvLibrary
         public static string version;                                                      /// Name for this version of SMV. Used for cloud scheduling.        
         public static Dictionary<string, string> smvVars = new Dictionary<string, string>();      /// Dictionary to store the current run specific variables
         public static bool debugMode = false;
+        public static string sessionId = String.Empty;
+        public static string taskId = String.Empty;
 
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
@@ -357,7 +361,7 @@ namespace SmvLibrary
             }
             catch (Exception e)
             {
-                Log.LogError(e.Message);
+                Log.LogError(e.ToString());
                 Log.LogFatalError(String.Format(CultureInfo.InvariantCulture, "Could not start process: {0} with args {1}, working directory: {2}", cmd, args, startDirectory));
                 return null;
             }
@@ -520,6 +524,20 @@ namespace SmvLibrary
                             process.WaitForExit();
                             Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
                             cumulativeExitCode += Math.Abs(process.ExitCode);
+                            try
+                            {
+                                using (var database = new SMVEntities())
+                                {
+                                    var masterEntry = new Master { ActionID = Guid.NewGuid().ToString(), TaskID = taskId, ActionName = action.name, Success = cumulativeExitCode.ToString() };
+                                    database.Masters.Add(masterEntry);
+                                    database.SaveChanges();
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Log.LogFatalError("Exception while updating database " + e);
+                            }
+
                             jobObject.QueryExtendedLimitInformation();
                             jobObject.Close();
                             jobObject.Dispose();

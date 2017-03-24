@@ -16,8 +16,7 @@ using StaticModuleVerifier.Properties;
 using SmvLibrary;
 using System.Reflection;
 using System.Globalization;
-
-
+using System.Data.SqlClient;
 
 namespace SmvSkeleton
 {
@@ -130,6 +129,34 @@ namespace SmvSkeleton
                 else if (args[i].Equals("/debug"))
                 {
                     Utility.debugMode = true;
+                    i++;
+                }
+                else if(args[i].StartsWith("/sessionID:", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    String[] tokens = args[i].Split(new char[] { ':' }, 2);
+                    if (!String.IsNullOrEmpty(tokens[1]))
+                    {
+                        Log.LogInfo("Setting session ID : " + tokens[1]);
+                        Utility.sessionId = tokens[1];
+                    }
+                    else
+                    {
+                        Log.LogError("Session ID not found");
+                    }
+                    i++;
+                }
+                else if (args[i].StartsWith("/taskID:", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    String[] tokens = args[i].Split(new char[] { ':' }, 2);
+                    if (!String.IsNullOrEmpty(tokens[1]))
+                    {
+                        Log.LogInfo("Setting task ID : " + tokens[1]);
+                        Utility.taskId = tokens[1];
+                    }
+                    else
+                    {
+                        Log.LogError("Task ID not found");
+                    }
                     i++;
                 }
                 else
