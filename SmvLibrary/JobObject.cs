@@ -29,11 +29,6 @@ namespace SmvLibrary
         /// </summary>
         IntPtr hiocp;
 
-        /// <summary>
-        /// Thread for completion function
-        /// </summary>
-        uint hThread;
-
 
         /// <summary>
         /// Dispose the job object
@@ -93,11 +88,10 @@ namespace SmvLibrary
         /// </summary>
         private void configure()
         {
-            uint dwThreadId;
-            UIntPtr dwThreadParam = new UIntPtr(0);
-            hThread = NativeMethods.CreateThread(UIntPtr.Zero, 0, completionThreadFunction, dwThreadParam, 0, out dwThreadId);
-            handle = NativeMethods.CreateJobObject(IntPtr.Zero, null);
             hiocp = NativeMethods.CreateIoCompletionPort(INVALID_HANDLE_VALUE, IntPtr.Zero, new UIntPtr(0), 0);
+            Task.Factory.StartNew(new Action(completionThreadFunction));
+            handle = NativeMethods.CreateJobObject(IntPtr.Zero, null);
+
         }
 
 
@@ -165,8 +159,11 @@ namespace SmvLibrary
                 int value = (int) compKey.ToUInt32();
                 switch (value)
                 {
-                    case COMPKEY_TERMINATE: fDone = true;
-                        break;
+                    case COMPKEY_TERMINATE:
+                        {
+                            fDone = true;
+                            break;
+                        }
 
                     case COMPKEY_JOBOBJECT:
                         {
@@ -182,10 +179,12 @@ namespace SmvLibrary
                                     break;
                             }
                             break;
-                        }  
+                        }
                     default:
-                        fDone = false;
-                        break;
+                        {
+                            fDone = false;
+                            break;
+                        }
                 }
             }
         }

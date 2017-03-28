@@ -1,11 +1,10 @@
-﻿param([string] $sdxRoot, [string] $configFilePath , [string] $connectionString)
+﻿param([string] $sdxRoot, [string] $configFilePath , [string] $connectionString, [string] $outputDir)
 $ErrorActionPreference = 'Continue'
 
 # Parsing the XML file to get the modules and the plugins
 [xml] $XmlDocument = Get-Content -Path $sdxRoot\$configFilePath
 $modulePaths = $XmlDocument.ServiceConfig.Module.path
 $plugins = $XmlDocument.ServiceConfig.Plugin
-$directoryPath = Get-Location
 
 
 
@@ -51,7 +50,7 @@ $backgroundJobScript = {
     }
     $taskId = [GUID]::NewGuid()
 
-    # Making the necessary database entries
+    # Making the nexessary database entries
     $query = "insert into SessionTaskMapping VALUES ('" + $sessionId + "' , '" + $taskId + "');";
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
 
@@ -114,6 +113,6 @@ $sessionId = [GUID]::NewGuid()
 
 foreach($modulePath in $modulePaths){
     foreach($plugin in $plugins){
-        Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $directoryPath, $sdxRoot, $sessionId, $connectionString
+        Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $outputDir, $sdxRoot, $sessionId, $connectionString
     }
 }
