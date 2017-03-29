@@ -12,7 +12,7 @@ namespace SmvDb
     using System;
     using System.Collections.Generic;
     
-    public partial class TaskPluginMapping
+    public partial class TaskPlugin
     {
         public string TaskID { get; set; }
         public string PluginID { get; set; }

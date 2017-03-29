@@ -12,9 +12,9 @@ namespace SmvDb
     using System;
     using System.Collections.Generic;
     
-    public partial class TaskErrorLogMapping
+    public partial class SessionTask
     {
+        public string SessionID { get; set; }
         public string TaskID { get; set; }
-        public string ErrorLog { get; set; }
     }
 }

@@ -25,14 +25,14 @@ namespace SmvDb
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Master> Masters { get; set; }
         public virtual DbSet<Module> Modules { get; set; }
         public virtual DbSet<Plugin> Plugins { get; set; }
-        public virtual DbSet<SessionTaskMapping> SessionTaskMappings { get; set; }
-        public virtual DbSet<SessionTimestampMapping> SessionTimestampMappings { get; set; }
+        public virtual DbSet<Session> Sessions { get; set; }
+        public virtual DbSet<SessionTask> SessionTasks { get; set; }
         public virtual DbSet<sysdiagram> sysdiagrams { get; set; }
-        public virtual DbSet<TaskErrorLogMapping> TaskErrorLogMappings { get; set; }
-        public virtual DbSet<TaskModuleMapping> TaskModuleMappings { get; set; }
-        public virtual DbSet<TaskPluginMapping> TaskPluginMappings { get; set; }
+        public virtual DbSet<Task> Tasks { get; set; }
+        public virtual DbSet<TaskAction> TaskActions { get; set; }
+        public virtual DbSet<TaskModule> TaskModules { get; set; }
+        public virtual DbSet<TaskPlugin> TaskPlugins { get; set; }
     }
 }

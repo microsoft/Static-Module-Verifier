@@ -12,11 +12,11 @@ namespace SmvDb
     using System;
     using System.Collections.Generic;
     
-    public partial class Master
+    public partial class Task
     {
-        public string ActionID { get; set; }
         public string TaskID { get; set; }
-        public string ActionName { get; set; }
-        public string Success { get; set; }
+        public string ErrorLog { get; set; }
+        public string Command { get; set; }
+        public string Arguments { get; set; }
     }
 }

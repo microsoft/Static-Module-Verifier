@@ -12,9 +12,9 @@ namespace SmvDb
     using System;
     using System.Collections.Generic;
     
-    public partial class SessionTaskMapping
+    public partial class Session
     {
         public string SessionID { get; set; }
-        public string TaskID { get; set; }
+        public string Timestamp { get; set; }
     }
 }

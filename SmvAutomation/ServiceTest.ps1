@@ -51,7 +51,7 @@ $backgroundJobScript = {
     $taskId = [GUID]::NewGuid()
 
     # Making the nexessary database entries
-    $query = "insert into SessionTaskMapping VALUES ('" + $sessionId + "' , '" + $taskId + "');";
+    $query = "insert into SessionTask VALUES ('" + $sessionId + "' , '" + $taskId + "');";
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
 
     $query = "SELECT ModuleID FROM Module WHERE ModulePath='$modPath'"
@@ -61,10 +61,10 @@ $backgroundJobScript = {
     $plugin = Get-DatabaseData -query $query –connectionString $connectionString
     $pluginId = $plugin.pluginId
 
-    $query = "insert into TaskModuleMapping VALUES ('" + $taskId + "' , '" + $moduleId + "');";
+    $query = "insert into TaskModule VALUES ('" + $taskId + "' , '" + $moduleId + "');";
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
 
-    $query = "insert into TaskPluginMapping VALUES ('" + $taskId + "' , '" + $pluginId + "');";
+    $query = "insert into TaskPlugin VALUES ('" + $taskId + "' , '" + $pluginId + "');";
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
 
     # Setting process parameters
@@ -100,9 +100,9 @@ $backgroundJobScript = {
     CreateDirectoryIfMissing $dirPath\SMVResults\$modPath\$pluginName\Output
     CreateDirectoryIfMissing $dirPath\SMVResults\$modPath\$pluginName\Error
     $path = "$dirPath\SMVResults\$modPath\$pluginName"
-    $query = "insert into TaskErrorLogMapping VALUES ('" + $taskId + "' , '" + $path + "');";
+    $query = "insert into Task (TaskID, ErrorLog, Command, Arguments) VALUES ('" + $taskId + "' , '" + $path + "' , '" + $cmd + "' , '" + $arg +"');";
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
-    $query = "insert into SessionTimestampMapping VALUES ('" + $sessionId + "' , '" + $timestamp + "');";
+    $query = "insert into Session VALUES ('" + $sessionId + "' , '" + $timestamp + "');";
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
     $stdout | Out-File $path\Output\log-output-$timestamp.txt
     $stderr | Out-File $path\Error\log-error-$timestamp.txt

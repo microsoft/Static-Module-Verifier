@@ -528,8 +528,8 @@ namespace SmvLibrary
                             {
                                 using (var database = new SMVEntities())
                                 {
-                                    var masterEntry = new Master { ActionID = Guid.NewGuid().ToString(), TaskID = taskId, ActionName = action.name, Success = cumulativeExitCode.ToString() };
-                                    database.Masters.Add(masterEntry);
+                                    var masterEntry = new TaskAction { ActionID = Guid.NewGuid().ToString(), TaskID = taskId, ActionName = action.name, Success = cumulativeExitCode.ToString() };
+                                    database.TaskActions.Add(masterEntry);
                                     database.SaveChanges();
                                 }
                             }
