@@ -67,6 +67,16 @@ $backgroundJobScript = {
     $query = "insert into TaskPlugin VALUES ('" + $taskId + "' , '" + $pluginId + "');";
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
 
+    # Saving the log file
+    $timestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
+    CreateDirectoryIfMissing $dirPath\SMVResults\$modPath\$pluginName\Output
+    CreateDirectoryIfMissing $dirPath\SMVResults\$modPath\$pluginName\Error
+    $path = "$dirPath\SMVResults\$modPath\$pluginName"
+    $query = "insert into Task (TaskID, Log, Command, Arguments) VALUES ('" + $taskId + "' , '" + $path + "' , '" + $cmd + "' , '" + $arg +"');";
+    Invoke-DatabaseQuery –query $query –connectionString $connectionString
+    $query = "insert into Session VALUES ('" + $sessionId + "' , '" + $timestamp + "');";
+    Invoke-DatabaseQuery –query $query –connectionString $connectionString
+
     # Setting process parameters
     $ps = new-object System.Diagnostics.Process
     $ps.StartInfo.Filename = "cmd.exe"
@@ -95,15 +105,7 @@ $backgroundJobScript = {
 
     $stdout += $ps.StandardOutput.ReadToEnd()
     $stderr += $ps.StandardError.ReadToEnd()
-    # Saving the log file
-    $timestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
-    CreateDirectoryIfMissing $dirPath\SMVResults\$modPath\$pluginName\Output
-    CreateDirectoryIfMissing $dirPath\SMVResults\$modPath\$pluginName\Error
-    $path = "$dirPath\SMVResults\$modPath\$pluginName"
-    $query = "insert into Task (TaskID, ErrorLog, Command, Arguments) VALUES ('" + $taskId + "' , '" + $path + "' , '" + $cmd + "' , '" + $arg +"');";
-    Invoke-DatabaseQuery –query $query –connectionString $connectionString
-    $query = "insert into Session VALUES ('" + $sessionId + "' , '" + $timestamp + "');";
-    Invoke-DatabaseQuery –query $query –connectionString $connectionString
+
     $stdout | Out-File $path\Output\log-output-$timestamp.txt
     $stderr | Out-File $path\Error\log-error-$timestamp.txt
     

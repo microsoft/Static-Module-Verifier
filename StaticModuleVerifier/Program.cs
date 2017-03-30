@@ -17,6 +17,7 @@ using SmvLibrary;
 using System.Reflection;
 using System.Globalization;
 using System.Data.SqlClient;
+using SmvDb;
 
 namespace SmvSkeleton
 {
@@ -201,6 +202,24 @@ namespace SmvSkeleton
             if (!ProcessArgs(args))
             {
                 return;
+            }
+
+            try
+            {
+                using (var database = new SMVEntities())
+                {
+                    SmvDb.Task task = database.Tasks.Where((x) => x.TaskID == Utility.taskId).FirstOrDefault();
+                    if (task != null)
+                    {
+                        string argsString = string.Join(" ", args);
+                        task.Arguments = argsString;
+                        database.SaveChanges();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.LogFatalError("Exception while updating database " + e);
             }
             // Get the SMV version name.
             string smvVersionTxtPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), "SmvVersionName.txt");

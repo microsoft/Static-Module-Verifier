@@ -522,13 +522,22 @@ namespace SmvLibrary
                             process.BeginOutputReadLine();
                             process.BeginErrorReadLine();
                             process.WaitForExit();
+                            TimeSpan span = process.ExitTime - process.StartTime;
                             Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
                             cumulativeExitCode += Math.Abs(process.ExitCode);
                             try
                             {
                                 using (var database = new SMVEntities())
                                 {
-                                    var masterEntry = new TaskAction { ActionID = Guid.NewGuid().ToString(), TaskID = taskId, ActionName = action.name, Success = cumulativeExitCode.ToString() };
+                                    var masterEntry = new TaskAction
+                                    {
+                                        ActionID = Guid.NewGuid().ToString(),
+                                        TaskID = taskId,
+                                        ActionName = action.name,
+                                        Success = cumulativeExitCode.ToString(),
+                                        ActionTime = span.ToString(),
+                                        WorkingDirectory = variables["workingDir"]
+                                    };
                                     database.TaskActions.Add(masterEntry);
                                     database.SaveChanges();
                                 }

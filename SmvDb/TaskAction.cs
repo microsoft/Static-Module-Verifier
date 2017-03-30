@@ -17,6 +17,8 @@ namespace SmvDb
         public string ActionID { get; set; }
         public string TaskID { get; set; }
         public string ActionName { get; set; }
+        public string WorkingDirectory { get; set; }
+        public string ActionTime { get; set; }
         public string Success { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace SmvDb
     public partial class Task
     {
         public string TaskID { get; set; }
-        public string ErrorLog { get; set; }
+        public string Log { get; set; }
         public string Command { get; set; }
         public string Arguments { get; set; }
     }

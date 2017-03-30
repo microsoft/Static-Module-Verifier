@@ -49,7 +49,7 @@
             <PropertyRef Name="TaskID" />
           </Key>
           <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
-          <Property Name="ErrorLog" Type="varchar(max)" Nullable="false" />
+          <Property Name="Log" Type="varchar(max)" Nullable="false" />
           <Property Name="Command" Type="varchar(max)" Nullable="false" />
           <Property Name="Arguments" Type="varchar(max)" />
         </EntityType>
@@ -60,6 +60,8 @@
           <Property Name="ActionID" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="ActionName" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="WorkingDirectory" Type="varchar(max)" Nullable="false" />
+          <Property Name="ActionTime" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="Success" Type="char" MaxLength="10" Nullable="false" />
         </EntityType>
         <EntityType Name="TaskModule">
@@ -136,7 +138,7 @@
             <PropertyRef Name="TaskID" />
           </Key>
           <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="ErrorLog" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Log" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Command" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Arguments" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
         </EntityType>
@@ -147,6 +149,8 @@
           <Property Name="ActionID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="ActionName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="WorkingDirectory" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="ActionTime" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Success" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
         </EntityType>
         <EntityType Name="TaskModule">
@@ -228,7 +232,7 @@
             <EntityTypeMapping TypeName="SMVModel.Task">
               <MappingFragment StoreEntitySet="Task">
                 <ScalarProperty Name="TaskID" ColumnName="TaskID" />
-                <ScalarProperty Name="ErrorLog" ColumnName="ErrorLog" />
+                <ScalarProperty Name="Log" ColumnName="Log" />
                 <ScalarProperty Name="Command" ColumnName="Command" />
                 <ScalarProperty Name="Arguments" ColumnName="Arguments" />
               </MappingFragment>
@@ -240,6 +244,8 @@
                 <ScalarProperty Name="ActionID" ColumnName="ActionID" />
                 <ScalarProperty Name="TaskID" ColumnName="TaskID" />
                 <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
+                <ScalarProperty Name="ActionTime" ColumnName="ActionTime" />
                 <ScalarProperty Name="Success" ColumnName="Success" />
               </MappingFragment>
             </EntityTypeMapping>
