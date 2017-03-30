@@ -111,8 +111,9 @@ $backgroundJobScript = {
 
 $sessionId = [GUID]::NewGuid()
 
-foreach($modulePath in $modulePaths){
-    foreach($plugin in $plugins){
+foreach($plugin in $plugins){
+    foreach($modulePath in $modulePaths){
         Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $outputDir, $sdxRoot, $sessionId, $connectionString
     }
+    Get-Job | Wait-Job
 }
