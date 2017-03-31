@@ -31,11 +31,11 @@ namespace SmvDb
                                              ModuleName = module.ModuleName
                                          }).Distinct().ToList();
 
-                    foreach (var v in firstSession)
+                    foreach (var firstSessionObject in firstSession)
                     {
-                        if (!secondSession.Contains(v))
+                        if (!secondSession.Contains(firstSessionObject))
                         {
-                            Console.WriteLine(v.ModuleName);
+                            Console.WriteLine(firstSessionObject.ModuleName);
                         }
                     }
 
@@ -71,11 +71,11 @@ namespace SmvDb
                                              PluginName = plugin.PluginName
                                          }).Distinct().ToList();
 
-                    foreach (var v in firstSession)
+                    foreach (var firstSessionObject in firstSession)
                     {
-                        if (!secondSession.Contains(v))
+                        if (!secondSession.Contains(firstSessionObject))
                         {
-                            Console.WriteLine(v.PluginName);
+                            Console.WriteLine(firstSessionObject.PluginName);
                         }
                     }
                     Console.ReadLine();
@@ -112,11 +112,11 @@ namespace SmvDb
                                              Success = taskAction.Success
                                          }).Distinct().ToList();
 
-                    foreach (var v in firstSession)
+                    foreach (var firstSessionObject in firstSession)
                     {
-                        if (!secondSession.Contains(v))
+                        if (!secondSession.Contains(firstSessionObject))
                         {
-                            Console.WriteLine(v.ActionName + " " + v.WorkingDirectory + " " + v.Success);
+                            Console.WriteLine(firstSessionObject.ActionName + " " + firstSessionObject.WorkingDirectory + " " + firstSessionObject.Success);
                         }
                     }
                     Console.ReadLine();
