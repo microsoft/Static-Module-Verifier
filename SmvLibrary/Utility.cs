@@ -527,7 +527,7 @@ namespace SmvLibrary
                             cumulativeExitCode += Math.Abs(process.ExitCode);
                             try
                             {
-                                using (var database = new SMVEntities())
+                                using (var database = new SmvDbEntities())
                                 {
                                     var masterEntry = new TaskAction
                                     {

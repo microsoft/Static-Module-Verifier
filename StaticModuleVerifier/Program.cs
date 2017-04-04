@@ -206,7 +206,7 @@ namespace SmvSkeleton
 
             try
             {
-                using (var database = new SMVEntities())
+                using (var database = new SmvDbEntities())
                 {
                     SmvDb.Task task = database.Tasks.Where((x) => x.TaskID == Utility.taskId).FirstOrDefault();
                     if (task != null)

@@ -15,7 +15,6 @@ namespace SmvDb
     public partial class Module
     {
         public string ModuleID { get; set; }
-        public string ModuleName { get; set; }
         public string ModulePath { get; set; }
     }
 }

@@ -15,6 +15,8 @@ namespace SmvDb
     public partial class Session
     {
         public string SessionID { get; set; }
-        public string Timestamp { get; set; }
+        public string StartTimestamp { get; set; }
+        public string EndTimestamp { get; set; }
+        public string User { get; set; }
     }
 }

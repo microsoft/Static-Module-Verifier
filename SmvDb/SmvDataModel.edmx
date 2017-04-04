@@ -4,30 +4,31 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="SMVModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-        <EntityType Name="Module">
+      <Schema Namespace="SmvDbModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012.Azure" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Modules">
           <Key>
             <PropertyRef Name="ModuleID" />
           </Key>
           <Property Name="ModuleID" Type="varchar" MaxLength="50" Nullable="false" />
-          <Property Name="ModuleName" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="ModulePath" Type="varchar(max)" Nullable="false" />
         </EntityType>
-        <EntityType Name="Plugin">
+        <EntityType Name="Plugins">
           <Key>
             <PropertyRef Name="PluginID" />
           </Key>
           <Property Name="PluginID" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="PluginName" Type="varchar" MaxLength="50" Nullable="false" />
         </EntityType>
-        <EntityType Name="Session">
+        <EntityType Name="Sessions">
           <Key>
             <PropertyRef Name="SessionID" />
           </Key>
           <Property Name="SessionID" Type="varchar" MaxLength="50" Nullable="false" />
-          <Property Name="Timestamp" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="StartTimestamp" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="EndTimestamp" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="User" Type="varchar" MaxLength="50" Nullable="false" />
         </EntityType>
-        <EntityType Name="SessionTask">
+        <EntityType Name="SessionTasks">
           <Key>
             <PropertyRef Name="TaskID" />
           </Key>
@@ -44,16 +45,7 @@
           <Property Name="version" Type="int" />
           <Property Name="definition" Type="varbinary(max)" />
         </EntityType>
-        <EntityType Name="Task">
-          <Key>
-            <PropertyRef Name="TaskID" />
-          </Key>
-          <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
-          <Property Name="Log" Type="varchar(max)" Nullable="false" />
-          <Property Name="Command" Type="varchar(max)" Nullable="false" />
-          <Property Name="Arguments" Type="varchar(max)" />
-        </EntityType>
-        <EntityType Name="TaskAction">
+        <EntityType Name="TaskActions">
           <Key>
             <PropertyRef Name="ActionID" />
           </Key>
@@ -64,42 +56,50 @@
           <Property Name="ActionTime" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="Success" Type="char" MaxLength="10" Nullable="false" />
         </EntityType>
-        <EntityType Name="TaskModule">
+        <EntityType Name="TaskModules">
           <Key>
             <PropertyRef Name="TaskID" />
           </Key>
           <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="ModuleID" Type="varchar" MaxLength="50" Nullable="false" />
         </EntityType>
-        <EntityType Name="TaskPlugin">
+        <EntityType Name="TaskPlugins">
           <Key>
             <PropertyRef Name="TaskID" />
           </Key>
           <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="PluginID" Type="varchar" MaxLength="50" Nullable="false" />
         </EntityType>
-        <EntityContainer Name="SMVModelStoreContainer">
-          <EntitySet Name="Module" EntityType="Self.Module" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="Plugin" EntityType="Self.Plugin" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="Session" EntityType="Self.Session" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="SessionTask" EntityType="Self.SessionTask" Schema="dbo" store:Type="Tables" />
+        <EntityType Name="Tasks">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Log" Type="varchar(max)" Nullable="false" />
+          <Property Name="Command" Type="varchar(max)" Nullable="false" />
+          <Property Name="Arguments" Type="varchar(max)" />
+        </EntityType>
+        <EntityContainer Name="SmvDbModelStoreContainer">
+          <EntitySet Name="Modules" EntityType="Self.Modules" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Plugins" EntityType="Self.Plugins" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Sessions" EntityType="Self.Sessions" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SessionTasks" EntityType="Self.SessionTasks" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="Task" EntityType="Self.Task" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="TaskAction" EntityType="Self.TaskAction" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="TaskModule" EntityType="Self.TaskModule" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="TaskPlugin" EntityType="Self.TaskPlugin" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TaskActions" EntityType="Self.TaskActions" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TaskModules" EntityType="Self.TaskModules" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TaskPlugins" EntityType="Self.TaskPlugins" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Tasks" EntityType="Self.Tasks" Schema="dbo" store:Type="Tables" />
         </EntityContainer>
       </Schema>
     </edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
-      <Schema Namespace="SMVModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+      <Schema Namespace="SmvDbModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityType Name="Module">
           <Key>
             <PropertyRef Name="ModuleID" />
           </Key>
           <Property Name="ModuleID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="ModuleName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="ModulePath" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
         </EntityType>
         <EntityType Name="Plugin">
@@ -114,7 +114,9 @@
             <PropertyRef Name="SessionID" />
           </Key>
           <Property Name="SessionID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="Timestamp" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="StartTimestamp" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="EndTimestamp" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
         </EntityType>
         <EntityType Name="SessionTask">
           <Key>
@@ -132,15 +134,6 @@
           <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="version" Type="Int32" />
           <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
-        </EntityType>
-        <EntityType Name="Task">
-          <Key>
-            <PropertyRef Name="TaskID" />
-          </Key>
-          <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="Log" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="Command" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="Arguments" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="TaskAction">
           <Key>
@@ -167,58 +160,68 @@
           <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="PluginID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
         </EntityType>
-        <EntityContainer Name="SMVEntities" annotation:LazyLoadingEnabled="true">
+        <EntityType Name="Task">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Log" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Command" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Arguments" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityContainer Name="SmvDbEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Modules" EntityType="Self.Module" />
           <EntitySet Name="Plugins" EntityType="Self.Plugin" />
           <EntitySet Name="Sessions" EntityType="Self.Session" />
           <EntitySet Name="SessionTasks" EntityType="Self.SessionTask" />
           <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagram" />
-          <EntitySet Name="Tasks" EntityType="Self.Task" />
           <EntitySet Name="TaskActions" EntityType="Self.TaskAction" />
           <EntitySet Name="TaskModules" EntityType="Self.TaskModule" />
           <EntitySet Name="TaskPlugins" EntityType="Self.TaskPlugin" />
+          <EntitySet Name="Tasks" EntityType="Self.Task" />
         </EntityContainer>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="SMVModelStoreContainer" CdmEntityContainer="SMVEntities">
+        <EntityContainerMapping StorageEntityContainer="SmvDbModelStoreContainer" CdmEntityContainer="SmvDbEntities">
           <EntitySetMapping Name="Modules">
-            <EntityTypeMapping TypeName="SMVModel.Module">
-              <MappingFragment StoreEntitySet="Module">
+            <EntityTypeMapping TypeName="SmvDbModel.Module">
+              <MappingFragment StoreEntitySet="Modules">
                 <ScalarProperty Name="ModuleID" ColumnName="ModuleID" />
-                <ScalarProperty Name="ModuleName" ColumnName="ModuleName" />
                 <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="Plugins">
-            <EntityTypeMapping TypeName="SMVModel.Plugin">
-              <MappingFragment StoreEntitySet="Plugin">
+            <EntityTypeMapping TypeName="SmvDbModel.Plugin">
+              <MappingFragment StoreEntitySet="Plugins">
                 <ScalarProperty Name="PluginID" ColumnName="PluginID" />
                 <ScalarProperty Name="PluginName" ColumnName="PluginName" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="Sessions">
-            <EntityTypeMapping TypeName="SMVModel.Session">
-              <MappingFragment StoreEntitySet="Session">
+            <EntityTypeMapping TypeName="SmvDbModel.Session">
+              <MappingFragment StoreEntitySet="Sessions">
                 <ScalarProperty Name="SessionID" ColumnName="SessionID" />
-                <ScalarProperty Name="Timestamp" ColumnName="Timestamp" />
+                <ScalarProperty Name="StartTimestamp" ColumnName="StartTimestamp" />
+                <ScalarProperty Name="EndTimestamp" ColumnName="EndTimestamp" />
+                <ScalarProperty Name="User" ColumnName="User" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="SessionTasks">
-            <EntityTypeMapping TypeName="SMVModel.SessionTask">
-              <MappingFragment StoreEntitySet="SessionTask">
+            <EntityTypeMapping TypeName="SmvDbModel.SessionTask">
+              <MappingFragment StoreEntitySet="SessionTasks">
                 <ScalarProperty Name="SessionID" ColumnName="SessionID" />
                 <ScalarProperty Name="TaskID" ColumnName="TaskID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="sysdiagrams">
-            <EntityTypeMapping TypeName="SMVModel.sysdiagram">
+            <EntityTypeMapping TypeName="SmvDbModel.sysdiagram">
               <MappingFragment StoreEntitySet="sysdiagrams">
                 <ScalarProperty Name="name" ColumnName="name" />
                 <ScalarProperty Name="principal_id" ColumnName="principal_id" />
@@ -228,19 +231,9 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Tasks">
-            <EntityTypeMapping TypeName="SMVModel.Task">
-              <MappingFragment StoreEntitySet="Task">
-                <ScalarProperty Name="TaskID" ColumnName="TaskID" />
-                <ScalarProperty Name="Log" ColumnName="Log" />
-                <ScalarProperty Name="Command" ColumnName="Command" />
-                <ScalarProperty Name="Arguments" ColumnName="Arguments" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="TaskActions">
-            <EntityTypeMapping TypeName="SMVModel.TaskAction">
-              <MappingFragment StoreEntitySet="TaskAction">
+            <EntityTypeMapping TypeName="SmvDbModel.TaskAction">
+              <MappingFragment StoreEntitySet="TaskActions">
                 <ScalarProperty Name="ActionID" ColumnName="ActionID" />
                 <ScalarProperty Name="TaskID" ColumnName="TaskID" />
                 <ScalarProperty Name="ActionName" ColumnName="ActionName" />
@@ -251,18 +244,28 @@
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="TaskModules">
-            <EntityTypeMapping TypeName="SMVModel.TaskModule">
-              <MappingFragment StoreEntitySet="TaskModule">
+            <EntityTypeMapping TypeName="SmvDbModel.TaskModule">
+              <MappingFragment StoreEntitySet="TaskModules">
                 <ScalarProperty Name="TaskID" ColumnName="TaskID" />
                 <ScalarProperty Name="ModuleID" ColumnName="ModuleID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="TaskPlugins">
-            <EntityTypeMapping TypeName="SMVModel.TaskPlugin">
-              <MappingFragment StoreEntitySet="TaskPlugin">
+            <EntityTypeMapping TypeName="SmvDbModel.TaskPlugin">
+              <MappingFragment StoreEntitySet="TaskPlugins">
                 <ScalarProperty Name="TaskID" ColumnName="TaskID" />
                 <ScalarProperty Name="PluginID" ColumnName="PluginID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Tasks">
+            <EntityTypeMapping TypeName="SmvDbModel.Task">
+              <MappingFragment StoreEntitySet="Tasks">
+                <ScalarProperty Name="TaskID" ColumnName="TaskID" />
+                <ScalarProperty Name="Log" ColumnName="Log" />
+                <ScalarProperty Name="Command" ColumnName="Command" />
+                <ScalarProperty Name="Arguments" ColumnName="Arguments" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

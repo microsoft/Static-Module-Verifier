@@ -13,10 +13,10 @@ namespace SmvDb
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class SMVEntities : DbContext
+    public partial class SmvDbEntities : DbContext
     {
-        public SMVEntities()
-            : base("name=SMVEntities")
+        public SmvDbEntities()
+            : base("name=SmvDbEntities")
         {
         }
     
@@ -30,9 +30,9 @@ namespace SmvDb
         public virtual DbSet<Session> Sessions { get; set; }
         public virtual DbSet<SessionTask> SessionTasks { get; set; }
         public virtual DbSet<sysdiagram> sysdiagrams { get; set; }
-        public virtual DbSet<Task> Tasks { get; set; }
         public virtual DbSet<TaskAction> TaskActions { get; set; }
         public virtual DbSet<TaskModule> TaskModules { get; set; }
         public virtual DbSet<TaskPlugin> TaskPlugins { get; set; }
+        public virtual DbSet<Task> Tasks { get; set; }
     }
 }

@@ -68,7 +68,6 @@
     <Compile Include="Session.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="SessionComparisonDbQueries.cs" />
     <Compile Include="SessionTask.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
