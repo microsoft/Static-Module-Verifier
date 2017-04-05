@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
-using System.Configuration;
 using System.Globalization;
 using System.Threading;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Xml.XPath;
 using System.Xml.Xsl;
 using System.Xml.Serialization;
 
@@ -39,7 +35,7 @@ namespace SmvLibrary
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
         private static List<SMVActionResult> actionResults;
-
+        
         private Utility() { }
 
         /// <summary>
@@ -328,10 +324,11 @@ namespace SmvLibrary
         /// <param name="startDirectory">Directory in which to start the process</param>
         /// <param name="env">Environment variables</param>
         /// <returns>The process on success, null on failure.</returns>
-        public static Process LaunchProcess(String cmd, String args, string startDirectory, SMVEnvVar[] env, TextWriter logger)
+        public static Process LaunchProcess(String cmd, String args, string startDirectory, SMVEnvVar[] env, TextWriter logger, JobObject jobObject)
         {
             try
             {
+
                 var psi = new ProcessStartInfo(cmd, args);
                 psi.RedirectStandardError = true;
                 psi.RedirectStandardInput = true;
@@ -349,15 +346,18 @@ namespace SmvLibrary
                     Log.LogInfo("PATH: " + startDirectory, logger);
                 }
 
-                var p = Process.Start(psi);
-                if (p == null)
+                Process process = Process.Start(psi);
+                if (process == null)
                 {
                     Log.LogFatalError(String.Format(CultureInfo.InvariantCulture, "Could not create process: {0} with args {1}, working directory: {2}", cmd, args, startDirectory));
                 }
-                return p;
+
+                jobObject.AddProcess(process.Id);
+                return process;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Log.LogError(e.Message);
                 Log.LogFatalError(String.Format(CultureInfo.InvariantCulture, "Could not start process: {0} with args {1}, working directory: {2}", cmd, args, startDirectory));
                 return null;
             }
@@ -389,7 +389,6 @@ namespace SmvLibrary
         {
             var waitHandle = new CountdownEvent(actions.Length);
             actionResults = new List<SMVActionResult>();
-
             if(callback == null)
             {
                 callback = new SMVActionCompleteCallBack(DoneExecuteAction);
@@ -422,7 +421,7 @@ namespace SmvLibrary
             var countDownEvent = context as CountdownEvent;
             countDownEvent.Signal();
         }
-
+        
         /// <summary>
         /// Called by schedulers to execute an action.
         /// </summary>
@@ -452,7 +451,7 @@ namespace SmvLibrary
                 string actionPath = variables["workingDir"];
                 string actionOutput = string.Empty;
                 int cumulativeExitCode = 0;
-
+                
                 // Get the name of the action.
                 string name = action.name;
                 if (variables.ContainsKey("analysisProperty"))
@@ -482,10 +481,26 @@ namespace SmvLibrary
                 {
                     foreach (SMVCommand cmd in action.Command)
                     {
-                        Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger);
+                        //Update maxTime and maxMemory allowed
+                        int maxMemory = int.MaxValue;
+                        int maxTime = int.MaxValue;
+                        updateAttribute(ref maxTime, cmd.maxTime, "Time");
+                        Log.LogDebug("Maximum time allowed for this command = " + maxTime);
+                        updateAttribute(ref maxMemory, cmd.maxMemory, "Memory");
+
+                        //Converting memory from MB to bytes, if input is valid
+                        if (maxMemory < int.MaxValue)
+                        {
+                            maxMemory *= (1024 * 1024);
+                        }
+                        Log.LogDebug("Maximum memory allowed for this command = " + maxMemory);
+                        JobObject jobObject = new JobObject();
+                        jobObject.setConstraints(maxMemory, maxTime);
+
+                        Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger, jobObject);
                         process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
                         process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
-                        
+
                         // Get the command and arguments, and expand all environment as well as SMV variables.
                         string cmdAttr = ExpandVariables(Environment.ExpandEnvironmentVariables(cmd.value), variables);
                         string argumentsAttr = string.Empty;
@@ -505,14 +520,20 @@ namespace SmvLibrary
                             process.WaitForExit();
                             Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
                             cumulativeExitCode += Math.Abs(process.ExitCode);
+                            jobObject.QueryExtendedLimitInformation();
+                            jobObject.Close();
+                            jobObject.Dispose();
                         }
                         catch (Exception e)
                         {
                             Log.LogInfo(e.ToString(), logger);
                             Log.LogInfo("Could not start process: " + cmdAttr, logger);
+                            jobObject.Close();
+                            jobObject.Dispose();
                             return null;
                         }
                     }
+                    
                 }
 
                 logger.Flush();
@@ -571,6 +592,21 @@ namespace SmvLibrary
                 }
 
                 return action.result;
+            }
+        }
+
+        public static void updateAttribute(ref int attribute, string cmdAttribute, string attributeName)
+        {
+            if(cmdAttribute != null)
+            {
+                try
+                {
+                    attribute = Convert.ToInt32(cmdAttribute);
+                }
+                catch (Exception)
+                {
+                    Log.LogWarning(String.Format("Could not convert {0} value from String to Int. Removing the {0} constraint.", attributeName));
+                }
             }
         }
 
