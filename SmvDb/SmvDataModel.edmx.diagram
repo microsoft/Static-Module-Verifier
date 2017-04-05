@@ -4,7 +4,7 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="c8651a305eab4181a5ffbb8cdc7c2184" Name="Diagram1">
+      <Diagram DiagramId="22c103e6d49941819f654f5f4eefac4f" Name="Diagram1">
         <EntityTypeShape EntityType="SmvDbModel.Module" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SmvDbModel.Plugin" Width="1.5" PointX="2.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="SmvDbModel.Session" Width="1.5" PointX="0.75" PointY="3.75" IsExpanded="true" />

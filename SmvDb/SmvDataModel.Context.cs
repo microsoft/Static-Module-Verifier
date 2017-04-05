@@ -12,6 +12,8 @@ namespace SmvDb
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
+    using System.Data.Entity.Core.Objects;
+    using System.Linq;
     
     public partial class SmvDbEntities : DbContext
     {
@@ -34,5 +36,62 @@ namespace SmvDb
         public virtual DbSet<TaskModule> TaskModules { get; set; }
         public virtual DbSet<TaskPlugin> TaskPlugins { get; set; }
         public virtual DbSet<Task> Tasks { get; set; }
+    
+        public virtual ObjectResult<ActionDiffBetweenTwoSessions_Result> ActionDiffBetweenTwoSessions(string firstSession, string secondSession)
+        {
+            var firstSessionParameter = firstSession != null ?
+                new ObjectParameter("FirstSession", firstSession) :
+                new ObjectParameter("FirstSession", typeof(string));
+    
+            var secondSessionParameter = secondSession != null ?
+                new ObjectParameter("SecondSession", secondSession) :
+                new ObjectParameter("SecondSession", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<ActionDiffBetweenTwoSessions_Result>("ActionDiffBetweenTwoSessions", firstSessionParameter, secondSessionParameter);
+        }
+    
+        public virtual int ModuleDiffBetweenTwoSessions(string firstSession, string secondSession)
+        {
+            var firstSessionParameter = firstSession != null ?
+                new ObjectParameter("FirstSession", firstSession) :
+                new ObjectParameter("FirstSession", typeof(string));
+    
+            var secondSessionParameter = secondSession != null ?
+                new ObjectParameter("SecondSession", secondSession) :
+                new ObjectParameter("SecondSession", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("ModuleDiffBetweenTwoSessions", firstSessionParameter, secondSessionParameter);
+        }
+    
+        public virtual ObjectResult<string> PluginDiffBetweenTwoSessions(string firstSession, string secondSession)
+        {
+            var firstSessionParameter = firstSession != null ?
+                new ObjectParameter("FirstSession", firstSession) :
+                new ObjectParameter("FirstSession", typeof(string));
+    
+            var secondSessionParameter = secondSession != null ?
+                new ObjectParameter("SecondSession", secondSession) :
+                new ObjectParameter("SecondSession", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<string>("PluginDiffBetweenTwoSessions", firstSessionParameter, secondSessionParameter);
+        }
+    
+        public virtual ObjectResult<SummaryTableForSession_Result> SummaryTableForSession(string sessionId)
+        {
+            var sessionIdParameter = sessionId != null ?
+                new ObjectParameter("sessionId", sessionId) :
+                new ObjectParameter("sessionId", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<SummaryTableForSession_Result>("SummaryTableForSession", sessionIdParameter);
+        }
+    
+        public virtual ObjectResult<taskDetailsParameter_Result> taskDetailsParameter(string sessionIdParameter)
+        {
+            var sessionIdParameterParameter = sessionIdParameter != null ?
+                new ObjectParameter("sessionIdParameter", sessionIdParameter) :
+                new ObjectParameter("sessionIdParameter", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<taskDetailsParameter_Result>("taskDetailsParameter", sessionIdParameterParameter);
+        }
     }
 }

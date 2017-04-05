@@ -58,6 +58,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionDiffBetweenTwoSessions_Result.cs">
+      <DependentUpon>SmvDataModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Module.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
@@ -86,6 +89,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SmvDataModel.edmx</DependentUpon>
     </Compile>
+    <Compile Include="SummaryTableForSession_Result.cs">
+      <DependentUpon>SmvDataModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="sysdiagram.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
@@ -93,6 +99,9 @@
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
     <Compile Include="TaskAction.cs">
+      <DependentUpon>SmvDataModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="taskDetailsParameter_Result.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
     <Compile Include="TaskModule.cs">

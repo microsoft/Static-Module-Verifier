@@ -79,6 +79,24 @@
           <Property Name="Command" Type="varchar(max)" Nullable="false" />
           <Property Name="Arguments" Type="varchar(max)" />
         </EntityType>
+        <Function Name="ActionDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="FirstSession" Type="varchar" Mode="In" />
+          <Parameter Name="SecondSession" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="ModuleDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="FirstSession" Type="varchar" Mode="In" />
+          <Parameter Name="SecondSession" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="PluginDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="FirstSession" Type="varchar" Mode="In" />
+          <Parameter Name="SecondSession" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="SummaryTableForSession" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionId" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="taskDetailsParameter" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionIdParameter" Type="varchar" Mode="In" />
+        </Function>
         <EntityContainer Name="SmvDbModelStoreContainer">
           <EntitySet Name="Modules" EntityType="Self.Modules" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Plugins" EntityType="Self.Plugins" Schema="dbo" store:Type="Tables" />
@@ -179,7 +197,46 @@
           <EntitySet Name="TaskModules" EntityType="Self.TaskModule" />
           <EntitySet Name="TaskPlugins" EntityType="Self.TaskPlugin" />
           <EntitySet Name="Tasks" EntityType="Self.Task" />
+          <FunctionImport Name="ActionDiffBetweenTwoSessions" ReturnType="Collection(SmvDbModel.ActionDiffBetweenTwoSessions_Result)">
+            <Parameter Name="FirstSession" Mode="In" Type="String" />
+            <Parameter Name="SecondSession" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="ModuleDiffBetweenTwoSessions">
+            <Parameter Name="FirstSession" Mode="In" Type="String" />
+            <Parameter Name="SecondSession" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="PluginDiffBetweenTwoSessions" ReturnType="Collection(String)">
+            <Parameter Name="FirstSession" Mode="In" Type="String" />
+            <Parameter Name="SecondSession" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SummaryTableForSession" ReturnType="Collection(SmvDbModel.SummaryTableForSession_Result)">
+            <Parameter Name="sessionId" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="taskDetailsParameter" ReturnType="Collection(SmvDbModel.taskDetailsParameter_Result)">
+            <Parameter Name="sessionIdParameter" Mode="In" Type="String" />
+          </FunctionImport>
         </EntityContainer>
+        <ComplexType Name="ActionDiffBetweenTwoSessions_Result">
+          <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="WorkingDirectory" Nullable="false" />
+          <Property Type="String" Name="Success" Nullable="false" MaxLength="10" />
+        </ComplexType>
+        <ComplexType Name="SummaryTableForSession_Result">
+          <Property Type="String" Name="ModulePath" Nullable="false" />
+          <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
+          <Property Type="String" Name="Command" Nullable="false" />
+          <Property Type="String" Name="Arguments" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="taskDetailsParameter_Result">
+          <Property Type="String" Name="ModulePath" Nullable="false" />
+          <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="WorkingDirectory" Nullable="false" />
+          <Property Type="String" Name="ActionTime" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="Success" Nullable="false" MaxLength="10" />
+        </ComplexType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -269,6 +326,41 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="ActionDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.ActionDiffBetweenTwoSessions">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.ActionDiffBetweenTwoSessions_Result">
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
+                <ScalarProperty Name="Success" ColumnName="Success" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="ModuleDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.ModuleDiffBetweenTwoSessions" />
+          <FunctionImportMapping FunctionImportName="PluginDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.PluginDiffBetweenTwoSessions" />
+          <FunctionImportMapping FunctionImportName="SummaryTableForSession" FunctionName="SmvDbModel.Store.SummaryTableForSession">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.SummaryTableForSession_Result">
+                <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
+                <ScalarProperty Name="Command" ColumnName="Command" />
+                <ScalarProperty Name="Arguments" ColumnName="Arguments" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="taskDetailsParameter" FunctionName="SmvDbModel.Store.taskDetailsParameter">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.taskDetailsParameter_Result">
+                <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
+                <ScalarProperty Name="ActionTime" ColumnName="ActionTime" />
+                <ScalarProperty Name="Success" ColumnName="Success" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

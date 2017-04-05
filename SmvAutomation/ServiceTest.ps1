@@ -1,16 +1,22 @@
-﻿param([string] $sdxRoot, [string] $configFilePath , [string] $connectionString)
+﻿param([string] $sdxRoot, [string] $automationConfigFilePath , [string] $configFilePath, [string] $connectionString)
 $ErrorActionPreference = 'Continue'
 
 # Parsing the XML file to get the modules and the plugins
-[xml] $XmlDocument = Get-Content -Path $sdxRoot\$configFilePath
+[xml] $XmlDocument = Get-Content -Path $sdxRoot\$automationConfigFilePath
+[xml] $configDocument = Get-Content -Path $configFilePath
 
-#$modulePaths = $XmlDocument.ServiceConfig.Modules.Module.path
+$key = $configDocument.Passwords.SmvTestKey.key
 
+$modulePaths = $XmlDocument.ServiceConfig.Modules.Module.path
+
+<#
 $folderPath = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.path
 $moduleDefinitionFile = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.moduleDefinitionFile
 $folders = Get-ChildItem -Path $sdxRoot\$folderPath -Filter $moduleDefinitionFile -Recurse
 $modulePaths = $folders.Directory.FullName.Replace("$sdxRoot\","")
+#>
 $plugins = $XmlDocument.ServiceConfig.Plugins.Plugin
+
 
 function Get-DatabaseData {
 	[CmdletBinding()]
@@ -46,7 +52,7 @@ function Invoke-DatabaseQuery {
 
 
 $backgroundJobScript = {
-    Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString)
+    Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString, [string] $configKey)
     function CreateDirectoryIfMissing ([string] $path){
         If(!(test-path $path))
         {
@@ -96,7 +102,7 @@ $backgroundJobScript = {
     }
 
 
-    $ctx = New-AzureStorageContext smvtest ***REMOVED***
+    $ctx = New-AzureStorageContext smvtest $configKey
     $share = Get-AzureStorageShare smvautomation -Context $ctx
     $taskId = [GUID]::NewGuid()
 
@@ -120,9 +126,9 @@ $backgroundJobScript = {
 
     # Saving the log file
     $timestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
-    CreateDirectoryIfMissingCloud -path $sessionId\$modPath\$pluginName
+    $path = "$sessionId\Logs\$modPath\$pluginName"
+    CreateDirectoryIfMissingCloud -path $path
 
-    $path = "$sessionId\$modPath\$pluginName"
     $query = "insert into Tasks (TaskID, Log, Command, Arguments) VALUES ('" + $taskId + "' , '" + $path + "' , '" + $cmd + "' , '" + $arg +"');"
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
 
@@ -156,14 +162,14 @@ $backgroundJobScript = {
     $stdout += $ps.StandardOutput.ReadToEnd()
     $stderr += $ps.StandardError.ReadToEnd()
 
-    $stdout | Out-File log-output-$timestamp.txt
-    $stderr | Out-File log-error-$timestamp.txt
+    $stdout | Out-File log-output-$timestamp-$sessionId.txt
+    $stderr | Out-File log-error-$timestamp-$sessionId.txt
 
-    Set-AzureStorageFileContent -Share $share -Source log-output-$timestamp.txt -Path $sessionId\$modPath\$pluginName\log-output-$timestamp.txt
-    Set-AzureStorageFileContent -Share $share -Source log-error-$timestamp.txt -Path $sessionId\$modPath\$pluginName\log-error-$timestamp.txt
+    Set-AzureStorageFileContent -Share $share -Source log-output-$timestamp-$sessionId.txt -Path $path\log-output-$timestamp.txt
+    Set-AzureStorageFileContent -Share $share -Source log-error-$timestamp-$sessionId.txt -Path $path\log-error-$timestamp.txt
 
-    Remove-Item log-output-$timestamp.txt
-    Remove-Item log-error-$timestamp.txt
+    Remove-Item log-output-$timestamp-$sessionId.txt
+    Remove-Item log-error-$timestamp-$sessionId.txt
     
 }
 
@@ -190,10 +196,11 @@ foreach($modulePath in $modulePaths){
 
 
 $sessionId = [GUID]::NewGuid()
+echo "Session ID: $sessionId"
 $startTimestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
 foreach($plugin in $plugins){
     foreach($modulePath in $modulePaths){
-        Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString
+        Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key
     }
     Get-Job | Wait-Job
 }
