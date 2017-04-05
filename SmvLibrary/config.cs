@@ -160,6 +160,12 @@ namespace SmvLibrary
 
         [XmlAttributeAttribute()]
         public string arguments { get; set; }
+
+        [XmlAttributeAttribute()]
+        public string maxMemory { get; set; }
+
+        [XmlAttributeAttribute()]
+        public string maxTime { get; set; }
     }
 
     [Serializable]
