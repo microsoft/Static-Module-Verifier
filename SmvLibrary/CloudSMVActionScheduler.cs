@@ -121,7 +121,7 @@ namespace SmvLibrary
                         CloudConstants.ResultsTopicName, schedulerInstanceGuid);
                     subscriptionClient.RetryPolicy = new RetryExponential(
                         TimeSpan.FromSeconds(CloudConstants.RetryBackoffInterval),
-                        TimeSpan.FromSeconds(CloudConstants.RetryBackoffInterval * CloudConstants.MaxRetries), 
+                        TimeSpan.FromSeconds(CloudConstants.RetryBackoffInterval * CloudConstants.MaxRetries),
                         CloudConstants.MaxRetries);
                     subscriptionClient.OnMessage((msg) =>
                     {
@@ -162,15 +162,13 @@ namespace SmvLibrary
 
             string actionPath = Utility.GetActionDirectory(action);
             string zipPath = Path.Combine(Path.GetTempPath(), actionGuid);
-            if(File.Exists(zipPath)) File.Delete(zipPath);
+            if (File.Exists(zipPath)) File.Delete(zipPath);
             ZipFile.CreateFromDirectory(actionPath, zipPath);
-
             Log.LogDebug("Created zip for " + actionPath);
-            
+
             CloudBlockBlob blob = inputContainer.GetBlockBlobReference(actionGuid + ".zip");
             blob.UploadFromFile(zipPath);
             File.Delete(zipPath);
-
             Log.LogDebug("Uploaded blob " + blob.Name);
 
             // Add entry to table storage.
@@ -184,7 +182,7 @@ namespace SmvLibrary
             tableDataSource.AddEntry(entry);
 
             Log.LogDebug("Added to table " + entry.PartitionKey + "," + entry.RowKey);
-            
+
             // Add message to queue.        
             //Log.LogInfo("Executing: " + action.GetFullName() + " [cloud id:" + actionGuid + "]");
             string messageString = schedulerInstanceGuid + "," + actionGuid;
@@ -192,10 +190,10 @@ namespace SmvLibrary
             actionsQueue.AddMessage(message);
 
             Log.LogDebug("Adding to queue " + message.Id);
-            
+
             contextDictionary[actionGuid] = new CloudActionCompleteContext(action, callback, context);
 
-            Log.LogDebug("Done adding.");   
+            Log.LogDebug("Done adding.");
         }
 
         /// <summary>
@@ -222,33 +220,49 @@ namespace SmvLibrary
             context.action.variables = action.variables;
 
             var results = new SMVActionResult[] { context.action.result };
-            if(entry.Status != (int)ActionStatus.Complete)
+            if (entry.Status != (int)ActionStatus.Complete)
             {
                 Log.LogError(string.Format("Failed to complete action: {0} ({1})", actionGuid, context.action.name));
                 context.callback(context.action, new SMVActionResult[] { context.action.result }, context.context);
+                return;
             }
 
             // Download and extract the results.
+            string actionDirectory = Utility.GetActionDirectory(context.action);
             CloudBlockBlob resultsBlob = outputContainer.GetBlockBlobReference(actionGuid + ".zip");
             string zipPath = Path.Combine(Path.GetTempPath(), actionGuid);
-            if(File.Exists(zipPath)) File.Delete(zipPath);
-            resultsBlob.DownloadToFile(zipPath, FileMode.CreateNew);
-            resultsBlob.Delete();
-            string actionDirectory = Utility.GetActionDirectory(context.action);
-            string resultDirectory = Path.Combine(actionDirectory, "result");
-            Directory.CreateDirectory(resultDirectory);
-            ZipFile.ExtractToDirectory(zipPath, resultDirectory);
-            File.Delete(zipPath);
-            Utility.CopyDirectory(resultDirectory, actionDirectory, true);
-            //Directory.Delete(resultDirectory, true);
+            if (File.Exists(zipPath)) File.Delete(zipPath);
+            if (resultsBlob.Exists())
+            {
+                resultsBlob.DownloadToFile(zipPath, FileMode.CreateNew);
+                resultsBlob.Delete();
+                using (var archive = ZipFile.OpenRead(zipPath))
+                {
+                    foreach (var f in archive.Entries)
+                    {
+                        var toBeExtractedFilePath = Path.Combine(actionDirectory, f.FullName);
+                        if (File.Exists(toBeExtractedFilePath))
+                        {
+                            File.Delete(toBeExtractedFilePath);
+                        }
+                    }
+                    archive.ExtractToDirectory(actionDirectory);
+                }
 
-            Log.LogDebug("download results for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
+                File.Delete(zipPath);
 
-            // Write to the cloudstats.txt file.
-            var contents = new string[] { "Wait Time: " + waitTime.ToString() ,
+                // Write to the cloudstats.txt file.
+                var contents = new string[] { "Wait Time: " + waitTime.ToString() ,
                 "Dequeue Count: " + dequeueCount ,
                 "Output" + Environment.NewLine + results.First().output };
-            File.AppendAllLines(Path.Combine(actionDirectory, "cloudstats.txt"), contents);
+                File.AppendAllLines(Path.Combine(actionDirectory, "cloudstats.txt"), contents);
+
+                Log.LogDebug("download results for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
+            }
+            else
+            {
+                Log.LogInfo("Results for " + action.GetFullName() + " [cloud id " + actionGuid + "] not available!");
+            }
 
             context.callback(context.action, results, context.context);
         }
