@@ -118,6 +118,11 @@ namespace SmvLibrary
         public static void CopyFile(string source, string destination, TextWriter logger)
         {
             Log.LogInfo(String.Format(CultureInfo.InvariantCulture, "Copying file {0} to {1}.", source, destination), logger);
+            string destinationFolder = Path.GetDirectoryName(destination);
+            if (!Directory.Exists(destinationFolder))
+            {
+                Directory.CreateDirectory(destinationFolder);
+            }
             File.Copy(source, destination, true);
         }
 
@@ -626,6 +631,58 @@ namespace SmvLibrary
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Makes the defect portable in the bug folder path passed as parameter
+        /// </summary>
+        /// <param name="bugFolderPath"></param>
+        public static void makeDefectPortable(string bugFolderPath)
+        {
+            if (!Directory.Exists(bugFolderPath))
+            {
+                Log.LogFatalError("Bug folder path not found");
+            }
+            try
+            {
+                //for sdv-harness.c
+                string sdvHarnessSourcePath = smvVars["workingDir"] + "\\sdv\\sdv-harness.c";
+                string sdvHarnessDestinationPath = "\\src\\" + sdvHarnessSourcePath.Replace(":", "");
+                CopyFile(sdvHarnessSourcePath, bugFolderPath + sdvHarnessDestinationPath, null);
+
+                //for rulename.slic file
+                string bugParentFolderPath = Path.GetDirectoryName(bugFolderPath);
+                string ruleName = Path.GetFileNameWithoutExtension(bugParentFolderPath);
+                string slicFileDestinationPath = "\\src\\" + bugParentFolderPath.Replace(":", "") + "\\" + ruleName + ".slic";
+                CopyFile(bugParentFolderPath + "\\" + ruleName + ".slic", bugFolderPath + slicFileDestinationPath, null);
+
+                //getting smvsrcfiles to an array
+                string smvSrcFilesPath = smvVars["workingDir"] + "\\sdv\\smvsrcfiles";
+                string smvSrcFilesContent = ReadFile(smvSrcFilesPath);
+                string[] smvSrcFiles = smvSrcFilesContent.Split('\n');
+
+                //to update defect.tt file
+                string defectTtFileContents = File.ReadAllText(bugFolderPath + "\\defect.tt");
+
+                //copying smvsrc files and updating defect.tt
+                for (int i = 0; i < smvSrcFiles.Length - 1; i++)
+                {
+                    string smvSrcFileDestinationPath = "\\src\\" + smvSrcFiles[i].Trim().Replace(":", "");
+                    CopyFile(smvSrcFiles[i].Trim(), bugFolderPath + smvSrcFileDestinationPath, null);
+                    defectTtFileContents = defectTtFileContents.Replace(smvSrcFiles[i].Trim(), smvSrcFileDestinationPath);
+                }
+                //for sdv-harness defect.tt update
+                defectTtFileContents = defectTtFileContents.Replace(sdvHarnessSourcePath.ToLower(), sdvHarnessDestinationPath);
+
+                //for rulename.slic defect.tt update
+                string pattern = @"\.\.\\\.\.\\\.\.\\check\\" + ruleName + @"\\" + ruleName + @"\.slic";
+                defectTtFileContents = Regex.Replace(defectTtFileContents, pattern, slicFileDestinationPath, RegexOptions.IgnoreCase);
+                File.WriteAllText(bugFolderPath + "\\defect.tt", defectTtFileContents);
+            }
+            catch (Exception e)
+            {
+                Log.LogFatalError("Exception occurred in trying to make defect portable - " + e);
+            }
         }
 
         /// <summary>
