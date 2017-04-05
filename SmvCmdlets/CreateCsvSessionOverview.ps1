@@ -1,7 +1,7 @@
 ﻿param([string] $dllFolderPath, [string] $sessionId, [string] $outputFileName)
-$configPath = "$dllFolderPath\CommandLet.dll.config"
+$configPath = "$dllFolderPath\SmvCmdlets.dll.config"
 [System.AppDomain]::CurrentDomain.SetData("APP_CONFIG_FILE", $configPath)
-Import-Module "$dllFolderPath\CommandLet.dll"
+Import-Module "$dllFolderPath\SmvCmdlets.dll"
 $results = Get-SessionOverview -SessionId $sessionId
 
 [System.Collections.ArrayList]$collection = New-Object System.Collections.ArrayList($null)

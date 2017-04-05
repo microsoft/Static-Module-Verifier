@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvAutomation", "SmvAutomat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvDb", "SmvDb\SmvDb.csproj", "{CAD1E044-FE00-47E4-BF63-EE943A653833}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmvCmdlets", "SmvCmdlets\SmvCmdlets.csproj", "{4BD5EB2A-3F7B-4AD7-9C1D-5861105715AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,10 @@ Global
 		{CAD1E044-FE00-47E4-BF63-EE943A653833}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAD1E044-FE00-47E4-BF63-EE943A653833}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAD1E044-FE00-47E4-BF63-EE943A653833}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BD5EB2A-3F7B-4AD7-9C1D-5861105715AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BD5EB2A-3F7B-4AD7-9C1D-5861105715AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BD5EB2A-3F7B-4AD7-9C1D-5861105715AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BD5EB2A-3F7B-4AD7-9C1D-5861105715AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
