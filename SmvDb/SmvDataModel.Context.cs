@@ -63,6 +63,24 @@ namespace SmvDb
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("ModuleDiffBetweenTwoSessions", firstSessionParameter, secondSessionParameter);
         }
     
+        public virtual ObjectResult<ModuleOverview_Result> ModuleOverview(string moduleId)
+        {
+            var moduleIdParameter = moduleId != null ?
+                new ObjectParameter("moduleId", moduleId) :
+                new ObjectParameter("moduleId", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<ModuleOverview_Result>("ModuleOverview", moduleIdParameter);
+        }
+    
+        public virtual ObjectResult<ModuleOverviewByPath_Result> ModuleOverviewByPath(string modulePath)
+        {
+            var modulePathParameter = modulePath != null ?
+                new ObjectParameter("modulePath", modulePath) :
+                new ObjectParameter("modulePath", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<ModuleOverviewByPath_Result>("ModuleOverviewByPath", modulePathParameter);
+        }
+    
         public virtual ObjectResult<string> PluginDiffBetweenTwoSessions(string firstSession, string secondSession)
         {
             var firstSessionParameter = firstSession != null ?
@@ -74,6 +92,15 @@ namespace SmvDb
                 new ObjectParameter("SecondSession", typeof(string));
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<string>("PluginDiffBetweenTwoSessions", firstSessionParameter, secondSessionParameter);
+        }
+    
+        public virtual ObjectResult<PluginOverview_Result> PluginOverview(string pluginId)
+        {
+            var pluginIdParameter = pluginId != null ?
+                new ObjectParameter("pluginId", pluginId) :
+                new ObjectParameter("pluginId", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<PluginOverview_Result>("PluginOverview", pluginIdParameter);
         }
     
         public virtual ObjectResult<SummaryTableForSession_Result> SummaryTableForSession(string sessionId)

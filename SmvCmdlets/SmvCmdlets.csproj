@@ -53,6 +53,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GetModuleOverview.cs" />
+    <Compile Include="GetModuleOverviewByPath.cs" />
+    <Compile Include="GetPluginOverview.cs" />
     <Compile Include="GetSessionOverview.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

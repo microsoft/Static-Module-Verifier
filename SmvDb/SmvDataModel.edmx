@@ -87,9 +87,18 @@
           <Parameter Name="FirstSession" Type="varchar" Mode="In" />
           <Parameter Name="SecondSession" Type="varchar" Mode="In" />
         </Function>
+        <Function Name="ModuleOverview" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="moduleId" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="ModuleOverviewByPath" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="modulePath" Type="varchar(max)" Mode="In" />
+        </Function>
         <Function Name="PluginDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="FirstSession" Type="varchar" Mode="In" />
           <Parameter Name="SecondSession" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="PluginOverview" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="pluginId" Type="varchar" Mode="In" />
         </Function>
         <Function Name="SummaryTableForSession" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="sessionId" Type="varchar" Mode="In" />
@@ -205,9 +214,18 @@
             <Parameter Name="FirstSession" Mode="In" Type="String" />
             <Parameter Name="SecondSession" Mode="In" Type="String" />
           </FunctionImport>
+          <FunctionImport Name="ModuleOverview" ReturnType="Collection(SmvDbModel.ModuleOverview_Result)">
+            <Parameter Name="moduleId" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="ModuleOverviewByPath" ReturnType="Collection(SmvDbModel.ModuleOverviewByPath_Result)">
+            <Parameter Name="modulePath" Mode="In" Type="String" />
+          </FunctionImport>
           <FunctionImport Name="PluginDiffBetweenTwoSessions" ReturnType="Collection(String)">
             <Parameter Name="FirstSession" Mode="In" Type="String" />
             <Parameter Name="SecondSession" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="PluginOverview" ReturnType="Collection(SmvDbModel.PluginOverview_Result)">
+            <Parameter Name="pluginId" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="SummaryTableForSession" ReturnType="Collection(SmvDbModel.SummaryTableForSession_Result)">
             <Parameter Name="sessionId" Mode="In" Type="String" />
@@ -220,6 +238,24 @@
           <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
           <Property Type="String" Name="WorkingDirectory" Nullable="false" />
           <Property Type="String" Name="Success" Nullable="false" MaxLength="10" />
+        </ComplexType>
+        <ComplexType Name="ModuleOverview_Result">
+          <Property Type="String" Name="SessionID" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="NumberOfPlugins" Nullable="true" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="ModuleOverviewByPath_Result">
+          <Property Type="String" Name="SessionID" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="PluginOverview_Result">
+          <Property Type="String" Name="SessionID" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="NumberOfModules" Nullable="true" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
         </ComplexType>
         <ComplexType Name="SummaryTableForSession_Result">
           <Property Type="String" Name="ModulePath" Nullable="false" />
@@ -336,7 +372,37 @@
             </ResultMapping>
           </FunctionImportMapping>
           <FunctionImportMapping FunctionImportName="ModuleDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.ModuleDiffBetweenTwoSessions" />
+          <FunctionImportMapping FunctionImportName="ModuleOverview" FunctionName="SmvDbModel.Store.ModuleOverview">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.ModuleOverview_Result">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="NumberOfPlugins" ColumnName="NumberOfPlugins" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="ModuleOverviewByPath" FunctionName="SmvDbModel.Store.ModuleOverviewByPath">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.ModuleOverviewByPath_Result">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
           <FunctionImportMapping FunctionImportName="PluginDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.PluginDiffBetweenTwoSessions" />
+          <FunctionImportMapping FunctionImportName="PluginOverview" FunctionName="SmvDbModel.Store.PluginOverview">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.PluginOverview_Result">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="NumberOfModules" ColumnName="NumberOfModules" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
           <FunctionImportMapping FunctionImportName="SummaryTableForSession" FunctionName="SmvDbModel.Store.SummaryTableForSession">
             <ResultMapping>
               <ComplexTypeMapping TypeName="SmvDbModel.SummaryTableForSession_Result">
