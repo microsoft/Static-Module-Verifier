@@ -1,11 +1,11 @@
-﻿param([string] $sdxRoot, [string] $automationConfigFilePath , [string] $configFilePath, [string] $connectionString, [string] $AzCopyPath)
+﻿param([string] $sdxRoot, [string] $automationConfigFilePath , [string] $configFilePath, [string] $AzCopyPath)
 $ErrorActionPreference = 'Continue'
 
 
 # Parsing the XML file to get the modules and the plugins
-[xml] $XmlDocument = Get-Content -Path $sdxRoot\$automationConfigFilePath
+[xml] $XmlDocument = Get-Content -Path $automationConfigFilePath
 [xml] $configDocument = Get-Content -Path $configFilePath
-
+$connectionString = $configDocument.Passwords.DbConnectionString.connectionString
 $key = $configDocument.Passwords.SmvTestKey.key
 $modulePaths = $XmlDocument.ServiceConfig.Modules.Module.path
 # For handling module directories
