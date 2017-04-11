@@ -1,6 +1,10 @@
-﻿param([string] $sdxRoot, [string] $automationConfigFilePath , [string] $configFilePath, [string] $AzCopyPath)
+﻿param([string] $sdxRoot, [string] $automationConfigFilePath , [string] $configFilePath, [string] $AzCopyPath, [string] $maxConcurrentJobs)
 $ErrorActionPreference = 'Continue'
 
+$numberOfCores = Get-WmiObject -class Win32_processor | Select-Object -ExpandProperty NumberOfCores
+if(!$maxConcurrentJobs){
+    $maxConcurrentJobs = $numberOfCores
+}
 
 # Parsing the XML file to get the modules and the plugins
 [xml] $XmlDocument = Get-Content -Path $automationConfigFilePath
@@ -9,10 +13,12 @@ $connectionString = $configDocument.Passwords.DbConnectionString.connectionStrin
 $key = $configDocument.Passwords.SmvTestKey.key
 $modulePaths = $XmlDocument.ServiceConfig.Modules.Module.path
 # For handling module directories
-$folderPath = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.path.Replace("%SDXROOT%\", "$sdxRoot\")
-$moduleDefinitionFile = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.moduleDefinitionFile
-$folders = Get-ChildItem -Path $folderPath -Filter $moduleDefinitionFile -Recurse
-$modulePaths += $folders.Directory.FullName
+if($XmlDocument.ServiceConfig.ModulesDirectory){
+    $folderPath = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.path.Replace("%SDXROOT%\", "$sdxRoot\")
+    $moduleDefinitionFile = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.moduleDefinitionFile
+    $folders = Get-ChildItem -Path $folderPath -Filter $moduleDefinitionFile -Recurse
+    $modulePaths += $folders.Directory.FullName
+}
 $modulePaths = $modulePaths.Replace("$sdxRoot\", "%SDXROOT%\")
 $modulePaths = $modulePaths | select -Unique
 
@@ -192,13 +198,18 @@ foreach($modulePath in $modulePaths){
     }
 }
 
-
 $sessionId = [GUID]::NewGuid()
 echo "Session ID: $sessionId"
 $startTimestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
 foreach($plugin in $plugins){
     foreach($modulePath in $modulePaths){
-        Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key
+        $check = $false
+        while($check -eq $false){
+            if((Get-Job -State 'Running').Count -lt $maxConcurrentJobs){
+                Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key
+                $check = $true
+            }
+        }
     }
     Get-Job | Wait-Job
 }
