@@ -1,22 +1,28 @@
-﻿param([string] $sdxRoot, [string] $automationConfigFilePath , [string] $configFilePath, [string] $connectionString)
+﻿param([string] $sdxRoot, [string] $automationConfigFilePath , [string] $configFilePath, [string] $AzCopyPath, [string] $maxConcurrentJobs)
 $ErrorActionPreference = 'Continue'
 
+$numberOfCores = Get-WmiObject -class Win32_processor | Select-Object -ExpandProperty NumberOfCores
+if(!$maxConcurrentJobs){
+    $maxConcurrentJobs = $numberOfCores
+}
+
 # Parsing the XML file to get the modules and the plugins
-[xml] $XmlDocument = Get-Content -Path $sdxRoot\$automationConfigFilePath
+[xml] $XmlDocument = Get-Content -Path $automationConfigFilePath
 [xml] $configDocument = Get-Content -Path $configFilePath
-
+$connectionString = $configDocument.Passwords.DbConnectionString.connectionString
 $key = $configDocument.Passwords.SmvTestKey.key
-
 $modulePaths = $XmlDocument.ServiceConfig.Modules.Module.path
+# For handling module directories
+if($XmlDocument.ServiceConfig.ModulesDirectory){
+    $folderPath = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.path.Replace("%SDXROOT%\", "$sdxRoot\")
+    $moduleDefinitionFile = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.moduleDefinitionFile
+    $folders = Get-ChildItem -Path $folderPath -Filter $moduleDefinitionFile -Recurse
+    $modulePaths += $folders.Directory.FullName
+}
+$modulePaths = $modulePaths.Replace("$sdxRoot\", "%SDXROOT%\")
+$modulePaths = $modulePaths | select -Unique
 
-<#
-$folderPath = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.path
-$moduleDefinitionFile = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.moduleDefinitionFile
-$folders = Get-ChildItem -Path $sdxRoot\$folderPath -Filter $moduleDefinitionFile -Recurse
-$modulePaths = $folders.Directory.FullName.Replace("$sdxRoot\","")
-#>
 $plugins = $XmlDocument.ServiceConfig.Plugins.Plugin
-
 
 function Get-DatabaseData {
 	[CmdletBinding()]
@@ -53,12 +59,6 @@ function Invoke-DatabaseQuery {
 
 $backgroundJobScript = {
     Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString, [string] $configKey)
-    function CreateDirectoryIfMissing ([string] $path){
-        If(!(test-path $path))
-        {
-            New-Item $path -ItemType Directory
-        }
-    }
 
     function CreateDirectoryIfMissingCloud([string] $path){
         $parts = $path.Split('\')
@@ -149,7 +149,7 @@ $backgroundJobScript = {
 
     # Running razzle window and the corresponding analysis
     $ps.StandardInput.WriteLine("$sdxRoot\tools\razzle.cmd x86 fre no_oacr no_certcheck")
-    $ps.StandardInput.WriteLine("cd $sdxRoot\$modPath")
+    $ps.StandardInput.WriteLine("cd $modPath")
     $ps.StandardInput.WriteLine("set usesmvsdv=true")
     $ps.StandardInput.WriteLine("rmdir /s /q sdv")
     $ps.StandardInput.WriteLine("rmdir /s /q sdv.temp")
@@ -161,18 +161,21 @@ $backgroundJobScript = {
 
     $stdout += $ps.StandardOutput.ReadToEnd()
     $stderr += $ps.StandardError.ReadToEnd()
-
-    $stdout | Out-File log-output-$timestamp-$sessionId.txt
-    $stderr | Out-File log-error-$timestamp-$sessionId.txt
-
-    Set-AzureStorageFileContent -Share $share -Source log-output-$timestamp-$sessionId.txt -Path $path\log-output-$timestamp.txt
-    Set-AzureStorageFileContent -Share $share -Source log-error-$timestamp-$sessionId.txt -Path $path\log-error-$timestamp.txt
-
-    Remove-Item log-output-$timestamp-$sessionId.txt
-    Remove-Item log-error-$timestamp-$sessionId.txt
+    
+    # Storing output in file
+    $stdout | Out-File log-output-$timestamp-$taskId.txt
+    $stderr | Out-File log-error-$timestamp-$taskId.txt
+    
+    # Moving output to file share
+    Set-AzureStorageFileContent -Share $share -Source log-output-$timestamp-$taskId.txt -Path $path\log-output-$timestamp.txt
+    Set-AzureStorageFileContent -Share $share -Source log-error-$timestamp-$taskId.txt -Path $path\log-error-$timestamp.txt
+    
+    #Deleting local copy of file
+    Remove-Item log-output-$timestamp-$taskId.txt
+    Remove-Item log-error-$timestamp-$taskId.txt
     
 }
-
+# Adding entry in Plugins table if it is not already present
 foreach($plugin in $plugins){
     $pluginName = $plugin.name
     $query = "SELECT PluginID FROM Plugins WHERE PluginName='$pluginName'"
@@ -184,6 +187,7 @@ foreach($plugin in $plugins){
     }
 }
 
+# Adding entry in Modules table if it is not already present
 foreach($modulePath in $modulePaths){
     $query = "SELECT ModuleID FROM Modules WHERE ModulePath='$modulePath'"
     $module = Get-DatabaseData -query $query –connectionString $connectionString
@@ -194,13 +198,18 @@ foreach($modulePath in $modulePaths){
     }
 }
 
-
 $sessionId = [GUID]::NewGuid()
 echo "Session ID: $sessionId"
 $startTimestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
 foreach($plugin in $plugins){
     foreach($modulePath in $modulePaths){
-        Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key
+        $check = $false
+        while($check -eq $false){
+            if((Get-Job -State 'Running').Count -lt $maxConcurrentJobs){
+                Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key
+                $check = $true
+            }
+        }
     }
     Get-Job | Wait-Job
 }
@@ -209,3 +218,5 @@ $user = $env:USERNAME
 $query = "insert into Sessions VALUES ('" + $sessionId + "' , '" + $startTimestamp + "' , '" + $endTimestamp + "' , '" + $user + "');"
 Invoke-DatabaseQuery –query $query –connectionString $connectionString
 
+# Copying SMV folder to fileshare
+& $AzCopyPath\AzCopy.exe /Source:"$sdxRoot\tools\analysis\x86\sdv\smv" /Dest:https://smvtest.file.core.windows.net/smvautomation/$sessionId/SMV /destkey:$key /S

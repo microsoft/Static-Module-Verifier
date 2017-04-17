@@ -64,7 +64,16 @@
     <Compile Include="Module.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="ModuleOverviewByPath_Result.cs">
+      <DependentUpon>SmvDataModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleOverview_Result.cs">
+      <DependentUpon>SmvDataModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Plugin.cs">
+      <DependentUpon>SmvDataModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PluginOverview_Result.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
