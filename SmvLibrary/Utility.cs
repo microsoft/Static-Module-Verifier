@@ -35,7 +35,7 @@ namespace SmvLibrary
         public static bool debugMode = false;
         public static string sessionId = String.Empty;
         public static string taskId = String.Empty;
-
+        public static bool useDb = false;
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
         private static List<SMVActionResult> actionResults;
@@ -525,28 +525,31 @@ namespace SmvLibrary
                             TimeSpan span = process.ExitTime - process.StartTime;
                             Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
                             cumulativeExitCode += Math.Abs(process.ExitCode);
-                            try
+                            if (useDb)
                             {
-                                using (var database = new SmvDbEntities())
+                                try
                                 {
-                                    var masterEntry = new TaskAction
+                                    using (var database = new SmvDbEntities())
                                     {
-                                        ActionID = Guid.NewGuid().ToString(),
-                                        TaskID = taskId,
-                                        ActionName = action.name,
-                                        Success = cumulativeExitCode.ToString(),
-                                        ActionTime = span.ToString(),
-                                        WorkingDirectory = variables["workingDir"]
-                                    };
-                                    database.TaskActions.Add(masterEntry);
-                                    database.SaveChanges();
+                                        var masterEntry = new TaskAction
+                                        {
+                                            ActionID = Guid.NewGuid().ToString(),
+                                            TaskID = taskId,
+                                            ActionName = action.name,
+                                            Success = cumulativeExitCode.ToString(),
+                                            ActionTime = span.ToString(),
+                                            WorkingDirectory = variables["workingDir"]
+                                        };
+                                        database.TaskActions.Add(masterEntry);
+                                        database.SaveChanges();
+                                    }
                                 }
-                            }
-                            catch (Exception e)
-                            {
-                                Log.LogFatalError("Exception while updating database " + e);
-                            }
+                                catch (Exception e)
+                                {
+                                    Log.LogFatalError("Exception while updating database " + e);
+                                }
 
+                            }
                             jobObject.QueryExtendedLimitInformation();
                             jobObject.Close();
                             jobObject.Dispose();
