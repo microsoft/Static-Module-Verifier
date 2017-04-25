@@ -36,6 +36,7 @@ namespace SmvLibrary
         public static string sessionId = String.Empty;
         public static string taskId = String.Empty;
         public static bool useDb = false;
+        public static bool useJobObject = false;
         public static string schedulerType = "local";
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
@@ -356,8 +357,10 @@ namespace SmvLibrary
                 {
                     Log.LogFatalError(String.Format(CultureInfo.InvariantCulture, "Could not create process: {0} with args {1}, working directory: {2}", cmd, args, startDirectory));
                 }
-
-                jobObject.AddProcess(process.Id);
+                if (jobObject != null)
+                {
+                    jobObject.AddProcess(process.Id);
+                }
                 return process;
             }
             catch (Exception e)
@@ -486,22 +489,25 @@ namespace SmvLibrary
                 {
                     foreach (SMVCommand cmd in action.Command)
                     {
-                        //Update maxTime and maxMemory allowed
-                        int maxMemory = int.MaxValue;
-                        int maxTime = int.MaxValue;
-                        updateAttribute(ref maxTime, cmd.maxTime, "Time");
-                        Log.LogDebug("Maximum time allowed for this command = " + maxTime);
-                        updateAttribute(ref maxMemory, cmd.maxMemory, "Memory");
-
-                        //Converting memory from MB to bytes, if input is valid
-                        if (maxMemory < int.MaxValue)
+                        JobObject jobObject = null;
+                        if (useJobObject)
                         {
-                            maxMemory *= (1024 * 1024);
-                        }
-                        Log.LogDebug("Maximum memory allowed for this command = " + maxMemory);
-                        JobObject jobObject = new JobObject();
-                        jobObject.setConstraints(maxMemory, maxTime);
+                            //Update maxTime and maxMemory allowed
+                            int maxMemory = int.MaxValue;
+                            int maxTime = int.MaxValue;
+                            updateAttribute(ref maxTime, cmd.maxTime, "Time");
+                            Log.LogDebug("Maximum time allowed for this command = " + maxTime);
+                            updateAttribute(ref maxMemory, cmd.maxMemory, "Memory");
 
+                            //Converting memory from MB to bytes, if input is valid
+                            if (maxMemory < int.MaxValue)
+                            {
+                                maxMemory *= (1024 * 1024);
+                            }
+                            Log.LogDebug("Maximum memory allowed for this command = " + maxMemory);
+                            jobObject = new JobObject();
+                            jobObject.setConstraints(maxMemory, maxTime);
+                        }
                         Process process = LaunchProcess("cmd.exe", "", actionPath, action.Env, logger, jobObject);
                         process.OutputDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
                         process.ErrorDataReceived += (sender, e) => { Log.LogMessage(e.Data, logger); };
@@ -551,16 +557,22 @@ namespace SmvLibrary
                                 }
 
                             }
-                            jobObject.QueryExtendedLimitInformation();
-                            jobObject.Close();
-                            jobObject.Dispose();
+                            if (useJobObject)
+                            {
+                                jobObject.QueryExtendedLimitInformation();
+                                jobObject.Close();
+                                jobObject.Dispose();
+                            }
                         }
                         catch (Exception e)
                         {
                             Log.LogInfo(e.ToString(), logger);
                             Log.LogInfo("Could not start process: " + cmdAttr, logger);
-                            jobObject.Close();
-                            jobObject.Dispose();
+                            if (useJobObject)
+                            {
+                                jobObject.Close();
+                                jobObject.Dispose();
+                            }
                             return null;
                         }
                     }

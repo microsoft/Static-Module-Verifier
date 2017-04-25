@@ -78,6 +78,12 @@ namespace SmvSkeleton
                     Utility.useDb = true;
                     i++;
                 }
+                else if(args[i].Equals("/jobobject", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    Log.LogInfo("Using job objects.");
+                    Utility.useJobObject = true;
+                    i++;
+                }
                 else if (args[i].StartsWith("/config:", StringComparison.InvariantCulture) || args[i].StartsWith("/log:", StringComparison.InvariantCulture))
                 {
                     String[] tokens = args[i].Split(new char[] { ':' }, 2);

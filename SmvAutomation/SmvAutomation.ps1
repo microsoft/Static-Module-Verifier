@@ -24,6 +24,7 @@ $modulePaths = $modulePaths | select -Unique
 
 $plugins = $XmlDocument.ServiceConfig.Plugins.Plugin
 [bool]$useDb = [System.Convert]::ToBoolean($XmlDocument.ServiceConfig.Plugins.useDb)
+[bool]$useJobObject = [System.Convert]::ToBoolean($XmlDocument.ServiceConfig.Plugins.useJobObject)
 
 if(!$useDb){
     $useDb = $false
@@ -63,7 +64,7 @@ function Invoke-DatabaseQuery {
 
 
 $backgroundJobScript = {
-    Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb)
+    Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb, [bool] $useJobObject)
 
     function CreateDirectoryIfMissingCloud([string] $path){
         $parts = $path.Split('\')
@@ -156,6 +157,9 @@ $backgroundJobScript = {
         $stderr += ("SessionID: " + $sessionId + "`r`nTaskID : " + $taskId +"`r`n`r`n")
 	    $arg += (" /db /sessionId:" + $sessionId + " /taskId:" + $taskId)
     } 
+	if($useJobObject){
+		$arg += (" /jobobject");
+	}
 
     # Running razzle window and the corresponding analysis
     $ps.StandardInput.WriteLine("$sdxRoot\tools\razzle.cmd x86 fre no_oacr no_certcheck")
@@ -221,7 +225,7 @@ foreach($plugin in $plugins){
         $check = $false
         while($check -eq $false){
             if((Get-Job -State 'Running').Count -lt $maxConcurrentJobs){
-                Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key, $useDb
+                Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key, $useDb, $useJobObject
                 $check = $true
             }
         }
