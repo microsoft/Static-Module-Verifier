@@ -36,6 +36,7 @@ namespace SmvLibrary
         public static string sessionId = String.Empty;
         public static string taskId = String.Empty;
         public static bool useDb = false;
+        public static string schedulerType = "local";
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
         private static List<SMVActionResult> actionResults;

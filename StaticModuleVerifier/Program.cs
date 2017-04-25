@@ -68,6 +68,7 @@ namespace SmvSkeleton
                 {
                     Log.LogInfo("Using cloud.");
                     cloud = true;
+                    Utility.schedulerType = "cloud";
                     i++;
                 }
                 else if (args[i].Equals("/db", StringComparison.InvariantCultureIgnoreCase))
