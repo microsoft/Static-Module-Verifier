@@ -16,7 +16,7 @@ namespace SmvLibrary
         public static bool updateStatusMode = false;
         private bool disposed = false;
         private bool done = false;
-
+        private bool errorsEncountered = false;
         private static ConcurrentDictionary<string, int> counters = new ConcurrentDictionary<string, int>();
         private ConcurrentBag<int> times = new ConcurrentBag<int>();
 

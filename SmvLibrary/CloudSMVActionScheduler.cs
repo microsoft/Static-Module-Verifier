@@ -30,6 +30,7 @@ namespace SmvLibrary
         private CloudQueue actionsQueue;                /// Cloud queue where each message is an action to be processed by a worker.
         private NamespaceManager namespaceManager;      /// Namespace manager used for working with service bus entities.
         private SubscriptionClient subscriptionClient;  /// Subscription client used to communicate with the service bus.
+        private int maxDequeueCount = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["maxDequeueCount"]);
 
         private class CloudActionCompleteContext
         {
@@ -60,6 +61,8 @@ namespace SmvLibrary
             // Set the instance GUID.
             schedulerInstanceGuid = Guid.NewGuid().ToString();
             Log.LogInfo("Scheduler Instance GUID: " + schedulerInstanceGuid);
+
+            Log.LogInfo($"Setting max dequeue count to {maxDequeueCount}");
 
             // Check if the connection strings are set properly.
             storageConnectionString = config.StorageConnectionString.value;
@@ -185,7 +188,7 @@ namespace SmvLibrary
 
             // Add message to queue.        
             //Log.LogInfo("Executing: " + action.GetFullName() + " [cloud id:" + actionGuid + "]");
-            string messageString = schedulerInstanceGuid + "," + actionGuid;
+            string messageString = schedulerInstanceGuid + "," + actionGuid + "," + maxDequeueCount;
             var message = new CloudQueueMessage(messageString);
             actionsQueue.AddMessage(message);
 

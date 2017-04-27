@@ -75,6 +75,15 @@ namespace SmvCloudWorker2
                         string[] msgParts = currentMessage.AsString.Split(',');
                         string schedulerInstanceGuid = msgParts[0];
                         string actionGuid = msgParts[1];
+                        int maxDequeueCount = 10;
+                        try
+                        {
+                            if (msgParts.Count() > 2)
+                            {
+                                maxDequeueCount = Convert.ToInt32(msgParts[2]);
+                            }
+                        }
+                        catch(Exception){}
 
                         // Get the table entry.
                         ActionsTableEntry tableEntry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
@@ -89,7 +98,7 @@ namespace SmvCloudWorker2
 
                             // Check if we have tried to process this message too many times.
                             // If so, delete it and report an error back to the client.
-                            if (currentMessage.DequeueCount >= CloudConstants.MaxDequeueCount)
+                            if (currentMessage.DequeueCount >= maxDequeueCount)
                             {
                                 tableDataSource.UpdateStatus(schedulerInstanceGuid, actionGuid, ActionStatus.Error);
                                 SendMessageToTopic(outputMsg);

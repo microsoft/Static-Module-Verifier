@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ServiceConfiguration serviceName="SmvService" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="4" osVersion="*" schemaVersion="2015-04.2.6">
+<ServiceConfiguration serviceName="SmvService" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="5" osVersion="*" schemaVersion="2015-04.2.6">
   <Role name="SmvCloudWorker">
     <Instances count="1" />
     <ConfigurationSettings>
-      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=fastavn;AccountKey=Av4MHaTusPHVNzWoVgwtdPQ0iiZufph2htXe6BDB2tmwzS7gZn7D06FYrCRfaMZca7sCARiMs9HLdwLurAdUNw==" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=smvtest;AccountKey=UQPvB4E+wfpAcNMEo8Q9l1mwXOJqqHtRYS1hCVddCX+jDA8ttE4cOIyeo19hIlpojvCvHH2butFN5tr1/V5ifQ==" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="true" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="SmvAdmin" />
-      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEEkbdXEzeeGyRKTyqVfz+r8wDQYJKoZIhvcNAQEBBQAEggEAScxFVTyS0I/mM2ybLs50KoM85eauUJ3VEsBWBwTxZAoeo5dJaBbyUIJ8fAJ6N+i8xwXBZBmVRWT/+77j+jbl4sFVwcQgsz45qChLJYM/Tl8UJ0mEpDM7kEN4+hy7F1/Ihn2iPkJ78iOdsPn8kzs/QicCYDj4YzdTTGV63bxH/1B0ffuzf+1Pn667ODWE3FyQxdRHcX7LmjFVDxG6BUhd4QLcPjJs0MiXWITyyutFnF4hKLo/P/5ZAkZDGOKxod+JiWWWrT0uczi26vH6+U3+SXC5F//Di9y9VcaEV+CW3cJQvOBVw0gDPC3jgwUAN7MSdjXPljpWg3PB5ZyytWRKvjAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECCVIUJwfaKv/gBA6pgoxnm2XF7t7XFvY5Ifs" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBnQYJKoZIhvcNAQcDoIIBjjCCAYoCAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEFy6/Nn/71CoRgK1YJQzMEswDQYJKoZIhvcNAQEBBQAEggEAIof1GzYcSRRwXXo3ZrwIesl0mXm+qGCTnlSs663v0YVf/818Lj4Lfnn3FFHXa2XGc0VINqn3QJPnsCp+4gaZeBX4xGjsCLzk5zeBXJ/0+Q5a+q1by2ivJIWmA8HBSn/Aw91+beiOQA3ETZ21GDWmNXSVX1bR5m+PvGDMcA4J3lHJzUxH5lylv84Hovg8aU4lvcyMomoZoIoDRTOBC9jJJM9BDRROo6SNx2mTx0ZhxkqaASz13pZxqEi8f5qDgPQEW9F1BnAdBzdhAyGEObWQ/eD4T2Csj5GJ4VBtNf5gqKddDoKJCamX6Pi4WXn7IsHGcMe85mxqCeitZ9bWj/VfoDAzBgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECG5wIa/6E6h1gBC9filQHeMHVFlYLfpCevOD" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2017-10-21T23:59:59.0000000-07:00" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
       <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="a2b813b0-d12c-4e28-b336-9b109be7d1fe" />
     </ConfigurationSettings>
     <Certificates>
-      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="75FFBA2520661DD3B7F932DC4228B99BD7C351F8" thumbprintAlgorithm="sha1" />
+      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="C1975882494B3605F851037574CE8F66E96E2248" thumbprintAlgorithm="sha1" />
     </Certificates>
   </Role>
 </ServiceConfiguration>

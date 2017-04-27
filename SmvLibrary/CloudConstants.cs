@@ -23,7 +23,6 @@ namespace SmvLibrary
         public const string TableName = "actionstable";                     /// Name of the table used to store information about the actions.
         public const string CloudConfigXmlFileName = "cloudconfig.xml";     /// Name of the XML file that contains the connection strings.
         public const string CloudConfigXsdFileName = "cloudconfig.xsd";     /// Name of XML schema file for the cloud config files.
-        public const int MaxDequeueCount = 5;                               /// The maximum number of times a message can be dequeued for processing.
         public const string SmvWorkingDirectoryResourceName = "SMVWorking"; /// Used to get the path to the SMV working directory.
         public const string SmvResultsDirectoryResourceName = "SMVResults"; /// Used to get the path to the results directory.
         public const string SmvDirectoryResourceName = "SMVExec";           /// Used to get the location to SMV.

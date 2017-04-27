@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <PublishProfile Include="Profiles\FastAVNProduction.azurePubxml" />
+    <PublishProfile Include="Profiles\SmvTest.azurePubxml" />
   </ItemGroup>
   <!-- Import the target files for this project template -->
   <PropertyGroup>
