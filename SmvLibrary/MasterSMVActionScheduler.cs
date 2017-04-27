@@ -58,6 +58,10 @@ namespace SmvLibrary
 
         public void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context)
         {
+            if (!action.executeOn.Equals(Utility.schedulerType))
+            {
+                action.executeOn = "local";
+            }
             Log.LogDebug("Queuing action: " + action.GetFullName() + " on " + action.executeOn);
             var entry = new ActionsQueueEntry(action, callback, context);
             actionsQueue.Enqueue(entry);
@@ -77,6 +81,7 @@ namespace SmvLibrary
                 {
                     SMVAction action = entry.Action;
                     string schedulerType = action.executeOn;
+                    
                     if (!schedulers.ContainsKey(schedulerType))
                     {
                         Log.LogFatalError("Could not find scheduler of type: " + schedulerType +
@@ -178,16 +183,6 @@ namespace SmvLibrary
                 if (counters["queued"] == counters["completed"])
                     Console.WriteLine();
             }
-        }
-
-        private Dictionary<string, string> m(Dictionary<string, string> d1, Dictionary<string, string> d2)
-        {
-            Dictionary<string, string> r = new Dictionary<string, string>();
-
-
-
-            return r;
-
         }
 
         protected virtual void Dispose(bool disposing)

@@ -28,7 +28,7 @@ namespace SmvSkeleton
         private static bool doAnalysis = false;
         private static string buildLogFileNamePrefix = "smvbuild";
         private static bool cloud = false;
-
+        private static bool useDb = false;
         /// <summary>
         /// Prints the usage string to the console.
         /// </summary>
@@ -68,6 +68,20 @@ namespace SmvSkeleton
                 {
                     Log.LogInfo("Using cloud.");
                     cloud = true;
+                    Utility.schedulerType = "cloud";
+                    i++;
+                }
+                else if (args[i].Equals("/db", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    Log.LogInfo("Using db.");
+                    useDb = true;
+                    Utility.useDb = true;
+                    i++;
+                }
+                else if(args[i].Equals("/jobobject", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    Log.LogInfo("Using job objects.");
+                    Utility.useJobObject = true;
                     i++;
                 }
                 else if (args[i].StartsWith("/config:", StringComparison.InvariantCulture) || args[i].StartsWith("/log:", StringComparison.InvariantCulture))
@@ -203,23 +217,25 @@ namespace SmvSkeleton
             {
                 return;
             }
-
-            try
+            if (useDb)
             {
-                using (var database = new SmvDbEntities())
+                try
                 {
-                    SmvDb.Task task = database.Tasks.Where((x) => x.TaskID == Utility.taskId).FirstOrDefault();
-                    if (task != null)
+                    using (var database = new SmvDbEntities())
                     {
-                        string argsString = string.Join(" ", args);
-                        task.Arguments = argsString;
-                        database.SaveChanges();
+                        SmvDb.Task task = database.Tasks.Where((x) => x.TaskID == Utility.taskId).FirstOrDefault();
+                        if (task != null)
+                        {
+                            string argsString = string.Join(" ", args);
+                            task.Arguments = argsString;
+                            database.SaveChanges();
+                        }
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                Log.LogFatalError("Exception while updating database " + e);
+                catch (Exception e)
+                {
+                    Log.LogFatalError("Exception while updating database " + e);
+                }
             }
             // Get the SMV version name.
             string smvVersionTxtPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), "SmvVersionName.txt");
