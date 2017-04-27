@@ -12,12 +12,11 @@ using System.Diagnostics;
 using System.Web;
 using System.Collections.Specialized;
 using System.Collections;
+using System.Xml.Serialization;
 using StaticModuleVerifier.Properties;
 using SmvLibrary;
 using System.Reflection;
 using System.Globalization;
-
-
 
 namespace SmvSkeleton
 {
@@ -25,16 +24,27 @@ namespace SmvSkeleton
     {
         static SMVConfig smvConfig;
         const string configXmlFileName = "Config.xml";
+        const string configXsdFileName = "Config.xsd";
+        const string cloudConfigXmlFileName = "CloudConfig.xml";
+        const string cloudConfigXsdFileName = "CloudConfig.xsd";
         private static bool doAnalysis = false;
         private static string buildLogFileNamePrefix = "smvbuild";
         private static bool cloud = false;
 
+        /// <summary>
+        /// Prints the usage string to the console.
+        /// </summary>
+        static void PrintUsage()
+        {
+            Console.WriteLine(Resources.UsageString);
+        }
 
         /// <summary>
         /// Prints detailed help text to the console.
         /// </summary>
         static void PrintHelp()
         {
+            PrintUsage();
             Log.LogInfo(Resources.HelpTextWithoutUsageString);
         }
 
@@ -56,7 +66,7 @@ namespace SmvSkeleton
                     PrintHelp();
                     break;
                 }
-                else if (args[i].Equals("/cloud", StringComparison.InvariantCultureIgnoreCase))
+                else if(args[i].Equals("/cloud", StringComparison.InvariantCultureIgnoreCase))
                 {
                     Log.LogInfo("Using cloud.");
                     cloud = true;
@@ -152,7 +162,7 @@ namespace SmvSkeleton
             return true;
         }
 
-        static int Main(string[] args)
+        static void Main(string[] args)
         {
             Utility.SetSmvVar("workingDir", Directory.GetCurrentDirectory());
             Utility.SetSmvVar("logFilePath", null);
@@ -165,8 +175,9 @@ namespace SmvSkeleton
             // This happens in cases such as /help, /getAvailableModules, /searchmodules
             if (!ProcessArgs(args))
             {
-                return -1;
+                return;
             }
+
             // Get the SMV version name.
             string smvVersionTxtPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), "SmvVersionName.txt");
             if (!File.Exists(smvVersionTxtPath))
@@ -181,11 +192,13 @@ namespace SmvSkeleton
             Utility.version = lines[0];
 
             // Consume specified configuration file
-            smvConfig = Utility.GetSMVConfig();
+            smvConfig = GetSMVConfig();
+
             if (smvConfig == null)
             {
                 Log.LogFatalError("Could not load Config file");
             }
+
             // Set the variables defined in the Variables node in the config file
             LoadGlobalVariables(smvConfig.Variables);
 
@@ -216,7 +229,7 @@ namespace SmvSkeleton
             CloudSMVActionScheduler cloudScheduler = null;
             if (cloud)
             {
-                cloudConfig = Utility.GetSMVCloudConfig();
+                cloudConfig = GetSMVCloudConfig();
                 cloudScheduler = new CloudSMVActionScheduler(cloudConfig);
             }
             Utility.scheduler.AddScheduler("local", localScheduler);
@@ -271,7 +284,6 @@ namespace SmvSkeleton
                         if (!analysisResult)
                         {
                             Log.LogFatalError("Analysis failed.");
-                            return -1;
                         }
 
                         sw.Stop();
@@ -282,16 +294,99 @@ namespace SmvSkeleton
             else
             {
                 Log.LogFatalError("Build failed, skipping Analysis.");
-                return -1;
             }
 
             Utility.PrintResult(Utility.result, (int)buildTime, (int)analysisTime, true);
             Log.LogInfo(String.Format("Total time taken {0} seconds", (int)(buildTime + analysisTime)));
 
             localScheduler.Dispose();
-            if (cloud) cloudScheduler.Dispose();
+            if(cloud) cloudScheduler.Dispose();
+        }
 
-            return 0;
+        /// <summary>
+        /// Load the cloud configuration from an XML file and store it in an SMVCloudConfig object.
+        /// </summary>
+        /// <returns>The SMVCloudConfig object containing the cloud configuration.</returns>
+        static SMVCloudConfig GetSMVCloudConfig()
+        {
+            try
+            {
+                string cloudConfigXmlPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXmlFileName);
+                string contents = Utility.ReadFile(cloudConfigXmlPath);
+                if (!String.IsNullOrEmpty(contents))
+                {
+                    bool isXMLValid = false;
+                    string schemaPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), cloudConfigXsdFileName);
+
+                    using (StringReader configContent = new StringReader(contents))
+                    {
+                        isXMLValid = Utility.ValidateXmlFile(schemaPath, configContent);
+                    }
+
+                    if (!isXMLValid)
+                    {
+                        Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                        return null;
+                    }
+
+                    XmlSerializer serializer = new XmlSerializer(typeof(SMVCloudConfig));
+                    SMVCloudConfig config = null;
+                    using (TextReader reader = new StringReader(contents))
+                    {
+                        config = (SMVCloudConfig)serializer.Deserialize(reader);
+                    }
+
+                    return config;
+                }
+                else
+                {
+                    Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                    return null;
+                }
+            }
+            catch(Exception)
+            {
+                Log.LogFatalError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Load the configuration from the config file and store it in an SMVConfig object.
+        /// </summary>
+        /// <returns>The configuration as an SMVConfig object.</returns>
+        static SMVConfig GetSMVConfig()
+        {
+            string configFileContent = Utility.ReadFile(Utility.GetSmvVar("configFilePath"));
+
+            if (!String.IsNullOrEmpty(configFileContent))
+            {
+                bool isXMLValid = false;
+                string schemaPath = Path.Combine(Utility.GetSmvVar("assemblyDir"), configXsdFileName);
+
+                using (StringReader configContent = new StringReader(configFileContent))
+                {
+                    isXMLValid = Utility.ValidateXmlFile(schemaPath, configContent);
+                }
+
+                if (!isXMLValid)
+                {
+                    Log.LogError("Could not load and validate XML file: " + Utility.GetSmvVar("configFilePath"));
+                    return null;
+                }
+
+                XmlSerializer serializer = new XmlSerializer(typeof(SMVConfig));
+                using (TextReader reader = new StringReader(configFileContent))
+                {
+                    smvConfig = (SMVConfig)serializer.Deserialize(reader);
+                }
+
+                return smvConfig;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>

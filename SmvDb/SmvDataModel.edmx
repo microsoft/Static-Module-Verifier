@@ -1,0 +1,453 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="SmvDbModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012.Azure" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Modules">
+          <Key>
+            <PropertyRef Name="ModuleID" />
+          </Key>
+          <Property Name="ModuleID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="ModulePath" Type="varchar(max)" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Plugins">
+          <Key>
+            <PropertyRef Name="PluginID" />
+          </Key>
+          <Property Name="PluginID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="PluginName" Type="varchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Sessions">
+          <Key>
+            <PropertyRef Name="SessionID" />
+          </Key>
+          <Property Name="SessionID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="StartTimestamp" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="EndTimestamp" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="User" Type="varchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SessionTasks">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="SessionID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="principal_id" Type="int" Nullable="false" />
+          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="version" Type="int" />
+          <Property Name="definition" Type="varbinary(max)" />
+        </EntityType>
+        <EntityType Name="TaskActions">
+          <Key>
+            <PropertyRef Name="ActionID" />
+          </Key>
+          <Property Name="ActionID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="ActionName" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="WorkingDirectory" Type="varchar(max)" Nullable="false" />
+          <Property Name="ActionTime" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Success" Type="char" MaxLength="10" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TaskModules">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="ModuleID" Type="varchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TaskPlugins">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="PluginID" Type="varchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Tasks">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="TaskID" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Log" Type="varchar(max)" Nullable="false" />
+          <Property Name="Command" Type="varchar(max)" Nullable="false" />
+          <Property Name="Arguments" Type="varchar(max)" />
+        </EntityType>
+        <Function Name="ActionDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="FirstSession" Type="varchar" Mode="In" />
+          <Parameter Name="SecondSession" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="ModuleDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="FirstSession" Type="varchar" Mode="In" />
+          <Parameter Name="SecondSession" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="ModuleOverview" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="moduleId" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="ModuleOverviewByPath" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="modulePath" Type="varchar(max)" Mode="In" />
+        </Function>
+        <Function Name="PluginDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="FirstSession" Type="varchar" Mode="In" />
+          <Parameter Name="SecondSession" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="PluginOverview" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="pluginId" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="SummaryTableForSession" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionId" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="taskDetailsParameter" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionIdParameter" Type="varchar" Mode="In" />
+        </Function>
+        <EntityContainer Name="SmvDbModelStoreContainer">
+          <EntitySet Name="Modules" EntityType="Self.Modules" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Plugins" EntityType="Self.Plugins" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Sessions" EntityType="Self.Sessions" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SessionTasks" EntityType="Self.SessionTasks" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TaskActions" EntityType="Self.TaskActions" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TaskModules" EntityType="Self.TaskModules" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TaskPlugins" EntityType="Self.TaskPlugins" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Tasks" EntityType="Self.Tasks" Schema="dbo" store:Type="Tables" />
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="SmvDbModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Module">
+          <Key>
+            <PropertyRef Name="ModuleID" />
+          </Key>
+          <Property Name="ModuleID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="ModulePath" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Plugin">
+          <Key>
+            <PropertyRef Name="PluginID" />
+          </Key>
+          <Property Name="PluginID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="PluginName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Session">
+          <Key>
+            <PropertyRef Name="SessionID" />
+          </Key>
+          <Property Name="SessionID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="StartTimestamp" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="EndTimestamp" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SessionTask">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="SessionID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+        </EntityType>
+        <EntityType Name="sysdiagram">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="principal_id" Type="Int32" Nullable="false" />
+          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="version" Type="Int32" />
+          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
+        </EntityType>
+        <EntityType Name="TaskAction">
+          <Key>
+            <PropertyRef Name="ActionID" />
+          </Key>
+          <Property Name="ActionID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="ActionName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="WorkingDirectory" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="ActionTime" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Success" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TaskModule">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="ModuleID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TaskPlugin">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="PluginID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Task">
+          <Key>
+            <PropertyRef Name="TaskID" />
+          </Key>
+          <Property Name="TaskID" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Log" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Command" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Arguments" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityContainer Name="SmvDbEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Modules" EntityType="Self.Module" />
+          <EntitySet Name="Plugins" EntityType="Self.Plugin" />
+          <EntitySet Name="Sessions" EntityType="Self.Session" />
+          <EntitySet Name="SessionTasks" EntityType="Self.SessionTask" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagram" />
+          <EntitySet Name="TaskActions" EntityType="Self.TaskAction" />
+          <EntitySet Name="TaskModules" EntityType="Self.TaskModule" />
+          <EntitySet Name="TaskPlugins" EntityType="Self.TaskPlugin" />
+          <EntitySet Name="Tasks" EntityType="Self.Task" />
+          <FunctionImport Name="ActionDiffBetweenTwoSessions" ReturnType="Collection(SmvDbModel.ActionDiffBetweenTwoSessions_Result)">
+            <Parameter Name="FirstSession" Mode="In" Type="String" />
+            <Parameter Name="SecondSession" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="ModuleDiffBetweenTwoSessions">
+            <Parameter Name="FirstSession" Mode="In" Type="String" />
+            <Parameter Name="SecondSession" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="ModuleOverview" ReturnType="Collection(SmvDbModel.ModuleOverview_Result)">
+            <Parameter Name="moduleId" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="ModuleOverviewByPath" ReturnType="Collection(SmvDbModel.ModuleOverviewByPath_Result)">
+            <Parameter Name="modulePath" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="PluginDiffBetweenTwoSessions" ReturnType="Collection(String)">
+            <Parameter Name="FirstSession" Mode="In" Type="String" />
+            <Parameter Name="SecondSession" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="PluginOverview" ReturnType="Collection(SmvDbModel.PluginOverview_Result)">
+            <Parameter Name="pluginId" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SummaryTableForSession" ReturnType="Collection(SmvDbModel.SummaryTableForSession_Result)">
+            <Parameter Name="sessionId" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="taskDetailsParameter" ReturnType="Collection(SmvDbModel.taskDetailsParameter_Result)">
+            <Parameter Name="sessionIdParameter" Mode="In" Type="String" />
+          </FunctionImport>
+        </EntityContainer>
+        <ComplexType Name="ActionDiffBetweenTwoSessions_Result">
+          <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="WorkingDirectory" Nullable="false" />
+          <Property Type="String" Name="Success" Nullable="false" MaxLength="10" />
+        </ComplexType>
+        <ComplexType Name="ModuleOverview_Result">
+          <Property Type="String" Name="SessionID" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="NumberOfPlugins" Nullable="true" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="ModuleOverviewByPath_Result">
+          <Property Type="String" Name="SessionID" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="PluginOverview_Result">
+          <Property Type="String" Name="SessionID" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="NumberOfModules" Nullable="true" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="SummaryTableForSession_Result">
+          <Property Type="String" Name="ModulePath" Nullable="false" />
+          <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
+          <Property Type="String" Name="Command" Nullable="false" />
+          <Property Type="String" Name="Arguments" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="taskDetailsParameter_Result">
+          <Property Type="String" Name="ModulePath" Nullable="false" />
+          <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="WorkingDirectory" Nullable="false" />
+          <Property Type="String" Name="ActionTime" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="Success" Nullable="false" MaxLength="10" />
+        </ComplexType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="SmvDbModelStoreContainer" CdmEntityContainer="SmvDbEntities">
+          <EntitySetMapping Name="Modules">
+            <EntityTypeMapping TypeName="SmvDbModel.Module">
+              <MappingFragment StoreEntitySet="Modules">
+                <ScalarProperty Name="ModuleID" ColumnName="ModuleID" />
+                <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Plugins">
+            <EntityTypeMapping TypeName="SmvDbModel.Plugin">
+              <MappingFragment StoreEntitySet="Plugins">
+                <ScalarProperty Name="PluginID" ColumnName="PluginID" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Sessions">
+            <EntityTypeMapping TypeName="SmvDbModel.Session">
+              <MappingFragment StoreEntitySet="Sessions">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="StartTimestamp" ColumnName="StartTimestamp" />
+                <ScalarProperty Name="EndTimestamp" ColumnName="EndTimestamp" />
+                <ScalarProperty Name="User" ColumnName="User" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SessionTasks">
+            <EntityTypeMapping TypeName="SmvDbModel.SessionTask">
+              <MappingFragment StoreEntitySet="SessionTasks">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="TaskID" ColumnName="TaskID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="sysdiagrams">
+            <EntityTypeMapping TypeName="SmvDbModel.sysdiagram">
+              <MappingFragment StoreEntitySet="sysdiagrams">
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
+                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="definition" ColumnName="definition" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TaskActions">
+            <EntityTypeMapping TypeName="SmvDbModel.TaskAction">
+              <MappingFragment StoreEntitySet="TaskActions">
+                <ScalarProperty Name="ActionID" ColumnName="ActionID" />
+                <ScalarProperty Name="TaskID" ColumnName="TaskID" />
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
+                <ScalarProperty Name="ActionTime" ColumnName="ActionTime" />
+                <ScalarProperty Name="Success" ColumnName="Success" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TaskModules">
+            <EntityTypeMapping TypeName="SmvDbModel.TaskModule">
+              <MappingFragment StoreEntitySet="TaskModules">
+                <ScalarProperty Name="TaskID" ColumnName="TaskID" />
+                <ScalarProperty Name="ModuleID" ColumnName="ModuleID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TaskPlugins">
+            <EntityTypeMapping TypeName="SmvDbModel.TaskPlugin">
+              <MappingFragment StoreEntitySet="TaskPlugins">
+                <ScalarProperty Name="TaskID" ColumnName="TaskID" />
+                <ScalarProperty Name="PluginID" ColumnName="PluginID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Tasks">
+            <EntityTypeMapping TypeName="SmvDbModel.Task">
+              <MappingFragment StoreEntitySet="Tasks">
+                <ScalarProperty Name="TaskID" ColumnName="TaskID" />
+                <ScalarProperty Name="Log" ColumnName="Log" />
+                <ScalarProperty Name="Command" ColumnName="Command" />
+                <ScalarProperty Name="Arguments" ColumnName="Arguments" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="ActionDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.ActionDiffBetweenTwoSessions">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.ActionDiffBetweenTwoSessions_Result">
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
+                <ScalarProperty Name="Success" ColumnName="Success" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="ModuleDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.ModuleDiffBetweenTwoSessions" />
+          <FunctionImportMapping FunctionImportName="ModuleOverview" FunctionName="SmvDbModel.Store.ModuleOverview">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.ModuleOverview_Result">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="NumberOfPlugins" ColumnName="NumberOfPlugins" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="ModuleOverviewByPath" FunctionName="SmvDbModel.Store.ModuleOverviewByPath">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.ModuleOverviewByPath_Result">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="PluginDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.PluginDiffBetweenTwoSessions" />
+          <FunctionImportMapping FunctionImportName="PluginOverview" FunctionName="SmvDbModel.Store.PluginOverview">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.PluginOverview_Result">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="NumberOfModules" ColumnName="NumberOfModules" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="SummaryTableForSession" FunctionName="SmvDbModel.Store.SummaryTableForSession">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.SummaryTableForSession_Result">
+                <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
+                <ScalarProperty Name="Command" ColumnName="Command" />
+                <ScalarProperty Name="Arguments" ColumnName="Arguments" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="taskDetailsParameter" FunctionName="SmvDbModel.Store.taskDetailsParameter">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.taskDetailsParameter_Result">
+                <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
+                <ScalarProperty Name="ActionTime" ColumnName="ActionTime" />
+                <ScalarProperty Name="Success" ColumnName="Success" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
