@@ -16,7 +16,7 @@ namespace SmvLibrary
         public static bool updateStatusMode = false;
         private bool disposed = false;
         private bool done = false;
-        private bool errorsEncountered = false;
+        public bool errorsEncountered = false;
         private static ConcurrentDictionary<string, int> counters = new ConcurrentDictionary<string, int>();
         private ConcurrentBag<int> times = new ConcurrentBag<int>();
 
@@ -132,6 +132,10 @@ namespace SmvLibrary
                 {
                     result = "Success";
                 }
+                else
+                {
+                    errorsEncountered = true;
+                }
                 lock (Utility.lockObject)
                 {
                     Utility.result[action.GetFullName()] = result;
@@ -139,7 +143,7 @@ namespace SmvLibrary
 
                 // If there was an error, simply call the callback function with whatever results we have, the callback is
                 // expected to handle the errors by looking at the list of results.
-                if (action.result == null || action.result.breakExecution)
+                if (action.result == null || action.result.breakExecution || !action.result.isSuccessful)
                 {
                     entry.Callback(action, entry.Results, entry.Context);
                 }

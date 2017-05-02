@@ -91,15 +91,12 @@ namespace SmvLibrary
                     blobStorage.DefaultRequestOptions = new BlobRequestOptions();
                     blobStorage.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(CloudConstants.RetryBackoffInterval), CloudConstants.MaxRetries);
                     inputContainer = blobStorage.GetContainerReference(CloudConstants.InputBlobContainerName);
-                    inputContainer.CreateIfNotExists();
                     outputContainer = blobStorage.GetContainerReference(CloudConstants.OutputBlobContainerName);
-                    outputContainer.CreateIfNotExists();
 
                     // Set up our queue.
                     queueStorage.DefaultRequestOptions = new QueueRequestOptions();
                     queueStorage.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(CloudConstants.RetryBackoffInterval), CloudConstants.MaxRetries);
                     actionsQueue = queueStorage.GetQueueReference(CloudConstants.InputQueueName);
-                    actionsQueue.CreateIfNotExists();
 
                     // Set up table storage.
                     tableStorage.DefaultRequestOptions = new TableRequestOptions();
@@ -110,10 +107,6 @@ namespace SmvLibrary
                     // Set up the service bus subscription.
                     namespaceManager = NamespaceManager.CreateFromConnectionString(serviceBusConnectionString);
                     var filter = new SqlFilter(String.Format(CultureInfo.CurrentCulture, "(SchedulerInstanceGuid = '{0}')", schedulerInstanceGuid));
-                    if (!namespaceManager.TopicExists(CloudConstants.ResultsTopicName))
-                    {
-                        namespaceManager.CreateTopic(CloudConstants.ResultsTopicName);
-                    }
                     var subDesc = new SubscriptionDescription(CloudConstants.ResultsTopicName, schedulerInstanceGuid);
                     subDesc.AutoDeleteOnIdle = TimeSpan.FromDays(7.0);
                     if (!namespaceManager.SubscriptionExists(CloudConstants.ResultsTopicName, schedulerInstanceGuid))
@@ -214,6 +207,11 @@ namespace SmvLibrary
             CloudActionCompleteContext context = contextDictionary[actionGuid];
             ActionsTableEntry entry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
             var action = (SMVAction)Utility.ByteArrayToObject(entry.SerializedAction);
+
+            if(action.result == null)
+            {
+                action.result = new SMVActionResult(action.name, "NO OUTPUT?", false, false, 0);
+            }
 
             Log.LogDebug("ActionComplete for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
 

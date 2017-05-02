@@ -2,6 +2,9 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <RemoteDesktopMoreOptions>True</RemoteDesktopMoreOptions>
-    <ActivePublishProfile>SmvTest</ActivePublishProfile>
+    <ActivePublishProfile>SmvSdv</ActivePublishProfile>
+    <PackageProfile>Cloud</PackageProfile>
+    <PackageSolutionConfiguration>Release</PackageSolutionConfiguration>
+    <PackageEnableRemoteDesktop>True</PackageEnableRemoteDesktop>
   </PropertyGroup>
 </Project>

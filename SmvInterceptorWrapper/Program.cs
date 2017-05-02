@@ -98,7 +98,6 @@ namespace SmvInterceptorWrapper
                 // Remove file names (*.c) from the content
                 Regex fileNameRegex1 = new Regex(@"([\s]+[\w\.-\\]+\.c\b)", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 Regex fileNameRegex2 = new Regex(@"([\s]+[\w\.-\\]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
-                List<string> filesToProcess = new List<string>();
                 int count = 0;
                 foreach (Match m in fileNameRegex1.Matches(rspContents))
                 {
@@ -109,7 +108,6 @@ namespace SmvInterceptorWrapper
                 {
                     count++;
                     smvclLogContents.Append("match2: " + m.Value + Environment.NewLine);
-                    if (m.Value.ToLower().Contains("javascriptarray.cpp")) filesToProcess.Add(m.Value);
                 }
                 rspFileContent = fileNameRegex1.Replace(rspFileContent, String.Empty);
                 rspFileContent = fileNameRegex2.Replace(rspFileContent, String.Empty);
@@ -117,19 +115,14 @@ namespace SmvInterceptorWrapper
                 File.WriteAllText(Path.Combine(smvOutDir, "sdv_cl.rsp"), rspFileContent);
 
                 // if no files are left (only .src etc. was given) then just return. nothing to do
-                if(count == 0 || filesToProcess.Count == 0) {
+                if(count == 0) {
                     Console.WriteLine("nothing to process");
                     return 0;
                 }
 
-                Console.WriteLine($"found javascript... {string.Join(",", filesToProcess)}");
 
                 // call CL.exe
                 //Console.WriteLine("Using analysis compiler: " + Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%"));
-                rspContents= fileNameRegex1.Replace(rspContents, String.Empty);
-                rspContents= fileNameRegex2.Replace(rspContents, String.Empty);
-                rspContents = rspContents + string.Join(" ", filesToProcess);
-                Console.WriteLine($"new arguments: {rspContents}");
                 ProcessStartInfo psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%")), Environment.ExpandEnvironmentVariables(rspContents));
                 psi.RedirectStandardError = true;
                 psi.RedirectStandardOutput = true;

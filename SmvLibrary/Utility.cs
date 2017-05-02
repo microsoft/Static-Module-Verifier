@@ -435,7 +435,7 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="action">The action to be executed.</param>
         /// <returns>An SMVActionResult object representing the result of executing the action.</returns>
-        public static SMVActionResult ExecuteAction(SMVAction action)
+        public static SMVActionResult ExecuteAction(SMVAction action, bool fromWorker)
         {
             // NOTE: The code in this function must be thread safe.
             if(action == null)
@@ -553,7 +553,13 @@ namespace SmvLibrary
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.LogFatalError("Exception while updating database " + e);
+                                    if (fromWorker) {
+                                        Log.LogError("Exception while updating database " + e);
+                                    }
+                                    else
+                                    {
+                                        Log.LogFatalError("Exception while updating database " + e);
+                                    }
                                 }
 
                             }
@@ -626,7 +632,14 @@ namespace SmvLibrary
                     // unhealthy after exiting here...
                     if (action.breakOnError)
                     {
-                        Log.LogFatalError(String.Format("Action: {0}, failed.", name));
+                        if (fromWorker)
+                        {
+                            Log.LogError(String.Format("Action: {0}, failed.", name));
+                        }
+                        else
+                        {
+                            Log.LogFatalError(String.Format("Action: {0}, failed.", name));
+                        }
                     }
                     else
                     {
@@ -662,7 +675,7 @@ namespace SmvLibrary
         {
             foreach (SMVActionResult result in actionResults)
             {
-                if (result.breakExecution)
+                if (result.breakExecution || !result.isSuccessful)
                 {
                     return false;
                 }

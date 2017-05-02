@@ -18,7 +18,6 @@ namespace SMVActionsTable
         {
             actionsTable = table;
            // if (actionsTable.Exists()) return;
-            //actionsTable.CreateIfNotExists();
         }
 
         /// <summary>

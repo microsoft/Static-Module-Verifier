@@ -157,7 +157,7 @@ namespace SmvCloudWorker2
                             Utility.SetSmvVar("workingDir", workingDirectory);
 
                             // Execute the action.
-                            SMVActionResult result = Utility.ExecuteAction(action);
+                            SMVActionResult result = Utility.ExecuteAction(action, true);
                             
                             // Change the paths back to their old values.
                             foreach (var key in keys)
@@ -312,7 +312,6 @@ namespace SmvCloudWorker2
                         queueClient.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(CloudConstants.RetryBackoffInterval),
                             CloudConstants.MaxRetries);
                         inputQueue = queueClient.GetQueueReference(CloudConstants.InputQueueName);
-                        inputQueue.CreateIfNotExists();
 
                         // Setup blob storage.
                         CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
@@ -320,11 +319,8 @@ namespace SmvCloudWorker2
                         blobClient.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(CloudConstants.RetryBackoffInterval),
                             CloudConstants.MaxRetries);
                         jobsContainer = blobClient.GetContainerReference(CloudConstants.InputBlobContainerName);
-                        jobsContainer.CreateIfNotExists();
                         resultsContainer = blobClient.GetContainerReference(CloudConstants.OutputBlobContainerName);
-                        resultsContainer.CreateIfNotExists();
                         versionsContainer = blobClient.GetContainerReference(CloudConstants.VersionsContainerName);
-                        versionsContainer.CreateIfNotExists();
 
                         // Setup table storage.
                         var tableStorage = storageAccount.CreateCloudTableClient();
