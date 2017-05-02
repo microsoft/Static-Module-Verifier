@@ -81,7 +81,7 @@ namespace SmvLibrary
                 {
                     SMVAction action = entry.Action;
                     string schedulerType = action.executeOn;
-                    
+
                     if (!schedulers.ContainsKey(schedulerType))
                     {
                         Log.LogFatalError("Could not find scheduler of type: " + schedulerType +
@@ -132,6 +132,7 @@ namespace SmvLibrary
                 {
                     result = "Success";
                 }
+                // Otherwise, add the next action to the queue, if any.
                 else
                 {
                     errorsEncountered = true;
@@ -151,7 +152,6 @@ namespace SmvLibrary
                 else
                 {
                     SMVAction nextAction = Utility.GetNextAction(action);
-
                     if (nextAction != null)
                     {
                         nextAction.analysisProperty = action.analysisProperty;

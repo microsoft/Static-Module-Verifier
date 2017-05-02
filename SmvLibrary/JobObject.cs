@@ -30,6 +30,12 @@ namespace SmvLibrary
         IntPtr hiocp;
 
         /// <summary>
+        /// Thread for completion function
+        /// </summary>
+        uint hThread;
+
+
+        /// <summary>
         /// Dispose the job object
         /// </summary>
         public void Dispose()

@@ -115,11 +115,7 @@ namespace SmvInterceptorWrapper
                 File.WriteAllText(Path.Combine(smvOutDir, "sdv_cl.rsp"), rspFileContent);
 
                 // if no files are left (only .src etc. was given) then just return. nothing to do
-                if(count == 0) {
-                    Console.WriteLine("nothing to process");
-                    return 0;
-                }
-
+                if(count == 0) { return 0; }
 
                 // call CL.exe
                 //Console.WriteLine("Using analysis compiler: " + Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%"));
