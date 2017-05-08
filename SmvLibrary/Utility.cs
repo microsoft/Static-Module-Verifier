@@ -435,7 +435,7 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="action">The action to be executed.</param>
         /// <returns>An SMVActionResult object representing the result of executing the action.</returns>
-        public static SMVActionResult ExecuteAction(SMVAction action, bool fromWorker)
+        public static SMVActionResult ExecuteAction(SMVAction action, bool fromWorker, bool workerUseDb, string workerTaskId)
         {
             // NOTE: The code in this function must be thread safe.
             if(action == null)
@@ -447,6 +447,11 @@ namespace SmvLibrary
             if(plugin != null)
             {
                 plugin.PreAction(action);
+            }
+
+            if (fromWorker)
+            {
+                taskId = workerTaskId;
             }
 
             using(MemoryStream stream = new MemoryStream())
@@ -532,7 +537,7 @@ namespace SmvLibrary
                             TimeSpan span = process.ExitTime - process.StartTime;
                             Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
                             cumulativeExitCode += Math.Abs(process.ExitCode);
-                            if (useDb)
+                            if (useDb || (fromWorker && workerUseDb))
                             {
                                 try
                                 {

@@ -80,6 +80,12 @@
     <Compile Include="Session.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="SessionActionFailureDetails_Result.cs">
+      <DependentUpon>SmvDataModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="SessionActionFailureSummary_Result.cs">
+      <DependentUpon>SmvDataModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="SessionTask.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>

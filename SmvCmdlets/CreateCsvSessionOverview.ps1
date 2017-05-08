@@ -1,4 +1,4 @@
-﻿param([string] $dllFolderPath, [string] $sessionId, [string] $outputFileName)
+﻿param([string] $dllFolderPath, [string] $sessionId)
 $configPath = "$dllFolderPath\SmvCmdlets.dll.config"
 [System.AppDomain]::CurrentDomain.SetData("APP_CONFIG_FILE", $configPath)
 Import-Module "$dllFolderPath\SmvCmdlets.dll"
@@ -15,5 +15,5 @@ foreach($result in $results){
     $properties.Arguments = $result.Arguments
     $collection.Add((New-Object PSObject -Property $properties)) | Out-Null
 }
-$collection | Export-CSV "$outputFileName.csv" -NoTypeInformation -Encoding UTF8 
-start "$outputFileName.csv"
+$collection | Export-CSV "GetSessionOverview-$sessionId.csv" -NoTypeInformation -Encoding UTF8 
+start "GetSessionOverview-$sessionId.csv"

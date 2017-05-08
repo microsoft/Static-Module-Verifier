@@ -15,6 +15,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using SMVActionsTable;
+using Newtonsoft.Json;
 
 namespace SmvLibrary
 {
@@ -176,12 +177,19 @@ namespace SmvLibrary
             ActionsTableEntry entry = new ActionsTableEntry(action.name, actionGuid, schedulerInstanceGuid, serializedAction,
                 Utility.version, null, moduleHash);
             tableDataSource.AddEntry(entry);
-
+            
             Log.LogDebug("Added to table " + entry.PartitionKey + "," + entry.RowKey);
+            CloudMessage cloudMessage = new CloudMessage();
+            cloudMessage.schedulerInstanceGuid = schedulerInstanceGuid;
+            cloudMessage.actionGuid = actionGuid;
+            cloudMessage.maxDequeueCount = maxDequeueCount;
+            cloudMessage.useDb = Utility.useDb;
+            cloudMessage.taskId = Utility.taskId;
 
+            string messageString = JsonConvert.SerializeObject(cloudMessage);
             // Add message to queue.        
             //Log.LogInfo("Executing: " + action.GetFullName() + " [cloud id:" + actionGuid + "]");
-            string messageString = schedulerInstanceGuid + "," + actionGuid + "," + maxDequeueCount;
+            //string messageString = schedulerInstanceGuid + "," + actionGuid + "," + maxDequeueCount;
             var message = new CloudQueueMessage(messageString);
             actionsQueue.AddMessage(message);
 

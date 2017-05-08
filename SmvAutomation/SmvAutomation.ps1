@@ -5,7 +5,8 @@ $numberOfCores = Get-WmiObject -class Win32_processor | Select-Object -ExpandPro
 if(!$maxConcurrentJobs){
     $maxConcurrentJobs = $numberOfCores
 }
-
+$sdxRoot = $sdxRoot.Trim()
+$sdxRoot
 # Parsing the XML file to get the modules and the plugins
 [xml] $XmlDocument = Get-Content -Path $automationConfigFilePath
 [xml] $configDocument = Get-Content -Path $configFilePath
@@ -111,6 +112,7 @@ $backgroundJobScript = {
     $ctx = New-AzureStorageContext smvtest $configKey
     $share = Get-AzureStorageShare smvautomation -Context $ctx
     $taskId = [GUID]::NewGuid()
+    $path = "$sessionId\Logs\$modPath\$pluginName"
     if($useDb){
         # Making the nexessary database entries
         $query = "insert into SessionTasks VALUES ('" + $sessionId + "' , '" + $taskId + "');";
@@ -137,7 +139,6 @@ $backgroundJobScript = {
 	
     # Saving the log file
     $timestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
-    $path = "$sessionId\Logs\$modPath\$pluginName"
     CreateDirectoryIfMissingCloud -path $path
 
 
@@ -160,12 +161,14 @@ $backgroundJobScript = {
 	if($useJobObject){
 		$arg += (" /jobobject");
 	}
-
+	$drive = $sdxRoot[0]+":"
     # Running razzle window and the corresponding analysis
+    $ps.StandardInput.WriteLine($drive)
     $ps.StandardInput.WriteLine("$sdxRoot\tools\razzle.cmd x86 fre no_oacr no_certcheck")
     $ps.StandardInput.WriteLine("cd $modPath")
     $ps.StandardInput.WriteLine("set usesmvsdv=true")
     $ps.StandardInput.WriteLine("rmdir /s /q sdv")
+    $ps.StandardInput.WriteLine("rmdir /s /q smv")
     $ps.StandardInput.WriteLine("rmdir /s /q sdv.temp")
     $ps.StandardInput.WriteLine("rmdir /s /q objfre")
     $ps.StandardInput.WriteLine("del smv* build*")

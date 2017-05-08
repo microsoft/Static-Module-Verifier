@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="SmvDbModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012.Azure" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="SmvDbModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012.Azure" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Modules">
           <Key>
             <PropertyRef Name="ModuleID" />
@@ -100,6 +100,12 @@
         <Function Name="PluginOverview" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="pluginId" Type="varchar" Mode="In" />
         </Function>
+        <Function Name="SessionActionFailureDetails" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionId" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="SessionActionFailureSummary" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionId" Type="varchar" Mode="In" />
+        </Function>
         <Function Name="SummaryTableForSession" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="sessionId" Type="varchar" Mode="In" />
         </Function>
@@ -117,8 +123,7 @@
           <EntitySet Name="TaskPlugins" EntityType="Self.TaskPlugins" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Tasks" EntityType="Self.Tasks" Schema="dbo" store:Type="Tables" />
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="SmvDbModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -215,23 +220,29 @@
             <Parameter Name="SecondSession" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="ModuleOverview" ReturnType="Collection(SmvDbModel.ModuleOverview_Result)">
-            <Parameter Name="moduleId" Mode="In" Type="String" />
+          <Parameter Name="moduleId" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="ModuleOverviewByPath" ReturnType="Collection(SmvDbModel.ModuleOverviewByPath_Result)">
-            <Parameter Name="modulePath" Mode="In" Type="String" />
+          <Parameter Name="modulePath" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="PluginDiffBetweenTwoSessions" ReturnType="Collection(String)">
             <Parameter Name="FirstSession" Mode="In" Type="String" />
             <Parameter Name="SecondSession" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="PluginOverview" ReturnType="Collection(SmvDbModel.PluginOverview_Result)">
-            <Parameter Name="pluginId" Mode="In" Type="String" />
+          <Parameter Name="pluginId" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="SummaryTableForSession" ReturnType="Collection(SmvDbModel.SummaryTableForSession_Result)">
-            <Parameter Name="sessionId" Mode="In" Type="String" />
+          <Parameter Name="sessionId" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="taskDetailsParameter" ReturnType="Collection(SmvDbModel.taskDetailsParameter_Result)">
-            <Parameter Name="sessionIdParameter" Mode="In" Type="String" />
+          <Parameter Name="sessionIdParameter" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SessionActionFailureDetails" ReturnType="Collection(SmvDbModel.SessionActionFailureDetails_Result)">
+          <Parameter Name="sessionId" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SessionActionFailureSummary" ReturnType="Collection(SmvDbModel.SessionActionFailureSummary_Result)">
+          <Parameter Name="sessionId" Mode="In" Type="String" />
           </FunctionImport>
         </EntityContainer>
         <ComplexType Name="ActionDiffBetweenTwoSessions_Result">
@@ -272,6 +283,15 @@
           <Property Type="String" Name="WorkingDirectory" Nullable="false" />
           <Property Type="String" Name="ActionTime" Nullable="false" MaxLength="50" />
           <Property Type="String" Name="Success" Nullable="false" MaxLength="10" />
+        </ComplexType>
+        <ComplexType Name="SessionActionFailureDetails_Result">
+          <Property Type="String" Name="WorkingDirectory" Nullable="false" />
+          <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="Success" Nullable="false" MaxLength="10" />
+        </ComplexType>
+        <ComplexType Name="SessionActionFailureSummary_Result">
+          <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="Count" Nullable="true" />
         </ComplexType>
       </Schema>
     </edmx:ConceptualModels>
@@ -424,6 +444,23 @@
                 <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
                 <ScalarProperty Name="ActionTime" ColumnName="ActionTime" />
                 <ScalarProperty Name="Success" ColumnName="Success" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="SessionActionFailureDetails" FunctionName="SmvDbModel.Store.SessionActionFailureDetails">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.SessionActionFailureDetails_Result">
+                <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="Success" ColumnName="Success" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="SessionActionFailureSummary" FunctionName="SmvDbModel.Store.SessionActionFailureSummary">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.SessionActionFailureSummary_Result">
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="Count" ColumnName="Count" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
