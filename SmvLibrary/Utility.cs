@@ -410,7 +410,7 @@ namespace SmvLibrary
                 {
                     action.variables["analysisProperty"] = action.analysisProperty;
                 }
-                Utility.scheduler.AddAction(action, callback, waitHandle);
+                scheduler.AddAction(action, callback, waitHandle);
             }
 
             waitHandle.Wait();
