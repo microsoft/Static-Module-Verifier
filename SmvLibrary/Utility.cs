@@ -41,7 +41,7 @@ namespace SmvLibrary
         private static IDictionary<string, SMVAction> actionsDictionary = new Dictionary<string, SMVAction>();
         public static object lockObject = new object();
         private static List<SMVActionResult> actionResults;
-        
+
         private Utility() { }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace SmvLibrary
             {
                 if (!string.IsNullOrEmpty(action.nextAction))
                 {
-                    dependentActions.Add(action.nextAction);    
+                    dependentActions.Add(action.nextAction);
                 }
             }
 
@@ -80,7 +80,7 @@ namespace SmvLibrary
                     result.Add(action);
                 }
             }
-            
+
 
             return result.ToArray();
         }
@@ -92,7 +92,7 @@ namespace SmvLibrary
         /// <returns>The contents of the file.</returns>
         public static string ReadFile(string filePath)
         {
-            string lines = string.Empty;           
+            string lines = string.Empty;
 
             try
             {
@@ -262,7 +262,7 @@ namespace SmvLibrary
         public static string GetActionDirectory(SMVAction action)
         {
             string path = string.Empty;
-            if(action.Path != null && action.Path.value != null)
+            if (action.Path != null && action.Path.value != null)
             {
                 path = action.Path.value;
             }
@@ -295,12 +295,12 @@ namespace SmvLibrary
         /// <returns>The array of bytes representing the serialized object.</returns>
         public static byte[] ObjectToByteArray(object obj)
         {
-            if(obj == null)
+            if (obj == null)
             {
                 return null;
             }
             var bf = new BinaryFormatter();
-            using(var ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
                 bf.Serialize(ms, obj);
                 return ms.ToArray();
@@ -315,7 +315,7 @@ namespace SmvLibrary
         public static object ByteArrayToObject(byte[] bytes)
         {
             var bf = new BinaryFormatter();
-            using(var ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
                 ms.Write(bytes, 0, bytes.Length);
                 ms.Seek(0, SeekOrigin.Begin);
@@ -378,7 +378,7 @@ namespace SmvLibrary
         /// <returns>The child action if one exists, else null.</returns>
         public static SMVAction GetNextAction(SMVAction action)
         {
-            if(action.nextAction == null || !actionsDictionary.ContainsKey(action.nextAction))
+            if (action.nextAction == null || !actionsDictionary.ContainsKey(action.nextAction))
             {
                 return null;
             }
@@ -397,14 +397,14 @@ namespace SmvLibrary
         {
             var waitHandle = new CountdownEvent(actions.Length);
             actionResults = new List<SMVActionResult>();
-            if(callback == null)
+            if (callback == null)
             {
                 callback = new SMVActionCompleteCallBack(DoneExecuteAction);
             }
 
             foreach (SMVAction action in actions)
             {
-                if(action.variables == null)
+                if (action.variables == null)
                     action.variables = new Dictionary<string, string>(Utility.smvVars);
                 if (!string.IsNullOrEmpty(action.analysisProperty))
                 {
@@ -429,7 +429,7 @@ namespace SmvLibrary
             var countDownEvent = context as CountdownEvent;
             countDownEvent.Signal();
         }
-        
+
         /// <summary>
         /// Called by schedulers to execute an action.
         /// </summary>
@@ -438,18 +438,18 @@ namespace SmvLibrary
         public static SMVActionResult ExecuteAction(SMVAction action, bool fromWorker)
         {
             // NOTE: The code in this function must be thread safe.
-            if(action == null)
+            if (action == null)
             {
                 return null;
             }
 
             // If there is a plugin, call PreAction first.
-            if(plugin != null)
+            if (plugin != null)
             {
                 plugin.PreAction(action);
             }
 
-            using(MemoryStream stream = new MemoryStream())
+            using (MemoryStream stream = new MemoryStream())
             {
                 // We use a logger for writing messages since we can't output to the console in this function (As this
                 // may be running in multiple threads).
@@ -459,7 +459,7 @@ namespace SmvLibrary
                 string actionPath = variables["workingDir"];
                 string actionOutput = string.Empty;
                 int cumulativeExitCode = 0;
-                
+
                 // Get the name of the action.
                 string name = action.name;
                 if (variables.ContainsKey("analysisProperty"))
@@ -482,8 +482,8 @@ namespace SmvLibrary
                 {
                     Console.InputEncoding = new UTF8Encoding(false);
                 }
-                
-                
+
+
                 // Run the commands.
                 if (action.Command != null)
                 {
@@ -553,7 +553,8 @@ namespace SmvLibrary
                                 }
                                 catch (Exception e)
                                 {
-                                    if (fromWorker) {
+                                    if (fromWorker)
+                                    {
                                         Log.LogError("Exception while updating database " + e);
                                     }
                                     else
@@ -582,7 +583,7 @@ namespace SmvLibrary
                             return null;
                         }
                     }
-                    
+
                 }
 
                 logger.Flush();
@@ -594,7 +595,7 @@ namespace SmvLibrary
                     Log.WriteToFile(Path.Combine(actionPath, string.Format("smvexecute-{0}.log", action.name)), output, false);
                 }
                 Log.LogDebug("cumulative exit code is " + cumulativeExitCode);
-                     
+
                 DateTime endTime = DateTime.Now;
 
                 action.result = new SMVActionResult(action.name, output, (cumulativeExitCode == 0),
@@ -617,7 +618,7 @@ namespace SmvLibrary
                     if (action.name.Equals("InterceptedBuild"))
                     {
                         string logPath = Path.Combine(variables["workingDir"], variables["smvLogFileNamePrefix"] + ".log");
-                        action.result.output = Utility.ReadFile(logPath);                        
+                        action.result.output = Utility.ReadFile(logPath);
                     }
 
                     // Call the plugin's post action.
@@ -632,18 +633,10 @@ namespace SmvLibrary
                     // unhealthy after exiting here...
                     if (action.breakOnError)
                     {
-                        if (fromWorker)
-                        {
-                            Log.LogError(String.Format("Action: {0}, failed.", name));
-                        }
-                        else
+                        if (!fromWorker)
                         {
                             Log.LogFatalError(String.Format("Action: {0}, failed.", name));
                         }
-                    }
-                    else
-                    {
-                        Log.LogError(String.Format("Action: {0}, failed.", name));
                     }
                 }
 
@@ -653,7 +646,7 @@ namespace SmvLibrary
 
         public static void updateAttribute(ref int attribute, string cmdAttribute, string attributeName)
         {
-            if(cmdAttribute != null)
+            if (cmdAttribute != null)
             {
                 try
                 {
@@ -716,7 +709,7 @@ namespace SmvLibrary
                 sb.Append(str.Substring(previousIndex));
 
                 return sb.ToString();
-            }            
+            }
         }
 
         /// <summary>
@@ -784,7 +777,7 @@ namespace SmvLibrary
 
                 Log.LogMessage("Build time: " + buildTime + " seconds.");
                 Log.LogMessage("Analysis time: " + analysisTime + " seconds.");
-            }            
+            }
         }
 
         /// <summary>
@@ -828,7 +821,7 @@ namespace SmvLibrary
             }
             smvVars.Add(key, value);
         }
-        
+
 
         /// <summary>
         /// Replaces the name of each variable embedded in the specified
@@ -851,7 +844,7 @@ namespace SmvLibrary
                 // Extract the var name without the prefix ([$) and suffix (])
                 string key = k.Substring(2, k.Length - 3);
                 string value = dict.ContainsKey(key) ? dict[key] : String.Empty;
-                
+
                 if (value == null)
                 {
                     Log.LogWarning(String.Format("Value of var ({0}) not set.", key), logger);
@@ -996,14 +989,15 @@ namespace SmvLibrary
             StreamWriter streamWriter = new StreamWriter(memStream);
 
             // Prepare arguments with path to the modules
-            XsltArgumentList xsltArgumentList = new XsltArgumentList();   
+            XsltArgumentList xsltArgumentList = new XsltArgumentList();
             xsltArgumentList.AddParam("absolute-path", "", Path.GetDirectoryName(filePath) + Path.DirectorySeparatorChar);
 
             // Transform input xml to output in memoryStream
             try
             {
                 xslTransform.Transform(xmlReader, xsltArgumentList, streamWriter);
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Log.LogError("Exception occurred while transforming modules of XML " + e);
                 return null;
@@ -1036,7 +1030,7 @@ namespace SmvLibrary
                 {
                     if (match.Success)
                     {
-                    
+
                         string key = match.Groups[1].Value;
                         path = key.Trim();
                         path = Path.GetDirectoryName(path);

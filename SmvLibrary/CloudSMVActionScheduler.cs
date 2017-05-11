@@ -211,6 +211,7 @@ namespace SmvLibrary
             if(action.result == null)
             {
                 action.result = new SMVActionResult(action.name, "NO OUTPUT?", false, false, 0);
+                Log.LogError(string.Format("Failed to complete action: {0} ({1})", actionGuid, context.action.name));
             }
 
             Log.LogDebug("ActionComplete for " + action.GetFullName() + " [cloud id " + actionGuid + "]");
