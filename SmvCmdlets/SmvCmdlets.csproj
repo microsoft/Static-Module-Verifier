@@ -58,11 +58,13 @@
     <Compile Include="GetPluginOverview.cs" />
     <Compile Include="GetSessionActionFailureDetails.cs" />
     <Compile Include="GetSessionActionFailureSummary.cs" />
+    <Compile Include="GetSessionBugDetails.cs" />
     <Compile Include="GetSessionOverview.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="GetCsvSessionBugDetails.ps1" />
     <None Include="CreateCsvSessionOverview.ps1" />
     <None Include="GetCsvPluginOverview.ps1" />
     <None Include="GetCsvSessionActionFailureDetails.ps1" />

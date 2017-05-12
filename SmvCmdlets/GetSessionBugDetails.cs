@@ -8,9 +8,9 @@ using SmvDb;
 
 namespace SmvCmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "SessionActionFailureDetails")]
-    [OutputType(typeof(List<SessionActionFailureDetails_Result>))]
-    public class GetSessionActionFailureDetails : PSCmdlet
+    [Cmdlet(VerbsCommon.Get, "SessionBugDetails")]
+    [OutputType(typeof(List<SessionBugDetails_Result>))]
+    public class GetSessionBugDetails : PSCmdlet
     {
 
         [Parameter(Position = 0, Mandatory = true)]
@@ -29,7 +29,7 @@ namespace SmvCmdlets
             {
                 using (SmvDbEntities entity = new SmvDbEntities())
                 {
-                    List<SessionActionFailureDetails_Result> results = entity.SessionActionFailureDetails(sessionId).ToList();
+                    List<SessionBugDetails_Result> results = entity.SessionBugDetails(sessionId).ToList();
                     WriteObject(results);
                 }
             }

@@ -26,7 +26,7 @@ $modulePaths = $modulePaths | select -Unique
 $plugins = $XmlDocument.ServiceConfig.Plugins.Plugin
 [bool]$useDb = [System.Convert]::ToBoolean($XmlDocument.ServiceConfig.Plugins.useDb)
 [bool]$useJobObject = [System.Convert]::ToBoolean($XmlDocument.ServiceConfig.Plugins.useJobObject)
-
+$modulePaths.Count
 if(!$useDb){
     $useDb = $false
 }
@@ -172,25 +172,25 @@ $backgroundJobScript = {
     $ps.StandardInput.WriteLine("rmdir /s /q sdv.temp")
     $ps.StandardInput.WriteLine("rmdir /s /q objfre")
     $ps.StandardInput.WriteLine("del smv* build*")
-    $ps.StandardInput.WriteLine("%RazzleToolPath%\$cmd $arg")
+    $ps.StandardInput.WriteLine("%RazzleToolPath%\$cmd $arg>log-output-$timestamp-$taskId.txt 2>log-error-$timestamp-$taskId.txt")
     $ps.StandardInput.WriteLine("exit")
     $ps.WaitForExit()
 
-    $stdout += $ps.StandardOutput.ReadToEnd()
+    <#$stdout += $ps.StandardOutput.ReadToEnd()
     $stderr += $ps.StandardError.ReadToEnd()
     
     # Storing output in file
     $stdout | Out-File log-output-$timestamp-$taskId.txt
-    $stderr | Out-File log-error-$timestamp-$taskId.txt
+    $stderr | Out-File log-error-$timestamp-$taskId.txt#>
     
-
+	$fullModPath = $modPath.Replace( "%SDXROOT%\", "$sdxRoot\")
     # Moving output to file share
-    Set-AzureStorageFileContent -Share $share -Source log-output-$timestamp-$taskId.txt -Path $path\log-output-$timestamp.txt
-    Set-AzureStorageFileContent -Share $share -Source log-error-$timestamp-$taskId.txt -Path $path\log-error-$timestamp.txt
+    Set-AzureStorageFileContent -Share $share -Source $fullModPath\log-output-$timestamp-$taskId.txt -Path $path\log-output-$timestamp.txt
+    Set-AzureStorageFileContent -Share $share -Source $fullModPath\log-error-$timestamp-$taskId.txt -Path $path\log-error-$timestamp.txt
     
     #Deleting local copy of file
-    Remove-Item log-output-$timestamp-$taskId.txt
-    Remove-Item log-error-$timestamp-$taskId.txt
+    Remove-Item $fullModPath\log-output-$timestamp-$taskId.txt
+    Remove-Item $fullModPath\log-error-$timestamp-$taskId.txt
 
     
 }
@@ -228,6 +228,7 @@ foreach($plugin in $plugins){
         $check = $false
         while($check -eq $false){
             if((Get-Job -State 'Running').Count -lt $maxConcurrentJobs){
+                Get-Job
                 Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key, $useDb, $useJobObject
                 $check = $true
             }

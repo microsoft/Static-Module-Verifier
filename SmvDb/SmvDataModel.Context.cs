@@ -138,5 +138,14 @@ namespace SmvDb
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<SessionActionFailureSummary_Result>("SessionActionFailureSummary", sessionIdParameter);
         }
+    
+        public virtual ObjectResult<SessionBugDetails_Result> SessionBugDetails(string sessionId)
+        {
+            var sessionIdParameter = sessionId != null ?
+                new ObjectParameter("sessionId", sessionId) :
+                new ObjectParameter("sessionId", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<SessionBugDetails_Result>("SessionBugDetails", sessionIdParameter);
+        }
     }
 }

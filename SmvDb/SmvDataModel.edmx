@@ -78,6 +78,7 @@
           <Property Name="Log" Type="varchar(max)" Nullable="false" />
           <Property Name="Command" Type="varchar(max)" Nullable="false" />
           <Property Name="Arguments" Type="varchar(max)" />
+          <Property Name="Bugs" Type="varchar(max)" />
         </EntityType>
         <Function Name="ActionDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="FirstSession" Type="varchar" Mode="In" />
@@ -105,6 +106,9 @@
         </Function>
         <Function Name="SessionActionFailureSummary" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="sessionId" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="SessionBugDetails" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionId" Type="varchar(max)" Mode="In" />
         </Function>
         <Function Name="SummaryTableForSession" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="sessionId" Type="varchar" Mode="In" />
@@ -200,6 +204,7 @@
           <Property Name="Log" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Command" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Arguments" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="Bugs" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityContainer Name="SmvDbEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Modules" EntityType="Self.Module" />
@@ -243,6 +248,9 @@
           </FunctionImport>
           <FunctionImport Name="SessionActionFailureSummary" ReturnType="Collection(SmvDbModel.SessionActionFailureSummary_Result)">
           <Parameter Name="sessionId" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SessionBugDetails" ReturnType="Collection(SmvDbModel.SessionBugDetails_Result)">
+            <Parameter Name="sessionId" Mode="In" Type="String" />
           </FunctionImport>
         </EntityContainer>
         <ComplexType Name="ActionDiffBetweenTwoSessions_Result">
@@ -292,6 +300,14 @@
         <ComplexType Name="SessionActionFailureSummary_Result">
           <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
           <Property Type="Int32" Name="Count" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="SessionBugDetails_Result">
+          <Property Type="String" Name="SessionID" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="ModulePath" Nullable="false" />
+          <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="Command" Nullable="false" />
+          <Property Type="String" Name="Arguments" Nullable="true" />
+          <Property Type="String" Name="Bugs" Nullable="true" />
         </ComplexType>
       </Schema>
     </edmx:ConceptualModels>
@@ -375,6 +391,7 @@
           <EntitySetMapping Name="Tasks">
             <EntityTypeMapping TypeName="SmvDbModel.Task">
               <MappingFragment StoreEntitySet="Tasks">
+                <ScalarProperty Name="Bugs" ColumnName="Bugs" />
                 <ScalarProperty Name="TaskID" ColumnName="TaskID" />
                 <ScalarProperty Name="Log" ColumnName="Log" />
                 <ScalarProperty Name="Command" ColumnName="Command" />
@@ -461,6 +478,18 @@
               <ComplexTypeMapping TypeName="SmvDbModel.SessionActionFailureSummary_Result">
                 <ScalarProperty Name="ActionName" ColumnName="ActionName" />
                 <ScalarProperty Name="Count" ColumnName="Count" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="SessionBugDetails" FunctionName="SmvDbModel.Store.SessionBugDetails">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.SessionBugDetails_Result">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="Command" ColumnName="Command" />
+                <ScalarProperty Name="Arguments" ColumnName="Arguments" />
+                <ScalarProperty Name="Bugs" ColumnName="Bugs" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>

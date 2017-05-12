@@ -410,7 +410,7 @@ namespace SmvLibrary
                 {
                     action.variables["analysisProperty"] = action.analysisProperty;
                 }
-                Utility.scheduler.AddAction(action, callback, waitHandle);
+                scheduler.AddAction(action, callback, waitHandle);
             }
 
             waitHandle.Wait();
@@ -424,6 +424,7 @@ namespace SmvLibrary
         /// <param name="context"></param>
         static void DoneExecuteAction(SMVAction action, IEnumerable<SMVActionResult> results, object context)
         {
+            Log.LogInfo("Reached DoneExecuteAction for " + action.GetFullName());
             actionResults.AddRange(results);
 
             var countDownEvent = context as CountdownEvent;
@@ -437,6 +438,7 @@ namespace SmvLibrary
         /// <returns>An SMVActionResult object representing the result of executing the action.</returns>
         public static SMVActionResult ExecuteAction(SMVAction action, bool fromWorker, bool workerUseDb, string workerTaskId)
         {
+            
             // NOTE: The code in this function must be thread safe.
             if(action == null)
             {

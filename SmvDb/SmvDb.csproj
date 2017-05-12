@@ -86,6 +86,9 @@
     <Compile Include="SessionActionFailureSummary_Result.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="SessionBugDetails_Result.cs">
+      <DependentUpon>SmvDataModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="SessionTask.cs">
       <DependentUpon>SmvDataModel.tt</DependentUpon>
     </Compile>
@@ -127,7 +130,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <EntityDeploy Include="SmvDataModel.edmx">
       <Generator>EntityModelCodeGenerator</Generator>

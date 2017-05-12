@@ -129,12 +129,24 @@ namespace SmvLibrary
                         catch (Exception e)
                         {
                             Log.LogError("Exception when completing action for " + msg.MessageId);
-                            Log.LogFatalError(e.ToString());
+                            Log.LogError(e.ToString());
+                            cloudExceptionCallback(msg);
                             msg.Abandon();
                         }
                     });
                     // If we're here, we've successfully initialized everything and can break out of the retry loop.
                     break;
+                }
+                catch(MessagingEntityAlreadyExistsException e)
+                {
+                    if(e.IsTransient && retriesLeft > 0)
+                    {
+                        retriesLeft--;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -153,6 +165,7 @@ namespace SmvLibrary
 
         public void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context)
         {
+            Log.LogInfo("Reached AddAction of cloud"+action.GetFullName());
             Log.LogDebug("Adding action " + action.GetFullName());
             string actionGuid = Guid.NewGuid().ToString();
             // Upload action directory to blob storage.
@@ -215,7 +228,7 @@ namespace SmvLibrary
             CloudActionCompleteContext context = contextDictionary[actionGuid];
             ActionsTableEntry entry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
             var action = (SMVAction)Utility.ByteArrayToObject(entry.SerializedAction);
-
+            Log.LogInfo("Reached ActionComplete of Cloud " + action.GetFullName());
             if(action.result == null)
             {
                 action.result = new SMVActionResult(action.name, "NO OUTPUT?", false, false, 0);
@@ -273,6 +286,20 @@ namespace SmvLibrary
                 Log.LogInfo("Results for " + action.GetFullName() + " [cloud id " + actionGuid + "] not available!");
             }
 
+            context.callback(context.action, results, context.context);
+        }
+
+        public void cloudExceptionCallback(BrokeredMessage message)
+        {
+            var actionGuid = (string)message.Properties["ActionGuid"];
+            CloudActionCompleteContext context = contextDictionary[actionGuid];
+            ActionsTableEntry entry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
+            var action = (SMVAction)Utility.ByteArrayToObject(entry.SerializedAction);
+
+            context.action.analysisProperty = action.analysisProperty;
+            context.action.result = action.result;
+            context.action.variables = action.variables;
+            var results = new SMVActionResult[] { context.action.result };
             context.callback(context.action, results, context.context);
         }
 

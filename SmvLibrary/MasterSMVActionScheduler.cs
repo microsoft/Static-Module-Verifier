@@ -74,6 +74,7 @@ namespace SmvLibrary
         /// </summary>
         private void Execute()
         {
+            Log.LogInfo("Reached Execute of Master");
             while (!done)
             {
                 ActionsQueueEntry entry;
@@ -109,6 +110,8 @@ namespace SmvLibrary
         /// <param name="context">A context object.</param>
         private void ActionComplete(SMVAction a, IEnumerable<SMVActionResult> results, object context)
         {
+            Log.LogInfo("Reached ActionComplete of Master " + a.GetFullName());
+
             var entry = context as ActionsQueueEntry;
             SMVAction action = entry.Action;
             SMVActionCompleteCallBack callback = entry.Callback;
@@ -117,6 +120,7 @@ namespace SmvLibrary
                 if (action.result == null)
                 {
                     action.result = new SMVActionResult(action.name, "NO OUTPUT?", false, false, 0);
+                    Utility.scheduler.errorsEncountered = true;
                 }
 
                 entry.Results.AddRange(results);
@@ -132,11 +136,6 @@ namespace SmvLibrary
                 {
                     result = "Success";
                 }
-                // Otherwise, add the next action to the queue, if any.
-                else
-                {
-                    errorsEncountered = true;
-                }
                 lock (Utility.lockObject)
                 {
                     Utility.result[action.GetFullName()] = result;
@@ -144,7 +143,7 @@ namespace SmvLibrary
 
                 // If there was an error, simply call the callback function with whatever results we have, the callback is
                 // expected to handle the errors by looking at the list of results.
-                if (action.result == null || action.result.breakExecution || !action.result.isSuccessful)
+                if (action.result == null || action.result.breakExecution)
                 {
                     entry.Callback(action, entry.Results, entry.Context);
                 }
@@ -170,7 +169,7 @@ namespace SmvLibrary
             }
             catch (Exception e)
             {
-                Log.LogError("Error processing finalization for action " + action.GetFullName());
+                Log.LogError("Error processing finalization for action " + action.GetFullName() + "\n" + e);
 
                 action.result.output = e.ToString();
                 entry.Callback(action, entry.Results, entry.Context);

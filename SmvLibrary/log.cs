@@ -52,8 +52,14 @@ namespace SmvLibrary
                 }
                 return;
             }
-
-            Console.WriteLine(result);
+            try
+            {
+                Console.WriteLine(result);
+            }
+            catch (Exception)
+            {
+                return;
+            }
         }
 
         /// <summary>

@@ -32,6 +32,7 @@ namespace SmvLibrary
 
         public void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context)
         {
+            Log.LogInfo("Reached Add Action of Local " + action.GetFullName());
             var entry = new ActionsQueueEntry(action, callback, context);
             actionsQueue.Enqueue(entry);
         }
@@ -43,6 +44,7 @@ namespace SmvLibrary
 
         private void Execute()
         {
+            Log.LogInfo("Reached Execute of Local");
             try
             {
                 while(true)

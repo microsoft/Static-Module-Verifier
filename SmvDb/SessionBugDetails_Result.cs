@@ -10,12 +10,12 @@
 namespace SmvDb
 {
     using System;
-    using System.Collections.Generic;
     
-    public partial class Task
+    public partial class SessionBugDetails_Result
     {
-        public string TaskID { get; set; }
-        public string Log { get; set; }
+        public string SessionID { get; set; }
+        public string ModulePath { get; set; }
+        public string PluginName { get; set; }
         public string Command { get; set; }
         public string Arguments { get; set; }
         public string Bugs { get; set; }
