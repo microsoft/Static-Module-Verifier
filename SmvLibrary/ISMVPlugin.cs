@@ -54,5 +54,7 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="analysisResult">List of result of the analysis actions.</param>
         void PostAnalysis(SMVAction[] analysisActions);
+
+        int GenerateBugsCount();
     }
 }

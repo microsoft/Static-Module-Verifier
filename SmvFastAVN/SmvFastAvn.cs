@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace FastAVN
 {
@@ -86,6 +87,14 @@ namespace FastAVN
         public void ProcessPluginArgument(string[] args)
         {
             // no special arguments for FastAVN
+        }
+
+        public int GenerateBugsCount()
+        {
+            string workingDir = Path.Combine(Utility.GetSmvVar("smvOutputDir"),"Bugs");
+            Regex regex = new Regex(@"Bug*");
+            int bugFoldersCount = System.IO.Directory.GetDirectories(workingDir).Where(path => regex.IsMatch(path)).ToList().Count();
+            return bugFoldersCount; 
         }
     }
 }
