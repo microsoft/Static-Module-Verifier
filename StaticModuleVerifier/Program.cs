@@ -312,6 +312,7 @@ namespace SmvSkeleton
 
                 if (string.IsNullOrEmpty(Utility.GetSmvVar("projectFile")))
                 {
+                    Utility.scheduler.Dispose();
                     Log.LogFatalError("Project file not set");
                     return -1;
                 }
@@ -352,6 +353,7 @@ namespace SmvSkeleton
 
                         if (!analysisResult)
                         {
+                            Utility.scheduler.Dispose();
                             Log.LogFatalError("Analysis failed.");
                         }
 
@@ -362,6 +364,7 @@ namespace SmvSkeleton
             }
             else
             {
+                Utility.scheduler.Dispose();
                 Log.LogFatalError("Build failed, skipping Analysis.");
                 return -1;
             }
@@ -389,6 +392,7 @@ namespace SmvSkeleton
                     }
                     catch (Exception e)
                     {
+                        Utility.scheduler.Dispose();
                         Log.LogFatalError("Exception while updating database " + e);
                         return -1;
                     }

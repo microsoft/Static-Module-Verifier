@@ -188,6 +188,7 @@ namespace SmvLibrary
             }
         }
 
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposed)
@@ -196,6 +197,11 @@ namespace SmvLibrary
                 {
                     // Clean up managed resources.
                     done = true;
+                    if (schedulers.ContainsKey("cloud"))
+                    {
+                        CloudSMVActionScheduler cloudScheduler = (CloudSMVActionScheduler)schedulers["cloud"];
+                        cloudScheduler.Dispose();
+                    }
                 }
             }
             disposed = true;

@@ -565,6 +565,7 @@ namespace SmvLibrary
                                     }
                                     else
                                     {
+                                        scheduler.Dispose();
                                         Log.LogFatalError("Exception while updating database " + e);
                                     }
                                 }
@@ -645,6 +646,7 @@ namespace SmvLibrary
                         }
                         else
                         {
+                            scheduler.Dispose();
                             Log.LogFatalError(String.Format("Action: {0}, failed.", name));
                         }
                     }
