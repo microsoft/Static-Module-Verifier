@@ -371,7 +371,7 @@ namespace SmvSkeleton
 
             Utility.PrintResult(Utility.result, (int)buildTime, (int)analysisTime, true);
             Log.LogInfo(String.Format("Total time taken {0} seconds", (int)(buildTime + analysisTime)));
-            if(Utility.plugin != null)
+            if (Utility.plugin != null)
             {
                 int bugCount = Utility.plugin.GenerateBugsCount();
                 Log.LogInfo("Found " + bugCount + " bugs!");
@@ -401,6 +401,18 @@ namespace SmvSkeleton
             localScheduler.Dispose();
             if (cloud) cloudScheduler.Dispose();
 
+            foreach (string bugDirectory in Directory.EnumerateDirectories(Path.Combine(Utility.smvVars["smvOutputDir"], "Bugs")))
+            {
+                try
+                {
+                    Utility.makeDefectPortable(bugDirectory, "smv");
+                }
+                catch (Exception e)
+                {
+                    Log.LogFatalError("Exception occurred when making defect portable." + e.ToString());
+                }
+            }
+            Log.LogInfo("Defects, if any, made portable successfully");
             return Convert.ToInt32(Utility.scheduler.errorsEncountered);
         }
 

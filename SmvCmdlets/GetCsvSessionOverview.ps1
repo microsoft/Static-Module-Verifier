@@ -15,5 +15,5 @@ foreach($result in $results){
     $properties.Arguments = $result.Arguments
     $collection.Add((New-Object PSObject -Property $properties)) | Out-Null
 }
-$collection | Export-CSV "GetSessionOverview-$sessionId.csv" -NoTypeInformation -Encoding UTF8 
-start "GetSessionOverview-$sessionId.csv"
+$collection | Export-CSV "SessionOverview-$sessionId.csv" -NoTypeInformation -Encoding UTF8 
+start "SessionOverview-$sessionId.csv"

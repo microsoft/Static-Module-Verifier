@@ -65,7 +65,7 @@ function Invoke-DatabaseQuery {
 
 
 $backgroundJobScript = {
-    Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb, [bool] $useJobObject)
+    Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb, [bool] $useJobObject, [string] $AzCopyPath)
 
     function CreateDirectoryIfMissingCloud([string] $path){
         $parts = $path.Split('\')
@@ -112,7 +112,7 @@ $backgroundJobScript = {
     $ctx = New-AzureStorageContext smvtest $configKey
     $share = Get-AzureStorageShare smvautomation -Context $ctx
     $taskId = [GUID]::NewGuid()
-    $path = "$sessionId\Logs\$modPath\$pluginName"
+    $path = "$sessionId\Logs\$modPath"
     if($useDb){
         # Making the nexessary database entries
         $query = "insert into SessionTasks VALUES ('" + $sessionId + "' , '" + $taskId + "');";
@@ -139,7 +139,8 @@ $backgroundJobScript = {
 	
     # Saving the log file
     $timestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
-    CreateDirectoryIfMissingCloud -path $path
+    CreateDirectoryIfMissingCloud -path $path\$pluginName
+    CreateDirectoryIfMissingCloud -path "$path\Bugs"
 
 
     # Setting process parameters
@@ -183,11 +184,17 @@ $backgroundJobScript = {
     $stdout | Out-File log-output-$timestamp-$taskId.txt
     $stderr | Out-File log-error-$timestamp-$taskId.txt#>
     
-	$fullModPath = $modPath.Replace( "%SDXROOT%\", "$sdxRoot\")
+    $fullModPath = $modPath.Replace( "%SDXROOT%\", "$sdxRoot\")
     # Moving output to file share
-    Set-AzureStorageFileContent -Share $share -Source $fullModPath\log-output-$timestamp-$taskId.txt -Path $path\log-output-$timestamp.txt
-    Set-AzureStorageFileContent -Share $share -Source $fullModPath\log-error-$timestamp-$taskId.txt -Path $path\log-error-$timestamp.txt
+    Set-AzureStorageFileContent -Share $share -Source $fullModPath\log-output-$timestamp-$taskId.txt -Path $path\$pluginName\log-output-$timestamp.txt
+    Set-AzureStorageFileContent -Share $share -Source $fullModPath\log-error-$timestamp-$taskId.txt -Path $path\$pluginName\log-error-$timestamp.txt
     
+    $list=dir "$fullModPath\smv\Bugs" -Directory
+    foreach($folder in $list){
+        $newId = [GUID]::NewGuid()
+        & $AzCopyPath\AzCopy.exe /Source:"$fullModPath\smv\Bugs\$folder" /Dest:https://smvtest.file.core.windows.net/smvautomation/$path/Bugs/Bug$newId /destkey:$configKey /S /Z:"$fullModPath/smv/Bugs"
+    }
+    & $AzCopyPath\AzCopy.exe /Source:"$fullModPath\smv" /Dest:https://smvtest.file.core.windows.net/smvautomation/$path/SMV_$taskId /destkey:$configKey /S /Z:"$fullModPath"
     #Deleting local copy of file
     Remove-Item $fullModPath\log-output-$timestamp-$taskId.txt
     Remove-Item $fullModPath\log-error-$timestamp-$taskId.txt
@@ -229,7 +236,7 @@ foreach($plugin in $plugins){
         while($check -eq $false){
             if((Get-Job -State 'Running').Count -lt $maxConcurrentJobs){
                 Get-Job
-                Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key, $useDb, $useJobObject
+                Start-Job -ScriptBlock $backgroundJobScript -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key, $useDb, $useJobObject, $AzCopyPath
                 $check = $true
             }
         }
@@ -244,4 +251,4 @@ if($useDb){
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
 }
 # Copying SMV folder to fileshare
-& $AzCopyPath\AzCopy.exe /Source:"$sdxRoot\tools\analysis\x86\sdv\smv" /Dest:https://smvtest.file.core.windows.net/smvautomation/$sessionId/SMV /destkey:$key /S
+& $AzCopyPath\AzCopy.exe /Source:"$sdxRoot\tools\analysis\x86\sdv\smv" /Dest:https://smvtest.file.core.windows.net/smvautomation/$sessionId/SMV /destkey:$key /S /Z:"$sdxRoot\tools\analysis\x86\sdv"
