@@ -176,6 +176,10 @@ $backgroundJobScript = {
     $ps.StandardInput.WriteLine("%RazzleToolPath%\$cmd $arg>log-output-$timestamp-$taskId.txt 2>log-error-$timestamp-$taskId.txt")
     $ps.StandardInput.WriteLine("exit")
     $ps.WaitForExit()
+    if($useDb){
+	    $query = "EXEC [dbo].[InsertDataToRollUpTable] @taskId = '$taskId'"
+	    Invoke-DatabaseQuery –query $query –connectionString $connectionString
+    }
 
     <#$stdout += $ps.StandardOutput.ReadToEnd()
     $stderr += $ps.StandardError.ReadToEnd()
@@ -194,7 +198,10 @@ $backgroundJobScript = {
         $newId = [GUID]::NewGuid()
         & $AzCopyPath\AzCopy.exe /Source:"$fullModPath\smv\Bugs\$folder" /Dest:https://smvtest.file.core.windows.net/smvautomation/$path/Bugs/Bug$newId /destkey:$configKey /S /Z:"$fullModPath/smv/Bugs"
     }
-    & $AzCopyPath\AzCopy.exe /Source:"$fullModPath\smv" /Dest:https://smvtest.file.core.windows.net/smvautomation/$path/SMV_$taskId /destkey:$configKey /S /Z:"$fullModPath"
+    Get-ChildItem "$fullModPath\smv" -Include *.rawcfgf | foreach($_) {Remove-Item $_.FullName}
+    Add-Type -assembly "system.io.compression.filesystem"
+    [io.compression.zipfile]::CreateFromDirectory("$fullModPath\smv", "$fullModPath\smv_$taskId.zip")
+    & $AzCopyPath\AzCopy.exe /Source:"$fullModPath" /Dest:https://smvtest.file.core.windows.net/smvautomation/$path /destkey:$configKey /Pattern:"smv_$taskId.zip" /Z:"$fullModPath"
     #Deleting local copy of file
     Remove-Item $fullModPath\log-output-$timestamp-$taskId.txt
     Remove-Item $fullModPath\log-error-$timestamp-$taskId.txt

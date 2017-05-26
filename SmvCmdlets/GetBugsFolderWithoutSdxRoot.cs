@@ -13,8 +13,8 @@ using System.Configuration;
 
 namespace SmvCmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "BugsFolder")]
-    public class GetBugsFolder : PSCmdlet
+    [Cmdlet(VerbsCommon.Get, "BugsFolderWithoutSdxRoot")]
+    public class GetBugsFolderWithoutSdxRoot : PSCmdlet
     {
 
         [Parameter(Position = 0, Mandatory = true)]
@@ -29,13 +29,8 @@ namespace SmvCmdlets
             get { return modulePath; }
             set { modulePath = value; }
         }
+
         [Parameter(Position = 2, Mandatory = true)]
-        public string SdxRoot
-        {
-            get { return sdxRoot; }
-            set { sdxRoot = value; }
-        }
-        [Parameter(Position = 3, Mandatory = true)]
         public string AzCopyPath
         {
             get { return azCopyPath; }
@@ -52,9 +47,10 @@ namespace SmvCmdlets
 
             try
             {
+                string destinationPath = SessionState.Path.CurrentFileSystemLocation.ToString();
                 var connectionString = ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString;
                 var connectionKey = ConfigurationManager.ConnectionStrings["StorageKey"].ConnectionString;
-                getFolderFromAzure(modulePath, sdxRoot, sessionId, azCopyPath, connectionString, connectionKey);
+                getFolderFromAzure(modulePath, destinationPath, sessionId, azCopyPath, connectionString, connectionKey);
             }
             catch (Exception e)
             {
@@ -62,22 +58,20 @@ namespace SmvCmdlets
             }
         }
 
-        public static void getFolderFromAzure(string absolutePath, string sdxRoot, string sessionId, string AzCopyPath, string connectionString, string connectionKey)
+        public static void getFolderFromAzure(string absolutePath, string destinationPath, string sessionId, string AzCopyPath, string connectionString, string connectionKey)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
             CloudFileClient fileClient = storageAccount.CreateCloudFileClient();
             CloudFileShare share = fileClient.GetShareReference("smvautomation");
             CloudFileDirectory direc = share.GetRootDirectoryReference();
             absolutePath = absolutePath.ToLower();
-            sdxRoot = sdxRoot.ToLower();
-            string relativePath = absolutePath.Replace(sdxRoot, "%SDXROOT%");
-            string cloudPath = Path.Combine(sessionId, "Logs", relativePath, "Bugs");
+            string cloudPath = Path.Combine(sessionId, "Logs", absolutePath, "Bugs");
             Console.WriteLine(cloudPath);
             CloudFileDirectory dir = direc.GetDirectoryReference(cloudPath);
-            absolutePath = Path.Combine(absolutePath, "Bugs");
-            if (Directory.Exists(absolutePath))
+            destinationPath = Path.Combine(destinationPath, "Bugs");
+            if (Directory.Exists(destinationPath))
             {
-                Directory.Delete(absolutePath, true);
+                Directory.Delete(destinationPath, true);
             }
             if (dir.Exists())
             {
@@ -92,7 +86,7 @@ namespace SmvCmdlets
                 string changeLocation = "cd " + AzCopyPath;
                 cmd.StandardInput.WriteLine(changeLocation);
 
-                string command = @".\AzCopy.exe /Source:https://smvtest.file.core.windows.net/smvautomation/" + cloudPath + " /Dest:" + absolutePath + " /Sourcekey:" + connectionKey + " /S /Z:" + absolutePath;
+                string command = @".\AzCopy.exe /Source:https://smvtest.file.core.windows.net/smvautomation/" + cloudPath + " /Dest:" + destinationPath + " /Sourcekey:" + connectionKey + " /S /Z:" + destinationPath;
 
                 cmd.StandardInput.WriteLine(command);
                 cmd.StandardInput.WriteLine("exit");

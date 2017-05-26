@@ -200,7 +200,10 @@ namespace SmvLibrary
                     if (schedulers.ContainsKey("cloud"))
                     {
                         CloudSMVActionScheduler cloudScheduler = (CloudSMVActionScheduler)schedulers["cloud"];
-                        cloudScheduler.Dispose();
+                        if (cloudScheduler != null)
+                        {
+                            cloudScheduler.Dispose();
+                        }
                     }
                 }
             }

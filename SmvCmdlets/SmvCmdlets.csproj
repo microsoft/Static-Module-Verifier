@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GetBugsFolder.cs" />
+    <Compile Include="GetBugsFolderWithoutSdxRoot.cs" />
     <Compile Include="GetModuleOverview.cs" />
     <Compile Include="GetModuleOverviewByPath.cs" />
     <Compile Include="GetPluginOverview.cs" />

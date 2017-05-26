@@ -250,7 +250,7 @@
           <Parameter Name="sessionId" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="SessionBugDetails" ReturnType="Collection(SmvDbModel.SessionBugDetails_Result)">
-            <Parameter Name="sessionId" Mode="In" Type="String" />
+          <Parameter Name="sessionId" Mode="In" Type="String" />
           </FunctionImport>
         </EntityContainer>
         <ComplexType Name="ActionDiffBetweenTwoSessions_Result">
