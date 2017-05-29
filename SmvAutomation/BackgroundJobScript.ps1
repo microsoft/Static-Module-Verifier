@@ -1,5 +1,5 @@
-Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb, [bool] $useJobObject, [string] $AzCopyPath)
-
+﻿Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb, [bool] $useJobObject, [string] $AzCopyPath)
+$ErrorActionPreference = 'Continue'
 # Pre-requisite utility functions needed
 function CreateDirectoryIfMissingCloud([string] $path){
 	$parts = $path.Split('\')
@@ -24,7 +24,6 @@ function Get-DatabaseData {
 	$adapter.Fill($dataset)
 	$dataset.Tables[0]
 }
-
 function Invoke-DatabaseQuery {
 	[CmdletBinding()]
 	param (
@@ -73,7 +72,6 @@ if($useDb){
 	# Updating the arguments for SMV if DB is to be used
 	$arg += (" /db /sessionId:" + $sessionId + " /taskId:" + $taskId)
 }
-
 if($useJobObject){
 	$arg += (" /jobobject");
 }

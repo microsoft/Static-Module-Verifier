@@ -99,7 +99,7 @@ if($useDb){
 $sessionId = [GUID]::NewGuid()
 echo "Session ID: $sessionId"
 $startTimestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
-
+$useDb
 # Initiating the parallel jobs
 foreach($plugin in $plugins){
     foreach($modulePath in $modulePaths){
