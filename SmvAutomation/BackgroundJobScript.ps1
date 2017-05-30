@@ -116,5 +116,7 @@ Add-Type -assembly "system.io.compression.filesystem"
 & $AzCopyPath\AzCopy.exe /Source:"$fullModPath" /Dest:https://smvtest.file.core.windows.net/smvautomation/$path /destkey:$configKey /Pattern:"smv_$taskId.zip" /Z:"$fullModPath"
 
 #Deleting local copy of log file
+Remove-Item $fullModPath\smv* -Recurse
+Remove-Item $fullModPath\build*
 Remove-Item $fullModPath\log-output-$timestamp-$taskId.txt
 Remove-Item $fullModPath\log-error-$timestamp-$taskId.txt
