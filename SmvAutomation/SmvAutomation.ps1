@@ -1,10 +1,8 @@
-﻿param([string] $sdxRoot, [string] $automationConfigFilePath , [string] $configFilePath, [string] $AzCopyPath, [string] $maxConcurrentJobs)
+﻿param([string] $automationConfigFilePath , [string] $configFilePath, [string] $AzCopyPath, [string] $maxConcurrentJobs)
 
 # PREPARING PREREQUISITES
 $ErrorActionPreference = 'Continue'
 $scriptPath=$PSScriptRoot
-$sdxRoot = $sdxRoot.Trim()
-$sdxRoot
 
 # Setting max number of parallel jobs to either input or number of cores on system
 $numberOfCores = Get-WmiObject -class Win32_processor | Select-Object -ExpandProperty NumberOfCores
@@ -52,18 +50,19 @@ $connectionString = $configDocument.Passwords.DbConnectionString.connectionStrin
 $key = $configDocument.Passwords.SmvTestKey.key
 
 # Extracting details about the unique modules and plugins
+$root = $XmlDocument.ServiceConfig.Root.value
+$environmentNameRoot = $XmlDocument.ServiceConfig.Root.environmentName
 $modulePaths = $XmlDocument.ServiceConfig.Modules.Module.path
 if($XmlDocument.ServiceConfig.ModulesDirectory){
-    $folderPath = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.path.Replace("%SDXROOT%\", "$sdxRoot\")
+    $folderPath = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.path.Replace("%$environmentNameRoot%\", "$root\")
     $moduleDefinitionFile = $XmlDocument.ServiceConfig.ModulesDirectory.ModuleDirectory.moduleDefinitionFile
     $folders = Get-ChildItem -Path $folderPath -Filter $moduleDefinitionFile -Recurse
     $modulePaths += $folders.Directory.FullName
 }
-$modulePaths = $modulePaths.Replace("$sdxRoot\", "%SDXROOT%\")
+$modulePaths = $modulePaths.Replace("$root\", "%$environmentNameRoot%\")
 $modulePaths = $modulePaths | select -Unique
 $modulePaths.Count
 $plugins = $XmlDocument.ServiceConfig.Plugins.Plugin
-
 # Setting up parameters for SMV
 [bool]$useDb = [System.Convert]::ToBoolean($XmlDocument.ServiceConfig.Plugins.useDb)
 [bool]$useJobObject = [System.Convert]::ToBoolean($XmlDocument.ServiceConfig.Plugins.useJobObject)
@@ -107,7 +106,7 @@ foreach($plugin in $plugins){
         while($check -eq $false){
             if((Get-Job -State 'Running').Count -lt $maxConcurrentJobs){
                 Get-Job
-                Start-Job -FilePath "$scriptPath\BackgroundJobScript.ps1" -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $sdxRoot, $sessionId, $connectionString, $key, $useDb, $useJobObject, $AzCopyPath
+                Start-Job -FilePath "$scriptPath\BackgroundJobScript.ps1" -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $root, $environmentNameRoot, $sessionId, $connectionString, $key, $useDb, $useJobObject, $AzCopyPath
                 $check = $true
             }
         }
@@ -124,4 +123,4 @@ if($useDb){
 }
 
 # Copying SMV input folder to fileshare
-& $AzCopyPath\AzCopy.exe /Source:"$sdxRoot\tools\analysis\x86\sdv\smv" /Dest:https://smvtest.file.core.windows.net/smvautomation/$sessionId/SMV /destkey:$key /S /Z:"$sdxRoot\tools\analysis\x86\sdv"
+& $AzCopyPath\AzCopy.exe /Source:"$root\tools\analysis\x86\sdv\smv" /Dest:https://smvtest.file.core.windows.net/smvautomation/$sessionId/SMV /destkey:$key /S /Z:"$root\tools\analysis\x86\sdv"

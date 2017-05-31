@@ -1,4 +1,4 @@
-﻿Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $sdxRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb, [bool] $useJobObject, [string] $AzCopyPath)
+﻿Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $root, [string] $environmentNameRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb, [bool] $useJobObject, [string] $AzCopyPath)
 $ErrorActionPreference = 'Continue'
 # Pre-requisite utility functions needed
 function CreateDirectoryIfMissingCloud([string] $path){
@@ -44,8 +44,8 @@ $ctx = New-AzureStorageContext smvtest $configKey
 $share = Get-AzureStorageShare smvautomation -Context $ctx
 $taskId=[GUID]::NewGuid()
 $path="$sessionId\Logs\$modPath"
-$drive=$sdxRoot[0]+":"
-$fullModPath=$modPath.Replace("%SDXROOT%\", "$sdxRoot\")
+$drive=$root[0]+":"
+$fullModPath=$modPath.Replace("%$environmentNameRoot%\", "$root\")
 
 if($useDb){
 	# Making the necessary database entries
@@ -89,7 +89,7 @@ $ps.StartInfo.RedirectStandardOutput = $True
 $ps.StartInfo.RedirectStandardError = $True
 $ps.StartInfo.UseShellExecute = $false
 $ps.Start()
-$ps.StandardInput.WriteLine("$sdxRoot\tools\SmvRazzle.cmd $drive $sdxRoot $modPath $cmd `"$arg`" $timestamp $taskId")
+$ps.StandardInput.WriteLine("$root\tools\SmvRazzle.cmd $drive $root $modPath $cmd `"$arg`" $timestamp $taskId")
 $ps.WaitForExit()
 
 # Updating the roll up table for easier post-processing
