@@ -714,7 +714,7 @@ namespace SmvLibrary
                 //to update defect.tt file
                 string defectTtFileContents = File.ReadAllText(bugFolderPath + "\\defect.tt");
 
-                string pattern = @"([a-zA-Z]:[\\[a-zA-Z0-9 ._-]+]*\.[a-zA-Z]+)";
+                string pattern = @"([a-zA-Z]:[\\[a-zA-Z0-9 ._-]+]*\.?[a-zA-Z]+)";
                 List<string> files = new List<string>();
 
                 foreach (Match match in Regex.Matches(defectTtFileContents, pattern))
@@ -738,9 +738,17 @@ namespace SmvLibrary
 
                 foreach (string file in files)
                 {
-                    string destinationPath = Path.Combine("src", file.Trim().Replace(":", ""));
-                    CopyFile(file.Trim(), Path.Combine(bugFolderPath, destinationPath), null);
-                    defectTtFileContents = defectTtFileContents.Replace(file.Trim(), destinationPath);
+                    try
+                    {
+                        string destinationPath = Path.Combine("src", file.Trim().Replace(":", ""));
+                        CopyFile(file.Trim(), Path.Combine(bugFolderPath, destinationPath), null);
+                        defectTtFileContents = defectTtFileContents.Replace(file.Trim(), destinationPath);
+                    }
+                    catch (Exception)
+                    {
+                        Log.LogError("Exception while copying " + file + "while making defects portable");
+                        continue;
+                    }
                 }
 
                 File.WriteAllText(bugFolderPath + "\\defect.tt", defectTtFileContents);
