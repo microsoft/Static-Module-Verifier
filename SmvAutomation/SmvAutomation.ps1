@@ -62,6 +62,8 @@ if($XmlDocument.ServiceConfig.ModulesDirectory){
 $modulePaths = $modulePaths.Replace("$root\", "%$environmentNameRoot%\")
 $modulePaths = $modulePaths | select -Unique
 $modulePaths.Count
+$modulePaths = $modulePaths.Trim()
+
 $plugins = $XmlDocument.ServiceConfig.Plugins.Plugin
 # Setting up parameters for SMV
 [bool]$useDb = [System.Convert]::ToBoolean($XmlDocument.ServiceConfig.Plugins.useDb)
