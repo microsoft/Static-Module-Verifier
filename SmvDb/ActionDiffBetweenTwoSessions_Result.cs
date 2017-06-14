@@ -13,8 +13,10 @@ namespace SmvDb
     
     public partial class ActionDiffBetweenTwoSessions_Result
     {
-        public string ActionName { get; set; }
-        public string WorkingDirectory { get; set; }
-        public string Success { get; set; }
+        public string ModulePath { get; set; }
+        public string PluginName { get; set; }
+        public string Bugs { get; set; }
+        public int ActionSuccessCount { get; set; }
+        public int ActionFailureCount { get; set; }
     }
 }

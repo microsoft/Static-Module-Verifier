@@ -10,8 +10,9 @@
 namespace SmvDb
 {
     using System;
+    using System.Collections.Generic;
     
-    public partial class SummaryTableForSession_Result
+    public partial class RollUpTable
     {
         public string SessionId { get; set; }
         public string TaskId { get; set; }
