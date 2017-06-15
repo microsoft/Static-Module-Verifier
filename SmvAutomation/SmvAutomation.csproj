@@ -67,7 +67,6 @@
     <None Include="App.config" />
     <None Include="BackgroundJobScript.ps1" />
     <None Include="SmvAutomation.ps1" />
-    <None Include="SmvMsBuild.cmd" />
     <None Include="SmvRazzle.cmd" />
   </ItemGroup>
   <ItemGroup>
