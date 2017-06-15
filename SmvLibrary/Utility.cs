@@ -727,12 +727,14 @@ namespace SmvLibrary
 
                 //getting smvsrcfiles to an array
                 string smvSrcFilesPath = Path.Combine(smvVars["workingDir"], outputDirName, "smvsrcfiles");
-                string[] smvSrcFiles = File.ReadAllLines(smvSrcFilesPath);
-                foreach (string smvSrcFile in smvSrcFiles)
-                {
-                    if (!files.Contains(smvSrcFile))
+                if (File.Exists(smvSrcFilesPath)){
+                    string[] smvSrcFiles = File.ReadAllLines(smvSrcFilesPath);
+                    foreach (string smvSrcFile in smvSrcFiles)
                     {
-                        files.Add(smvSrcFile);
+                        if (!files.Contains(smvSrcFile))
+                        {
+                            files.Add(smvSrcFile);
+                        }
                     }
                 }
 

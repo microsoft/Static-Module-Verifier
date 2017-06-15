@@ -1,4 +1,4 @@
-﻿Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $root, [string] $environmentNameRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb, [bool] $useJobObject, [string] $AzCopyPath)
+﻿Param([string] $modPath, [string] $cmd, [string] $arg, [string] $pluginName, [string] $outputDir, [string] $root, [string] $environmentNameRoot, [string] $sessionId, [string] $connectionString, [string] $configKey, [bool] $useDb, [bool] $useJobObject, [string] $AzCopyPath)
 $ErrorActionPreference = 'Continue'
 # Pre-requisite utility functions needed
 function CreateDirectoryIfMissingCloud([string] $path){
@@ -72,6 +72,10 @@ if($useDb){
 	# Updating the arguments for SMV if DB is to be used
 	$arg += (" /db /sessionId:" + $sessionId + " /taskId:" + $taskId)
 }
+
+$arg
+
+
 if($useJobObject){
 	$arg += (" /jobobject");
 }
@@ -84,12 +88,19 @@ CreateDirectoryIfMissingCloud -path "$path\Bugs"
 # Running SMV in a process window
 $ps = new-object System.Diagnostics.Process
 $ps.StartInfo.Filename = "cmd.exe"
+
 $ps.StartInfo.RedirectStandardInput = $True
 $ps.StartInfo.RedirectStandardOutput = $True
 $ps.StartInfo.RedirectStandardError = $True
 $ps.StartInfo.UseShellExecute = $false
 $ps.Start()
-$ps.StandardInput.WriteLine("$root\tools\SmvRazzle.cmd $drive $root $modPath $cmd `"$arg`" $timestamp $taskId")
+
+if($pluginName -eq "MSBUILD"){
+	$ps.StandardInput.WriteLine("`"$root`"\tools\SmvMsBuild.cmd $drive `"$root`" `"$fullModPath`" $cmd `"$arg`" $timestamp $taskId")
+}
+else{
+	$ps.StandardInput.WriteLine("$root\tools\SmvRazzle.cmd $drive $root $modPath $cmd `"$arg`" $timestamp $taskId")
+}
 $ps.WaitForExit()
 
 # Updating the roll up table for easier post-processing
@@ -103,16 +114,16 @@ Set-AzureStorageFileContent -Share $share -Source $fullModPath\log-output-$times
 Set-AzureStorageFileContent -Share $share -Source $fullModPath\log-error-$timestamp-$taskId.txt -Path $path\$pluginName\log-error-$timestamp.txt
 
 # Moving Bugs folders to Azure, if any
-$list=dir "$fullModPath\smv\Bugs" -Directory
+$list=dir "$fullModPath\$outputDir\Bugs" -Directory
 foreach($folder in $list){
 	$newId = [GUID]::NewGuid()
-	& $AzCopyPath\AzCopy.exe /Source:"$fullModPath\smv\Bugs\$folder" /Dest:https://smvtest.file.core.windows.net/smvautomation/$path/Bugs/Bug$newId /destkey:$configKey /S /Z:"$fullModPath/smv/Bugs"
+	& $AzCopyPath\AzCopy.exe /Source:"$fullModPath\$outputDir\Bugs\$folder" /Dest:https://smvtest.file.core.windows.net/smvautomation/$path/Bugs/Bug$newId /destkey:$configKey /S /Z:"$fullModPath/$outputDir/Bugs"
 }
 
 # Deleting all rawcfgf files and then uploading SMV output zip to Azure
-Get-ChildItem "$fullModPath\smv" -Include *.rawcfgf -Recurse | foreach($_) {Remove-Item $_.FullName}
+Get-ChildItem "$fullModPath\$outputDir" -Include *.rawcfgf -Recurse | foreach($_) {Remove-Item $_.FullName}
 Add-Type -assembly "system.io.compression.filesystem"
-[io.compression.zipfile]::CreateFromDirectory("$fullModPath\smv", "$fullModPath\smv_$taskId.zip")
+[io.compression.zipfile]::CreateFromDirectory("$fullModPath\$outputDir", "$fullModPath\smv_$taskId.zip")
 & $AzCopyPath\AzCopy.exe /Source:"$fullModPath" /Dest:https://smvtest.file.core.windows.net/smvautomation/$path /destkey:$configKey /Pattern:"smv_$taskId.zip" /Z:"$fullModPath"
 
 #Deleting local copy of log file

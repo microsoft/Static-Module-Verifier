@@ -108,7 +108,7 @@ foreach($plugin in $plugins){
         while($check -eq $false){
             if((Get-Job -State 'Running').Count -lt $maxConcurrentJobs){
                 Get-Job
-                Start-Job -FilePath "$scriptPath\BackgroundJobScript.ps1" -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $root, $environmentNameRoot, $sessionId, $connectionString, $key, $useDb, $useJobObject, $AzCopyPath
+                Start-Job -FilePath "$scriptPath\BackgroundJobScript.ps1" -ArgumentList $modulePath, $plugin.command, $plugin.arguments, $plugin.name, $plugin.outputDir, $root, $environmentNameRoot, $sessionId, $connectionString, $key, $useDb, $useJobObject, $AzCopyPath
                 $check = $true
             }
         }
@@ -123,6 +123,6 @@ if($useDb){
     $query = "insert into Sessions VALUES ('" + $sessionId + "' , '" + $startTimestamp + "' , '" + $endTimestamp + "' , '" + $user + "');"
     Invoke-DatabaseQuery –query $query –connectionString $connectionString
 }
-
+<#
 # Copying SMV input folder to fileshare
-& $AzCopyPath\AzCopy.exe /Source:"$root\tools\analysis\x86\sdv\smv" /Dest:https://smvtest.file.core.windows.net/smvautomation/$sessionId/SMV /destkey:$key /S /Z:"$root\tools\analysis\x86\sdv"
+& $AzCopyPath\AzCopy.exe /Source:"$root\tools\analysis\x86\sdv\smv" /Dest:https://smvtest.file.core.windows.net/smvautomation/$sessionId/SMV /destkey:$key /S /Z:"$root\tools\analysis\x86\sdv"#>
