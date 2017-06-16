@@ -105,6 +105,7 @@
     <None Include="GetCsvSessionActionFailureSummary.ps1" />
     <None Include="GetCurrentModuleBugsFolder.ps1" />
     <None Include="packages.config" />
+    <None Include="preparePowershellWindow.ps1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SmvDb\SmvDb.csproj">
