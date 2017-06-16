@@ -67,6 +67,7 @@
     <None Include="App.config" />
     <None Include="BackgroundJobScript.ps1" />
     <None Include="SmvAutomation.ps1" />
+    <None Include="SmvMsBuild.cmd" />
     <None Include="SmvRazzle.cmd" />
   </ItemGroup>
   <ItemGroup>
@@ -89,7 +90,11 @@ copy $(ProjectDir)..\SmvCmdlets\$(OutDir)EntityFramework.SqlServer.dll $(TargetD
 copy $(ProjectDir)..\SmvCmdlets\$(OutDir)Microsoft.WindowsAzure.Storage.dll $(TargetDir)
 copy $(ProjectDir)..\SmvCmdlets\$(OutDir)SmvCmdlets.dll $(TargetDir)
 copy $(ProjectDir)..\SmvCmdlets\$(OutDir)SmvCmdlets.dll.config $(TargetDir)
-copy $(ProjectDir)..\SmvCmdlets\$(OutDir)SmvDb.dll $(TargetDir)</PostBuildEvent>
+copy $(ProjectDir)..\SmvCmdlets\$(OutDir)SmvDb.dll $(TargetDir)
+copy $(ProjectDir)SmvAutomation.ps1 $(TargetDir)
+copy $(ProjectDir)BackgroundJobScript.ps1 $(TargetDir)
+copy $(ProjectDir)SmvRazzle.cmd $(TargetDir)
+copy $(ProjectDir)SmvMsBuild.cmd $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

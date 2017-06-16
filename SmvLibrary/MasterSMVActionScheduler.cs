@@ -157,7 +157,6 @@ namespace SmvLibrary
 
                         DebugUtility.DumpVariables(entry.Action.variables, "entry.action");
                         DebugUtility.DumpVariables(Utility.smvVars, "smvvars");
-
                         nextAction.variables = Utility.smvVars.Union(entry.Action.variables).ToDictionary(g => g.Key, g => g.Value);
                         this.AddAction(nextAction, entry.Callback, entry.Context);
                     }

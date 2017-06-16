@@ -623,8 +623,8 @@ namespace SmvLibrary
                         string logPath = Path.Combine(variables["workingDir"], variables["smvLogFileNamePrefix"] + ".log");
                         action.result.output = Utility.ReadFile(logPath);
 
-                        variables["outputDir"] = ExtractBuildPath(variables["workingDir"], action.result.output, logger);
-                        Utility.SetSmvVar("outputDir", variables["outputDir"]);
+                        //variables["outputDir"] = ExtractBuildPath(variables["workingDir"], action.result.output, logger);
+                        //Utility.SetSmvVar("outputDir", variables["outputDir"]);
                     }
 
                     // Get the output directory and the analysis directory.
