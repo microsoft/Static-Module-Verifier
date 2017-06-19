@@ -67,7 +67,8 @@ if($XmlDocument.ServiceConfig.ModulesDirectory){
 }
 $modulePaths = $modulePaths.Replace("$root\", "%$environmentNameRoot%\")
 $modulePaths = $modulePaths | select -Unique
-echo "Number of modules: $modulePaths.Count"
+$count = $modulePaths.Count
+echo "Number of modules: $count"
 $modulePaths = $modulePaths.Trim()
 
 $plugins = $XmlDocument.ServiceConfig.Plugins.Plugin
