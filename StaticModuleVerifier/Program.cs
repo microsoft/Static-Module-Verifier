@@ -405,7 +405,7 @@ namespace SmvSkeleton
             {
                 try
                 {
-                    Utility.makeDefectPortable(bugDirectory, "smv");
+                    Utility.makeDefectPortable(bugDirectory);
                 }
                 catch (Exception e)
                 {

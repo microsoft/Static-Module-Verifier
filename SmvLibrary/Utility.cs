@@ -704,7 +704,7 @@ namespace SmvLibrary
         /// Makes the defect portable in the bug folder path passed as parameter
         /// </summary>
         /// <param name="bugFolderPath"></param>
-        public static void makeDefectPortable(string bugFolderPath, string outputDirName)
+        public static void makeDefectPortable(string bugFolderPath)
         {
             if (!Directory.Exists(bugFolderPath))
             {
@@ -727,7 +727,7 @@ namespace SmvLibrary
                 }
 
                 //getting smvsrcfiles to an array
-                string smvSrcFilesPath = Path.Combine(smvVars["workingDir"], outputDirName, "smvsrcfiles");
+                string smvSrcFilesPath = Path.Combine(smvVars["smvOutputDir"], "smvsrcfiles");
                 if (File.Exists(smvSrcFilesPath)){
                     string[] smvSrcFiles = File.ReadAllLines(smvSrcFilesPath);
                     foreach (string smvSrcFile in smvSrcFiles)
