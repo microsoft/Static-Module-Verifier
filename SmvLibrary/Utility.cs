@@ -429,7 +429,7 @@ namespace SmvLibrary
         /// <param name="context"></param>
         static void DoneExecuteAction(SMVAction action, IEnumerable<SMVActionResult> results, object context)
         {
-            Log.LogInfo("Reached DoneExecuteAction for " + action.GetFullName());
+            Log.LogDebug("Reached DoneExecuteAction for " + action.GetFullName());
             actionResults.AddRange(results);
 
             var countDownEvent = context as CountdownEvent;
@@ -622,9 +622,10 @@ namespace SmvLibrary
                     {
                         string logPath = Path.Combine(variables["workingDir"], variables["smvLogFileNamePrefix"] + ".log");
                         action.result.output = Utility.ReadFile(logPath);
-
-                        //variables["outputDir"] = ExtractBuildPath(variables["workingDir"], action.result.output, logger);
-                        //Utility.SetSmvVar("outputDir", variables["outputDir"]);
+                        if (!variables.ContainsKey("outputDir")){
+                            variables["outputDir"] = ExtractBuildPath(variables["workingDir"], action.result.output, logger);
+                            Utility.SetSmvVar("outputDir", variables["outputDir"]);
+                        }
                     }
 
                     // Get the output directory and the analysis directory.

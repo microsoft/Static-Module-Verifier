@@ -74,7 +74,7 @@ namespace SmvLibrary
         /// </summary>
         private void Execute()
         {
-            Log.LogInfo("Reached Execute of Master");
+            Log.LogDebug("Reached Execute of Master");
             while (!done)
             {
                 ActionsQueueEntry entry;
@@ -110,7 +110,7 @@ namespace SmvLibrary
         /// <param name="context">A context object.</param>
         private void ActionComplete(SMVAction a, IEnumerable<SMVActionResult> results, object context)
         {
-            Log.LogInfo("Reached ActionComplete of Master " + a.GetFullName());
+            Log.LogDebug("Reached ActionComplete of Master " + a.GetFullName());
 
             var entry = context as ActionsQueueEntry;
             SMVAction action = entry.Action;

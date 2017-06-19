@@ -169,7 +169,7 @@ namespace SmvLibrary
         {
             try
             {
-                Log.LogInfo("Reached AddAction of cloud" + action.GetFullName());
+                Log.LogDebug("Reached AddAction of cloud" + action.GetFullName());
                 Log.LogDebug("Adding action " + action.GetFullName());
                 string actionGuid = Guid.NewGuid().ToString();
                 // Upload action directory to blob storage.
@@ -237,7 +237,7 @@ namespace SmvLibrary
             CloudActionCompleteContext context = contextDictionary[actionGuid];
             ActionsTableEntry entry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
             var action = (SMVAction)Utility.ByteArrayToObject(entry.SerializedAction);
-            Log.LogInfo("Reached ActionComplete of Cloud " + action.GetFullName());
+            Log.LogDebug("Reached ActionComplete of Cloud " + action.GetFullName());
             if(action.result == null)
             {
                 action.result = new SMVActionResult(action.name, "NO OUTPUT?", false, false, 0);
