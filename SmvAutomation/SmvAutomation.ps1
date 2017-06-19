@@ -53,6 +53,10 @@ $key = $configDocument.Passwords.SmvTestKey.key
 $root = $XmlDocument.ServiceConfig.Root.value
 $environmentNameRoot = $XmlDocument.ServiceConfig.Root.environmentName
 $smvRoot = $XmlDocument.ServiceConfig.SmvRoot.value
+if(!$smvRoot -Or !$root -Or !$environmentNameRoot){
+    echo "Roots have not been defined properly in the configuration"
+    exit
+}
 $sdv = (Get-Item $smvRoot).Parent.FullName
 $modulePaths = $XmlDocument.ServiceConfig.Modules.Module.path
 if($XmlDocument.ServiceConfig.ModulesDirectory){
@@ -63,7 +67,7 @@ if($XmlDocument.ServiceConfig.ModulesDirectory){
 }
 $modulePaths = $modulePaths.Replace("$root\", "%$environmentNameRoot%\")
 $modulePaths = $modulePaths | select -Unique
-$modulePaths.Count
+echo "Number of modules: $modulePaths.Count"
 $modulePaths = $modulePaths.Trim()
 
 $plugins = $XmlDocument.ServiceConfig.Plugins.Plugin
@@ -102,7 +106,7 @@ if($useDb){
 $sessionId = [GUID]::NewGuid()
 echo "Session ID: $sessionId"
 $startTimestamp = Get-Date -Format "yyyy-MM-dd-HH-mm-ss" 
-$useDb
+echo "Using DB: $useDb"
 # Initiating the parallel jobs
 foreach($plugin in $plugins){
     foreach($modulePath in $modulePaths){

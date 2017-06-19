@@ -86,7 +86,6 @@ CreateDirectoryIfMissingCloud -path "$path\Bugs"
 # Running SMV in a process window
 $ps = new-object System.Diagnostics.Process
 $ps.StartInfo.Filename = "cmd.exe"
-
 $ps.StartInfo.RedirectStandardInput = $True
 $ps.StartInfo.RedirectStandardOutput = $True
 $ps.StartInfo.RedirectStandardError = $True
