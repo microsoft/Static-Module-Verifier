@@ -54,7 +54,7 @@ namespace SmvCmdlets
             {
                 var connectionString = ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString;
                 var connectionKey = ConfigurationManager.ConnectionStrings["StorageKey"].ConnectionString;
-                getFolderFromAzure(modulePath, sdxRoot, sessionId, azCopyPath, connectionString, connectionKey);
+                getFolderFromAzureToLocalPath(modulePath, sdxRoot, sessionId, azCopyPath, connectionString, connectionKey);
             }
             catch (Exception e)
             {
@@ -62,7 +62,7 @@ namespace SmvCmdlets
             }
         }
 
-        public static void getFolderFromAzure(string absolutePath, string sdxRoot, string sessionId, string AzCopyPath, string connectionString, string connectionKey)
+        public static void getFolderFromAzureToLocalPath(string absolutePath, string sdxRoot, string sessionId, string AzCopyPath, string connectionString, string connectionKey)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
             CloudFileClient fileClient = storageAccount.CreateCloudFileClient();

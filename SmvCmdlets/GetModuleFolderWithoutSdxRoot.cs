@@ -13,8 +13,8 @@ using System.Configuration;
 
 namespace SmvCmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "BugsFolderWithoutSdxRoot")]
-    public class GetBugsFolderWithoutSdxRoot : PSCmdlet
+    [Cmdlet(VerbsCommon.Get, "ModuleFolderWithoutSdxRoot")]
+    public class GetModuleFolderWithoutSdxRoot : PSCmdlet
     {
 
         [Parameter(Position = 0, Mandatory = true)]
@@ -50,9 +50,8 @@ namespace SmvCmdlets
                 string destinationPath = SessionState.Path.CurrentFileSystemLocation.ToString();
                 var connectionString = ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString;
                 var connectionKey = ConfigurationManager.ConnectionStrings["StorageKey"].ConnectionString;
-                destinationPath = Path.Combine(destinationPath, "Bugs");
-                string bugPath = Path.Combine(modulePath.ToLower(), "Bugs");
-                Utility.getFolderFromAzure(bugPath, destinationPath, sessionId, azCopyPath, connectionString, connectionKey);
+                destinationPath = Path.Combine(destinationPath, modulePath);
+                Utility.getFolderFromAzure(modulePath.ToLower(), destinationPath, sessionId, azCopyPath, connectionString, connectionKey);
             }
             catch (Exception e)
             {

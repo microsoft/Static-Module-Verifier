@@ -9,6 +9,7 @@ foreach($result in $results){
     $properties = [ordered]@{}
     $properties.ModulePath = $result.ModulePath
     $properties.PluginName = $result.PluginName
+    $properties.Bugs = $result.Bugs
     $properties.ActionSuccessCount = $result.ActionSuccessCount
     $properties.ActionFailureCount = $result.ActionFailureCount
     $properties.Command = $result.Command
