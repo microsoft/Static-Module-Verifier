@@ -8,9 +8,14 @@ if(Test-Path ModulesFromCsv-$sessionId){
 }
 New-Item ModulesFromCsv-$sessionId -ItemType Directory
 cd ModulesFromCsv-$sessionId
-
+$count = 1
 foreach($modulePath in $modulePaths){
 	$modulePath
+	New-Item Module_$count -ItemType Directory
+	cd Module_$count
+	$modulePath | Out-File ModuleName.txt
     Get-ModuleFolderWithoutSdxRoot -SessionId $sessionId -ModulePath $modulePath -AzCopyPath $AzCopyPath
+	cd ..
+	$count++
 } 
 cd ..

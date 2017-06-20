@@ -50,7 +50,7 @@ namespace SmvCmdlets
                 string destinationPath = SessionState.Path.CurrentFileSystemLocation.ToString();
                 var connectionString = ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString;
                 var connectionKey = ConfigurationManager.ConnectionStrings["StorageKey"].ConnectionString;
-                destinationPath = Path.Combine(destinationPath, modulePath);
+                destinationPath = Path.Combine(destinationPath, "Module");
                 Utility.getFolderFromAzure(modulePath.ToLower(), destinationPath, sessionId, azCopyPath, connectionString, connectionKey);
             }
             catch (Exception e)
