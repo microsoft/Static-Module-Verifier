@@ -149,7 +149,6 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="script.sql" />
     <Content Include="SmvDataModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>SmvDataModel.edmx</DependentUpon>
@@ -160,6 +159,18 @@
       <DependentUpon>SmvDataModel.edmx</DependentUpon>
       <LastGenOutput>SmvDataModel.cs</LastGenOutput>
     </Content>
+    <Content Include="Stored Procedures\ActionDiffBetweenTwoSessions.sql" />
+    <Content Include="Stored Procedures\InsertDataToRollUpTable.sql" />
+    <Content Include="Stored Procedures\ModuleDiffBetweenTwoSessions.sql" />
+    <Content Include="Stored Procedures\ModuleOverview.sql" />
+    <Content Include="Stored Procedures\ModuleOverviewByPath.sql" />
+    <Content Include="Stored Procedures\PluginDiffBetweenTwoSessions.sql" />
+    <Content Include="Stored Procedures\PluginOverview.sql" />
+    <Content Include="Stored Procedures\SessionActionFailureDetails.sql" />
+    <Content Include="Stored Procedures\SessionActionFailureSummary.sql" />
+    <Content Include="Stored Procedures\SessionBugDetails.sql" />
+    <Content Include="Stored Procedures\SummaryTableForSession.sql" />
+    <Content Include="Stored Procedures\taskDetailsParameter.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
