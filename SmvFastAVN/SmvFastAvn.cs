@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace FastAVN
 {
@@ -23,7 +24,7 @@ namespace FastAVN
                 if(a.name.Equals("CheckEntryPoints"))
                 {
                     // get the directories etc.
-                    string workingDir = Utility.GetSmvVar("workingDir");
+                    string workingDir = Utility.GetSmvVar("smvOutputDir");
                     List<SMVAction> entryPointActions = new List<SMVAction>();
                     foreach(string d in Directory.EnumerateDirectories(workingDir).Where(s => !s.EndsWith("Bugs")))
                     {
@@ -33,14 +34,14 @@ namespace FastAVN
                         ea.variables.Add("epDirName", new DirectoryInfo(d).Name);
                         ea.variables["workingDir"] = d;
                          ea.nextAction = null;
-                        entryPointActions.Add(ea);                        
+                        entryPointActions.Add(ea);              
                     }
                     Utility.ExecuteActions(entryPointActions.ToArray());
                 }
                 else
                 {
                     a.variables = new Dictionary<string, string>(Utility.smvVars);
-                    Utility.ExecuteAction(a);
+                    Utility.ExecuteAction(a, false, false, null);
                 }
             }
 
@@ -62,7 +63,7 @@ namespace FastAVN
         {
             
             log("Merging results...");
-            Utility.ExecuteAction(analysisActions.Where(a => a.name.Equals("MergeResults")).First());
+            Utility.ExecuteAction(analysisActions.Where(a => a.name.Equals("MergeResults")).First(), false, false, null);
         }
 
         public void PostBuild(SMVAction[] buildActions)
@@ -86,6 +87,14 @@ namespace FastAVN
         public void ProcessPluginArgument(string[] args)
         {
             // no special arguments for FastAVN
+        }
+
+        public int GenerateBugsCount()
+        {
+            string workingDir = Path.Combine(Utility.GetSmvVar("smvOutputDir"),"Bugs");
+            Regex regex = new Regex(@"Bug*");
+            int bugFoldersCount = System.IO.Directory.GetDirectories(workingDir).Where(path => regex.IsMatch(path)).ToList().Count();
+            return bugFoldersCount; 
         }
     }
 }
