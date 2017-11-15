@@ -295,8 +295,6 @@ namespace SmvInterceptorWrapper
                     {
                         File.Copy(outDir + "\\slamout.obj.li", outDir + "\\slam.li", true);
                     }
-
-                    return 0;
                 }
                 return 0;
             }
