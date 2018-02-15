@@ -20,5 +20,6 @@ namespace SmvDb
         public string WorkingDirectory { get; set; }
         public string ActionTime { get; set; }
         public string Success { get; set; }
+        public string AnalysisDirectory { get; set; }
     }
 }

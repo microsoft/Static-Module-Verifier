@@ -220,6 +220,7 @@ warning 6002: The table/view 'SmvDb.dbo.RollUpTable' does not have a primary key
           <Property Name="WorkingDirectory" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="ActionTime" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Success" Type="String" MaxLength="10" FixedLength="true" Unicode="false" Nullable="false" />
+          <Property Name="AnalysisDirectory" Type="String" Nullable="false" />
         </EntityType>
         <EntityType Name="TaskModule">
           <Key>

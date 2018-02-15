@@ -557,7 +557,8 @@ namespace SmvLibrary
                                             ActionName = action.name,
                                             Success = cumulativeExitCode.ToString(),
                                             ActionTime = span.ToString(),
-                                            WorkingDirectory = variables["workingDir"]
+                                            WorkingDirectory = variables["workingDir"],
+                                            AnalysisDirectory = variables["analysisProperty"]
                                         };
                                         database.TaskActions.Add(masterEntry);
                                         database.SaveChanges();

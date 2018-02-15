@@ -235,6 +235,7 @@ namespace SmvSkeleton
                         {
                             string argsString = string.Join(" ", args);
                             task.Arguments = argsString;
+
                             database.SaveChanges();
                         }
                     }
