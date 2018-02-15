@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
-
+https://github.com/Microsoft/Static-Module-Verifier/pull/25/conflict?name=SmvLibrary%252FUtility.cs&ancestor_oid=d19ebc04bb723676b04a5dfdc1b6a0106a20ef89&base_oid=92e890ad9e57913341ef398f18fe7b233805d0ae&head_oid=648d5bb769ea85638fd85d8682410f0a41594081
 namespace SmvLibrary
 {
     public class MasterSMVActionScheduler : ISMVActionScheduler
@@ -136,7 +136,10 @@ namespace SmvLibrary
                 {
                     result = "Success";
                 }
-                lock (Utility.lockObject)
+
+                // Otherwise, add the next action to the queue, if any.
+
+lock (Utility.lockObject)
                 {
                     Utility.result[action.GetFullName()] = result;
                 }

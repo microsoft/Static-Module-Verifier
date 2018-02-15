@@ -242,7 +242,6 @@ namespace SmvSkeleton
                 catch (Exception e)
                 {
                     Log.LogFatalError("Exception while updating database " + e);
-                    return -1;
                 }
             }
             // Get the SMV version name.
@@ -250,13 +249,11 @@ namespace SmvSkeleton
             if (!File.Exists(smvVersionTxtPath))
             {
                 Log.LogFatalError("SmvVersionName.txt must exist in the SMV bin directory.");
-                return -1;
             }
             string[] lines = File.ReadAllLines(smvVersionTxtPath);
             if (lines.Length < 1)
             {
                 Log.LogFatalError("SmvVersionName.txt is empty.");
-                return -1;
             }
             Utility.version = lines[0];
 
@@ -265,7 +262,6 @@ namespace SmvSkeleton
             if (smvConfig == null)
             {
                 Log.LogFatalError("Could not load Config file");
-                return -1;
             }
             // Set the variables defined in the Variables node in the config file
             LoadGlobalVariables(smvConfig.Variables);
@@ -314,7 +310,6 @@ namespace SmvSkeleton
                 {
                     Utility.scheduler.Dispose();
                     Log.LogFatalError("Project file not set");
-                    return -1;
                 }
 
                 List<SMVActionResult> buildActionsResult = Utility.ExecuteActions(Utility.GetRootActions(smvConfig.Build));
@@ -366,7 +361,6 @@ namespace SmvSkeleton
             {
                 Utility.scheduler.Dispose();
                 Log.LogFatalError("Build failed, skipping Analysis.");
-                return -1;
             }
 
             Utility.PrintResult(Utility.result, (int)buildTime, (int)analysisTime, true);

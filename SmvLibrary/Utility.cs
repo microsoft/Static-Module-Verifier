@@ -647,19 +647,11 @@ namespace SmvLibrary
                     // unhealthy after exiting here...
                     if (action.breakOnError)
                     {
-                        if (fromWorker)
-                        {
-                            Log.LogError(String.Format("Action: {0}, failed.", name));
-                        }
-                        else
+                        if (!fromWorker)
                         {
                             scheduler.Dispose();
                             Log.LogFatalError(String.Format("Action: {0}, failed.", name));
                         }
-                    }
-                    else
-                    {
-                        Log.LogError(String.Format("Action: {0}, failed.", name));
                     }
                 }
 
@@ -1108,16 +1100,38 @@ namespace SmvLibrary
             {
                 output = output.Replace("\r\n", Environment.NewLine);
 
-                // Razzle
-                Match match = Regex.Match(output, @"cl.exe @(.*?)$", RegexOptions.Multiline);
+                string regex = String.Format(CultureInfo.InvariantCulture, "/F{0}\"(\\S+)\"|/F{0}(\\S+)", "[a|d|m|p|R|e|o|r|i]");
+                Match matchFromRspPath = Regex.Match(output, @"cl.exe @(.*?)$", RegexOptions.Multiline);
+                Match matchFromRegex = Regex.Match(output, regex);
+
                 string path = String.Empty;
 
                 try
                 {
-                    if (match.Success)
+                    if (matchFromRegex.Success)
                     {
+                        string key = string.Empty;
+                        if (!string.IsNullOrEmpty(matchFromRegex.Groups[1].Value))
+                        {
+                            key = matchFromRegex.Groups[1].Value;
+                        }
+                        else if (!string.IsNullOrEmpty(matchFromRegex.Groups[2].Value))
+                        {
+                            key = matchFromRegex.Groups[2].Value;
+                        }
+                        else
+                        {
+                            Log.LogFatalError("Cannot extract build path from the log file!");
+                        }
+                        path = Path.Combine(workingDir, key.Trim());
+                        path = Path.GetDirectoryName(path);
+                        Log.LogInfo("Build path found - " + path, logger);
+                        return path;
 
-                        string key = match.Groups[1].Value;
+                    }
+                    else if (matchFromRspPath.Success)
+                    {
+                        string key = matchFromRspPath.Groups[1].Value;
                         path = key.Trim();
                         path = Path.GetDirectoryName(path);
 
@@ -1126,45 +1140,9 @@ namespace SmvLibrary
                     }
                     else
                     {
-                        //MSBuild
-                        string regex = String.Format(CultureInfo.InvariantCulture, "/F{0}\"(\\S+)\"|/F{0}(\\S+)", "[a|d|m|p|R|e|o|r|i]");
-                        match = Regex.Match(output, regex);
-
-                        if (match.Success)
-                        {
-                            string key = string.Empty;
-                            if (!string.IsNullOrEmpty(match.Groups[1].Value))
-                            {
-                                key = match.Groups[1].Value;
-                            }
-                            else if (!string.IsNullOrEmpty(match.Groups[2].Value))
-                            {
-                                key = match.Groups[2].Value;
-                            }
-                            else
-                            {
-                                Log.LogFatalError("Cannot extract build path from the log file!");
-                            }
-                            path = Path.Combine(workingDir, key.Trim());
-
-                            //detect whether its a directory or file. If file get the parent directory
-
-                            //FileAttributes attr = File.GetAttributes(path);
-
-                            //if ((attr & FileAttributes.Directory) != FileAttributes.Directory)
-                            //{
-                            //  path = Path.GetDirectoryName(path);                                
-                            //}
-                            path = Path.GetDirectoryName(path);
-                            Log.LogInfo("Build path found - " + path, logger);
-                            return path;
-                        }
-                        else
-                        {
-                            //Log.LogFatalError("Regex match failed, could not extract build path");
-                            //return string.Empty;
-                            return Environment.CurrentDirectory;
-                        }
+                        //Log.LogFatalError("Regex match failed, could not extract build path");
+                        //return string.Empty;
+                        return Environment.CurrentDirectory;
                     }
                 }
                 catch (Exception e)
