@@ -65,5 +65,10 @@ namespace SmvLineCounter
         }
 
         public void PostAnalysis(SMVAction[] analysisActions) { }
+
+        public int GenerateBugsCount()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -25,6 +25,7 @@ namespace SmvSkeleton
     {
         static SMVConfig smvConfig;
         const string configXmlFileName = "Config.xml";
+        private static bool makeDefectsPortable = false; // TODO
         private static bool doAnalysis = false;
         private static string buildLogFileNamePrefix = "smvbuild";
         private static bool cloud = false;
@@ -396,18 +397,21 @@ namespace SmvSkeleton
             localScheduler.Dispose();
             if (cloud) cloudScheduler.Dispose();
 
-            foreach (string bugDirectory in Directory.EnumerateDirectories(Path.Combine(Utility.smvVars["smvOutputDir"], "Bugs")))
+            if (makeDefectsPortable)
             {
-                try
+                foreach (string bugDirectory in Directory.EnumerateDirectories(Path.Combine(Utility.smvVars["smvOutputDir"], "Bugs")))
                 {
-                    Utility.makeDefectPortable(bugDirectory);
+                    try
+                    {
+                        Utility.makeDefectPortable(bugDirectory);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.LogFatalError("Exception occurred when making defect portable." + e.ToString());
+                    }
                 }
-                catch (Exception e)
-                {
-                    Log.LogFatalError("Exception occurred when making defect portable." + e.ToString());
-                }
+                Log.LogInfo("Defects, if any, made portable successfully");
             }
-            Log.LogInfo("Defects, if any, made portable successfully");
             return Convert.ToInt32(Utility.scheduler.errorsEncountered);
         }
 
