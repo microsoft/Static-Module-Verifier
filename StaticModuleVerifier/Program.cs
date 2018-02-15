@@ -209,7 +209,14 @@ namespace SmvSkeleton
             Utility.SetSmvVar("assemblyDir", Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
             Utility.SetSmvVar("configFilePath", Path.Combine(Utility.GetSmvVar("workingDir"), configXmlFileName));
             Utility.SetSmvVar("smvLogFileNamePrefix", buildLogFileNamePrefix);
+            try
+            {
+                Console.BufferHeight = Int16.MaxValue - 1;
+            }
+            catch (Exception)
+            {
 
+            }
             // Process commandline arguments.
             // Note that ProcessArgs will return false if execution should not continue. 
             // This happens in cases such as /help, /getAvailableModules, /searchmodules
@@ -301,6 +308,7 @@ namespace SmvSkeleton
 
                 if (string.IsNullOrEmpty(Utility.GetSmvVar("projectFile")))
                 {
+                    Utility.scheduler.Dispose();
                     Log.LogFatalError("Project file not set");
                 }
 
@@ -340,6 +348,7 @@ namespace SmvSkeleton
 
                         if (!analysisResult)
                         {
+                            Utility.scheduler.Dispose();
                             Log.LogFatalError("Analysis failed.");
                         }
 
@@ -350,15 +359,54 @@ namespace SmvSkeleton
             }
             else
             {
+                Utility.scheduler.Dispose();
                 Log.LogFatalError("Build failed, skipping Analysis.");
             }
 
             Utility.PrintResult(Utility.result, (int)buildTime, (int)analysisTime, true);
             Log.LogInfo(String.Format("Total time taken {0} seconds", (int)(buildTime + analysisTime)));
-
+            if (Utility.plugin != null)
+            {
+                int bugCount = Utility.plugin.GenerateBugsCount();
+                Log.LogInfo("Found " + bugCount + " bugs!");
+                if (useDb)
+                {
+                    try
+                    {
+                        using (var database = new SmvDbEntities())
+                        {
+                            SmvDb.Task task = database.Tasks.Where((x) => x.TaskID == Utility.taskId).FirstOrDefault();
+                            if (task != null)
+                            {
+                                string bugCountString = bugCount.ToString();
+                                task.Bugs = bugCountString;
+                                database.SaveChanges();
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Utility.scheduler.Dispose();
+                        Log.LogFatalError("Exception while updating database " + e);
+                        return -1;
+                    }
+                }
+            }
             localScheduler.Dispose();
             if (cloud) cloudScheduler.Dispose();
 
+            foreach (string bugDirectory in Directory.EnumerateDirectories(Path.Combine(Utility.smvVars["smvOutputDir"], "Bugs")))
+            {
+                try
+                {
+                    Utility.makeDefectPortable(bugDirectory);
+                }
+                catch (Exception e)
+                {
+                    Log.LogFatalError("Exception occurred when making defect portable." + e.ToString());
+                }
+            }
+            Log.LogInfo("Defects, if any, made portable successfully");
             return Convert.ToInt32(Utility.scheduler.errorsEncountered);
         }
 

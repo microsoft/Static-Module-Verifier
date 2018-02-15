@@ -124,6 +124,11 @@ namespace SmvLibrary
         public static void CopyFile(string source, string destination, TextWriter logger)
         {
             Log.LogInfo(String.Format(CultureInfo.InvariantCulture, "Copying file {0} to {1}.", source, destination), logger);
+            string destinationFolder = Path.GetDirectoryName(destination);
+            if (!Directory.Exists(destinationFolder))
+            {
+                Directory.CreateDirectory(destinationFolder);
+            }
             File.Copy(source, destination, true);
         }
 
@@ -424,6 +429,7 @@ namespace SmvLibrary
         /// <param name="context"></param>
         static void DoneExecuteAction(SMVAction action, IEnumerable<SMVActionResult> results, object context)
         {
+            Log.LogDebug("Reached DoneExecuteAction for " + action.GetFullName());
             actionResults.AddRange(results);
 
             var countDownEvent = context as CountdownEvent;
@@ -435,8 +441,9 @@ namespace SmvLibrary
         /// </summary>
         /// <param name="action">The action to be executed.</param>
         /// <returns>An SMVActionResult object representing the result of executing the action.</returns>
-        public static SMVActionResult ExecuteAction(SMVAction action, bool fromWorker)
+        public static SMVActionResult ExecuteAction(SMVAction action, bool fromWorker, bool workerUseDb, string workerTaskId)
         {
+
             // NOTE: The code in this function must be thread safe.
             if (action == null)
             {
@@ -447,6 +454,11 @@ namespace SmvLibrary
             if (plugin != null)
             {
                 plugin.PreAction(action);
+            }
+
+            if (fromWorker)
+            {
+                taskId = workerTaskId;
             }
 
             using (MemoryStream stream = new MemoryStream())
@@ -532,7 +544,7 @@ namespace SmvLibrary
                             TimeSpan span = process.ExitTime - process.StartTime;
                             Log.LogMessage(string.Format("Command Exit code: {0}", process.ExitCode), logger);
                             cumulativeExitCode += Math.Abs(process.ExitCode);
-                            if (useDb)
+                            if (useDb || (fromWorker && workerUseDb))
                             {
                                 try
                                 {
@@ -559,6 +571,7 @@ namespace SmvLibrary
                                     }
                                     else
                                     {
+                                        scheduler.Dispose();
                                         Log.LogFatalError("Exception while updating database " + e);
                                     }
                                 }
@@ -609,9 +622,10 @@ namespace SmvLibrary
                     {
                         string logPath = Path.Combine(variables["workingDir"], variables["smvLogFileNamePrefix"] + ".log");
                         action.result.output = Utility.ReadFile(logPath);
-
-                        variables["outputDir"] = ExtractBuildPath(variables["workingDir"], action.result.output, logger);
-                        Utility.SetSmvVar("outputDir", variables["outputDir"]);
+                        if (!variables.ContainsKey("outputDir")){
+                            variables["outputDir"] = ExtractBuildPath(variables["workingDir"], action.result.output, logger);
+                            Utility.SetSmvVar("outputDir", variables["outputDir"]);
+                        }
                     }
 
                     // Get the output directory and the analysis directory.
@@ -635,6 +649,7 @@ namespace SmvLibrary
                     {
                         if (!fromWorker)
                         {
+                            scheduler.Dispose();
                             Log.LogFatalError(String.Format("Action: {0}, failed.", name));
                         }
                     }
@@ -675,6 +690,69 @@ namespace SmvLibrary
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Makes the defect portable in the bug folder path passed as parameter
+        /// </summary>
+        /// <param name="bugFolderPath"></param>
+        public static void makeDefectPortable(string bugFolderPath)
+        {
+            if (!Directory.Exists(bugFolderPath))
+            {
+                Log.LogFatalError("Bug folder path not found");
+            }
+            try
+            {
+                //to update defect.tt file
+                string defectTtFileContents = File.ReadAllText(bugFolderPath + "\\defect.tt");
+
+                string pattern = @"([a-zA-Z]:[\\[a-zA-Z0-9 ._-]+]*\.?[a-zA-Z]+)";
+                List<string> files = new List<string>();
+
+                foreach (Match match in Regex.Matches(defectTtFileContents, pattern))
+                {
+                    if (!files.Contains(match.Value))
+                    {
+                        files.Add(match.Value);
+                    }
+                }
+
+                //getting smvsrcfiles to an array
+                string smvSrcFilesPath = Path.Combine(smvVars["smvOutputDir"], "smvsrcfiles");
+                if (File.Exists(smvSrcFilesPath)){
+                    string[] smvSrcFiles = File.ReadAllLines(smvSrcFilesPath);
+                    foreach (string smvSrcFile in smvSrcFiles)
+                    {
+                        if (!files.Contains(smvSrcFile))
+                        {
+                            files.Add(smvSrcFile);
+                        }
+                    }
+                }
+
+                foreach (string file in files)
+                {
+                    try
+                    {
+                        string destinationPath = Path.Combine("src", file.Trim().Replace(":", ""));
+                        CopyFile(file.Trim(), Path.Combine(bugFolderPath, destinationPath), null);
+                        defectTtFileContents = defectTtFileContents.Replace(file.Trim(), destinationPath);
+                    }
+                    catch (Exception)
+                    {
+                        Log.LogError("Exception while copying " + file + "while making defects portable");
+                        continue;
+                    }
+                }
+
+                File.WriteAllText(bugFolderPath + "\\defect.tt", defectTtFileContents);
+            }
+
+            catch (Exception e)
+            {
+                Log.LogFatalError("Exception occurred in trying to make defect portable - " + e);
+            }
         }
 
         /// <summary>

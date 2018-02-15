@@ -36,6 +36,7 @@ namespace SmvDb
         public virtual DbSet<TaskModule> TaskModules { get; set; }
         public virtual DbSet<TaskPlugin> TaskPlugins { get; set; }
         public virtual DbSet<Task> Tasks { get; set; }
+        public virtual DbSet<RollUpTable> RollUpTables { get; set; }
     
         public virtual ObjectResult<ActionDiffBetweenTwoSessions_Result> ActionDiffBetweenTwoSessions(string firstSession, string secondSession)
         {
@@ -48,6 +49,15 @@ namespace SmvDb
                 new ObjectParameter("SecondSession", typeof(string));
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<ActionDiffBetweenTwoSessions_Result>("ActionDiffBetweenTwoSessions", firstSessionParameter, secondSessionParameter);
+        }
+    
+        public virtual int InsertDataToRollUpTable(string taskId)
+        {
+            var taskIdParameter = taskId != null ?
+                new ObjectParameter("taskId", taskId) :
+                new ObjectParameter("taskId", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("InsertDataToRollUpTable", taskIdParameter);
         }
     
         public virtual int ModuleDiffBetweenTwoSessions(string firstSession, string secondSession)
@@ -101,6 +111,33 @@ namespace SmvDb
                 new ObjectParameter("pluginId", typeof(string));
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<PluginOverview_Result>("PluginOverview", pluginIdParameter);
+        }
+    
+        public virtual ObjectResult<SessionActionFailureDetails_Result> SessionActionFailureDetails(string sessionId)
+        {
+            var sessionIdParameter = sessionId != null ?
+                new ObjectParameter("sessionId", sessionId) :
+                new ObjectParameter("sessionId", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<SessionActionFailureDetails_Result>("SessionActionFailureDetails", sessionIdParameter);
+        }
+    
+        public virtual ObjectResult<SessionActionFailureSummary_Result> SessionActionFailureSummary(string sessionId)
+        {
+            var sessionIdParameter = sessionId != null ?
+                new ObjectParameter("sessionId", sessionId) :
+                new ObjectParameter("sessionId", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<SessionActionFailureSummary_Result>("SessionActionFailureSummary", sessionIdParameter);
+        }
+    
+        public virtual ObjectResult<SessionBugDetails_Result> SessionBugDetails(string sessionId)
+        {
+            var sessionIdParameter = sessionId != null ?
+                new ObjectParameter("sessionId", sessionId) :
+                new ObjectParameter("sessionId", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<SessionBugDetails_Result>("SessionBugDetails", sessionIdParameter);
         }
     
         public virtual ObjectResult<SummaryTableForSession_Result> SummaryTableForSession(string sessionId)

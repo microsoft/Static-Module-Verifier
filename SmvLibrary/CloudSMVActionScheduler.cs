@@ -15,6 +15,8 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using SMVActionsTable;
+using Newtonsoft.Json;
+using System.Threading;
 
 namespace SmvLibrary
 {
@@ -128,12 +130,25 @@ namespace SmvLibrary
                         catch (Exception e)
                         {
                             Log.LogError("Exception when completing action for " + msg.MessageId);
-                            Log.LogFatalError(e.ToString());
+                            Log.LogError(e.ToString());
+                            cloudExceptionCallback(msg);
                             msg.Abandon();
                         }
                     });
                     // If we're here, we've successfully initialized everything and can break out of the retry loop.
                     break;
+                }
+                catch(MessagingEntityAlreadyExistsException e)
+                {
+                    Thread.Sleep(60000);
+                    if(e.IsTransient && retriesLeft > 0)
+                    {
+                        retriesLeft--;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -152,44 +167,59 @@ namespace SmvLibrary
 
         public void AddAction(SMVAction action, SMVActionCompleteCallBack callback, object context)
         {
-            Log.LogDebug("Adding action " + action.GetFullName());
-            string actionGuid = Guid.NewGuid().ToString();
-            // Upload action directory to blob storage.
+            try
+            {
+                Log.LogDebug("Reached AddAction of cloud" + action.GetFullName());
+                Log.LogDebug("Adding action " + action.GetFullName());
+                string actionGuid = Guid.NewGuid().ToString();
+                // Upload action directory to blob storage.
 
-            string actionPath = Utility.GetActionDirectory(action);
-            string zipPath = Path.Combine(Path.GetTempPath(), actionGuid);
-            if (File.Exists(zipPath)) File.Delete(zipPath);
-            ZipFile.CreateFromDirectory(actionPath, zipPath);
-            Log.LogDebug("Created zip for " + actionPath);
+                string actionPath = Utility.GetActionDirectory(action);
+                string zipPath = Path.Combine(Path.GetTempPath(), actionGuid);
+                if (File.Exists(zipPath)) File.Delete(zipPath);
+                ZipFile.CreateFromDirectory(actionPath, zipPath);
+                Log.LogDebug("Created zip for " + actionPath);
 
-            CloudBlockBlob blob = inputContainer.GetBlockBlobReference(actionGuid + ".zip");
-            blob.UploadFromFile(zipPath);
-            File.Delete(zipPath);
-            Log.LogDebug("Uploaded blob " + blob.Name);
+                CloudBlockBlob blob = inputContainer.GetBlockBlobReference(actionGuid + ".zip");
+                blob.UploadFromFile(zipPath);
+                File.Delete(zipPath);
+                Log.LogDebug("Uploaded blob " + blob.Name);
 
-            // Add entry to table storage.
+                // Add entry to table storage.
 
-            // TODO: Due to constraints on sizes of properties in Azure table entities, serializedAction cannot be larger
-            // than 64kB. Fix this if this becomes an issue.
-            byte[] serializedAction = Utility.ObjectToByteArray(action);
-            string moduleHash = string.Empty;
-            ActionsTableEntry entry = new ActionsTableEntry(action.name, actionGuid, schedulerInstanceGuid, serializedAction,
-                Utility.version, null, moduleHash);
-            tableDataSource.AddEntry(entry);
+                // TODO: Due to constraints on sizes of properties in Azure table entities, serializedAction cannot be larger
+                // than 64kB. Fix this if this becomes an issue.
+                byte[] serializedAction = Utility.ObjectToByteArray(action);
+                string moduleHash = string.Empty;
+                ActionsTableEntry entry = new ActionsTableEntry(action.name, actionGuid, schedulerInstanceGuid, serializedAction,
+                    Utility.version, null, moduleHash);
+                tableDataSource.AddEntry(entry);
 
-            Log.LogDebug("Added to table " + entry.PartitionKey + "," + entry.RowKey);
+                Log.LogDebug("Added to table " + entry.PartitionKey + "," + entry.RowKey);
+                CloudMessage cloudMessage = new CloudMessage();
+                cloudMessage.schedulerInstanceGuid = schedulerInstanceGuid;
+                cloudMessage.actionGuid = actionGuid;
+                cloudMessage.maxDequeueCount = maxDequeueCount;
+                cloudMessage.useDb = Utility.useDb;
+                cloudMessage.taskId = Utility.taskId;
 
-            // Add message to queue.        
-            //Log.LogInfo("Executing: " + action.GetFullName() + " [cloud id:" + actionGuid + "]");
-            string messageString = schedulerInstanceGuid + "," + actionGuid + "," + maxDequeueCount;
-            var message = new CloudQueueMessage(messageString);
-            actionsQueue.AddMessage(message);
+                string messageString = JsonConvert.SerializeObject(cloudMessage);
+                // Add message to queue.        
+                //Log.LogInfo("Executing: " + action.GetFullName() + " [cloud id:" + actionGuid + "]");
+                //string messageString = schedulerInstanceGuid + "," + actionGuid + "," + maxDequeueCount;
+                var message = new CloudQueueMessage(messageString);
+                actionsQueue.AddMessage(message);
 
-            Log.LogDebug("Adding to queue " + message.Id);
+                Log.LogDebug("Adding to queue " + message.Id);
 
-            contextDictionary[actionGuid] = new CloudActionCompleteContext(action, callback, context);
+                contextDictionary[actionGuid] = new CloudActionCompleteContext(action, callback, context);
 
-            Log.LogDebug("Done adding.");
+                Log.LogDebug("Done adding.");
+            } catch(Exception e)
+            {
+                Utility.scheduler.Dispose();
+                Log.LogFatalError(e.ToString());
+            }
         }
 
         /// <summary>
@@ -207,7 +237,7 @@ namespace SmvLibrary
             CloudActionCompleteContext context = contextDictionary[actionGuid];
             ActionsTableEntry entry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
             var action = (SMVAction)Utility.ByteArrayToObject(entry.SerializedAction);
-
+            Log.LogDebug("Reached ActionComplete of Cloud " + action.GetFullName());
             if(action.result == null)
             {
                 action.result = new SMVActionResult(action.name, "NO OUTPUT?", false, false, 0);
@@ -270,6 +300,20 @@ namespace SmvLibrary
             context.callback(context.action, results, context.context);
         }
 
+        public void cloudExceptionCallback(BrokeredMessage message)
+        {
+            var actionGuid = (string)message.Properties["ActionGuid"];
+            CloudActionCompleteContext context = contextDictionary[actionGuid];
+            ActionsTableEntry entry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
+            var action = (SMVAction)Utility.ByteArrayToObject(entry.SerializedAction);
+
+            context.action.analysisProperty = action.analysisProperty;
+            context.action.result = action.result;
+            context.action.variables = action.variables;
+            var results = new SMVActionResult[] { context.action.result };
+            context.callback(context.action, results, context.context);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposed)
@@ -277,6 +321,8 @@ namespace SmvLibrary
                 if (disposing)
                 {
                     // Clean up managed resources.
+                    subscriptionClient.Abort();
+                    namespaceManager.DeleteSubscription(CloudConstants.ResultsTopicName, schedulerInstanceGuid);
                 }
             }
             disposed = true;

@@ -65,7 +65,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="BackgroundJobScript.ps1" />
     <None Include="SmvAutomation.ps1" />
+    <None Include="SmvMsBuild.cmd" />
+    <None Include="SmvRazzle.cmd" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
@@ -80,6 +83,19 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(ProjectDir)..\SmvCmdlets\*.ps1 $(TargetDir)
+copy $(ProjectDir)..\SmvCmdlets\$(OutDir)EntityFramework.dll $(TargetDir)
+copy $(ProjectDir)..\SmvCmdlets\$(OutDir)EntityFramework.SqlServer.dll $(TargetDir)
+copy $(ProjectDir)..\SmvCmdlets\$(OutDir)Microsoft.WindowsAzure.Storage.dll $(TargetDir)
+copy $(ProjectDir)..\SmvCmdlets\$(OutDir)SmvCmdlets.dll $(TargetDir)
+copy $(ProjectDir)..\SmvCmdlets\$(OutDir)SmvCmdlets.dll.config $(TargetDir)
+copy $(ProjectDir)..\SmvCmdlets\$(OutDir)SmvDb.dll $(TargetDir)
+copy $(ProjectDir)SmvAutomation.ps1 $(TargetDir)
+copy $(ProjectDir)BackgroundJobScript.ps1 $(TargetDir)
+copy $(ProjectDir)SmvRazzle.cmd $(TargetDir)
+copy $(ProjectDir)SmvMsBuild.cmd $(TargetDir)</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

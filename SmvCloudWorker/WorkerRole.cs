@@ -15,6 +15,7 @@ using SMVActionsTable;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Microsoft.ServiceBus.Messaging;
 using Microsoft.ServiceBus;
+using Newtonsoft.Json;
 
 namespace SmvCloudWorker2
 {
@@ -71,19 +72,40 @@ namespace SmvCloudWorker2
                     currentMessage = inputQueue.GetMessage(TimeSpan.FromHours(1));
                     if (currentMessage != null)
                     {
-                        // Parse the message.
-                        string[] msgParts = currentMessage.AsString.Split(',');
-                        string schedulerInstanceGuid = msgParts[0];
-                        string actionGuid = msgParts[1];
+                        string schedulerInstanceGuid = String.Empty;
+                        string actionGuid = String.Empty;
                         int maxDequeueCount = 10;
+                        Boolean useDb = false;
+                        string taskId = String.Empty;
+
                         try
                         {
-                            if (msgParts.Count() > 2)
+                            CloudMessage message = JsonConvert.DeserializeObject<CloudMessage>(currentMessage.AsString);
+                            schedulerInstanceGuid = message.schedulerInstanceGuid;
+                            actionGuid = message.actionGuid;
+                            maxDequeueCount = message.maxDequeueCount;
+                            useDb = message.useDb;
+                            taskId = message.taskId;
+                        } catch(Exception e)
+                        {
+                            Log.LogInfo("Json message parsing failed. Trying old message parsing.");
+                            // Parse the message.
+                            string[] msgParts = currentMessage.AsString.Split(',');
+                            schedulerInstanceGuid = msgParts[0];
+                            actionGuid = msgParts[1];
+                            maxDequeueCount = 10;
+                            try
                             {
-                                maxDequeueCount = Convert.ToInt32(msgParts[2]);
+                                if (msgParts.Count() > 2)
+                                {
+                                    maxDequeueCount = Convert.ToInt32(msgParts[2]);
+                                }
+                            }
+                            catch (Exception) {
+                                Log.LogError("Message parsing failed.");
                             }
                         }
-                        catch(Exception){}
+                        
 
                         // Get the table entry.
                         ActionsTableEntry tableEntry = tableDataSource.GetEntry(schedulerInstanceGuid, actionGuid);
@@ -157,7 +179,7 @@ namespace SmvCloudWorker2
                             Utility.SetSmvVar("workingDir", workingDirectory);
 
                             // Execute the action.
-                            SMVActionResult result = Utility.ExecuteAction(action, true);
+                            SMVActionResult result = Utility.ExecuteAction(action, true, useDb, taskId);
                             
                             // Change the paths back to their old values.
                             foreach (var key in keys)

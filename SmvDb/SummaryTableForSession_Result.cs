@@ -13,10 +13,13 @@ namespace SmvDb
     
     public partial class SummaryTableForSession_Result
     {
+        public string SessionId { get; set; }
+        public string TaskId { get; set; }
         public string ModulePath { get; set; }
         public string PluginName { get; set; }
-        public Nullable<int> ActionSuccessCount { get; set; }
-        public Nullable<int> ActionFailureCount { get; set; }
+        public string Bugs { get; set; }
+        public int ActionSuccessCount { get; set; }
+        public int ActionFailureCount { get; set; }
         public string Command { get; set; }
         public string Arguments { get; set; }
     }

@@ -18,5 +18,6 @@ namespace SmvDb
         public string Log { get; set; }
         public string Command { get; set; }
         public string Arguments { get; set; }
+        public string Bugs { get; set; }
     }
 }

@@ -19,6 +19,28 @@
           <Property Name="PluginID" Type="varchar" MaxLength="50" Nullable="false" />
           <Property Name="PluginName" Type="varchar" MaxLength="50" Nullable="false" />
         </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'SmvDb.dbo.RollUpTable' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="RollUpTable">
+          <Key>
+            <PropertyRef Name="SessionId" />
+            <PropertyRef Name="TaskId" />
+            <PropertyRef Name="ModulePath" />
+            <PropertyRef Name="PluginName" />
+            <PropertyRef Name="ActionSuccessCount" />
+            <PropertyRef Name="ActionFailureCount" />
+            <PropertyRef Name="Command" />
+          </Key>
+          <Property Name="SessionId" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="TaskId" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="ModulePath" Type="varchar(max)" Nullable="false" />
+          <Property Name="PluginName" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Bugs" Type="varchar(max)" />
+          <Property Name="ActionSuccessCount" Type="int" Nullable="false" />
+          <Property Name="ActionFailureCount" Type="int" Nullable="false" />
+          <Property Name="Command" Type="varchar(max)" Nullable="false" />
+          <Property Name="Arguments" Type="varchar(max)" />
+        </EntityType>
         <EntityType Name="Sessions">
           <Key>
             <PropertyRef Name="SessionID" />
@@ -78,10 +100,14 @@
           <Property Name="Log" Type="varchar(max)" Nullable="false" />
           <Property Name="Command" Type="varchar(max)" Nullable="false" />
           <Property Name="Arguments" Type="varchar(max)" />
+          <Property Name="Bugs" Type="varchar(max)" />
         </EntityType>
         <Function Name="ActionDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="FirstSession" Type="varchar" Mode="In" />
           <Parameter Name="SecondSession" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="InsertDataToRollUpTable" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="taskId" Type="varchar" Mode="In" />
         </Function>
         <Function Name="ModuleDiffBetweenTwoSessions" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="FirstSession" Type="varchar" Mode="In" />
@@ -100,6 +126,15 @@
         <Function Name="PluginOverview" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="pluginId" Type="varchar" Mode="In" />
         </Function>
+        <Function Name="SessionActionFailureDetails" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionId" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="SessionActionFailureSummary" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionId" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="SessionBugDetails" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="sessionId" Type="varchar(max)" Mode="In" />
+        </Function>
         <Function Name="SummaryTableForSession" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="sessionId" Type="varchar" Mode="In" />
         </Function>
@@ -116,6 +151,19 @@
           <EntitySet Name="TaskModules" EntityType="Self.TaskModules" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="TaskPlugins" EntityType="Self.TaskPlugins" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Tasks" EntityType="Self.Tasks" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="RollUpTable" EntityType="Self.RollUpTable" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [RollUpTable].[SessionId] AS [SessionId], 
+    [RollUpTable].[TaskId] AS [TaskId], 
+    [RollUpTable].[ModulePath] AS [ModulePath], 
+    [RollUpTable].[PluginName] AS [PluginName], 
+    [RollUpTable].[Bugs] AS [Bugs], 
+    [RollUpTable].[ActionSuccessCount] AS [ActionSuccessCount], 
+    [RollUpTable].[ActionFailureCount] AS [ActionFailureCount], 
+    [RollUpTable].[Command] AS [Command], 
+    [RollUpTable].[Arguments] AS [Arguments]
+    FROM [dbo].[RollUpTable] AS [RollUpTable]</DefiningQuery>
+          </EntitySet>
         </EntityContainer>
       </Schema>
     </edmx:StorageModels>
@@ -195,6 +243,27 @@
           <Property Name="Log" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Command" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Name="Arguments" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="Bugs" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="RollUpTable">
+          <Key>
+            <PropertyRef Name="SessionId" />
+            <PropertyRef Name="TaskId" />
+            <PropertyRef Name="ModulePath" />
+            <PropertyRef Name="PluginName" />
+            <PropertyRef Name="ActionSuccessCount" />
+            <PropertyRef Name="ActionFailureCount" />
+            <PropertyRef Name="Command" />
+          </Key>
+          <Property Name="SessionId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="TaskId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="ModulePath" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="PluginName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Bugs" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="ActionSuccessCount" Type="Int32" Nullable="false" />
+          <Property Name="ActionFailureCount" Type="Int32" Nullable="false" />
+          <Property Name="Command" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Arguments" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityContainer Name="SmvDbEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Modules" EntityType="Self.Module" />
@@ -206,9 +275,13 @@
           <EntitySet Name="TaskModules" EntityType="Self.TaskModule" />
           <EntitySet Name="TaskPlugins" EntityType="Self.TaskPlugin" />
           <EntitySet Name="Tasks" EntityType="Self.Task" />
+          <EntitySet Name="RollUpTables" EntityType="Self.RollUpTable" />
           <FunctionImport Name="ActionDiffBetweenTwoSessions" ReturnType="Collection(SmvDbModel.ActionDiffBetweenTwoSessions_Result)">
             <Parameter Name="FirstSession" Mode="In" Type="String" />
             <Parameter Name="SecondSession" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="InsertDataToRollUpTable">
+            <Parameter Name="taskId" Mode="In" Type="String" />
           </FunctionImport>
           <FunctionImport Name="ModuleDiffBetweenTwoSessions">
             <Parameter Name="FirstSession" Mode="In" Type="String" />
@@ -227,6 +300,15 @@
           <FunctionImport Name="PluginOverview" ReturnType="Collection(SmvDbModel.PluginOverview_Result)">
             <Parameter Name="pluginId" Mode="In" Type="String" />
           </FunctionImport>
+          <FunctionImport Name="SessionActionFailureDetails" ReturnType="Collection(SmvDbModel.SessionActionFailureDetails_Result)">
+            <Parameter Name="sessionId" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SessionActionFailureSummary" ReturnType="Collection(SmvDbModel.SessionActionFailureSummary_Result)">
+            <Parameter Name="sessionId" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="SessionBugDetails" ReturnType="Collection(SmvDbModel.SessionBugDetails_Result)">
+            <Parameter Name="sessionId" Mode="In" Type="String" />
+          </FunctionImport>
           <FunctionImport Name="SummaryTableForSession" ReturnType="Collection(SmvDbModel.SummaryTableForSession_Result)">
             <Parameter Name="sessionId" Mode="In" Type="String" />
           </FunctionImport>
@@ -235,9 +317,11 @@
           </FunctionImport>
         </EntityContainer>
         <ComplexType Name="ActionDiffBetweenTwoSessions_Result">
-          <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
-          <Property Type="String" Name="WorkingDirectory" Nullable="false" />
-          <Property Type="String" Name="Success" Nullable="false" MaxLength="10" />
+          <Property Type="String" Name="ModulePath" Nullable="false" />
+          <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="Bugs" Nullable="true" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="false" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="false" />
         </ComplexType>
         <ComplexType Name="ModuleOverview_Result">
           <Property Type="String" Name="SessionID" Nullable="false" MaxLength="50" />
@@ -257,11 +341,31 @@
           <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
           <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
         </ComplexType>
-        <ComplexType Name="SummaryTableForSession_Result">
+        <ComplexType Name="SessionActionFailureDetails_Result">
+          <Property Type="String" Name="WorkingDirectory" Nullable="false" />
+          <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="Success" Nullable="false" MaxLength="10" />
+        </ComplexType>
+        <ComplexType Name="SessionActionFailureSummary_Result">
+          <Property Type="String" Name="ActionName" Nullable="false" MaxLength="50" />
+          <Property Type="Int32" Name="Count" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="SessionBugDetails_Result">
+          <Property Type="String" Name="SessionID" Nullable="false" MaxLength="50" />
           <Property Type="String" Name="ModulePath" Nullable="false" />
           <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
-          <Property Type="Int32" Name="ActionSuccessCount" Nullable="true" />
-          <Property Type="Int32" Name="ActionFailureCount" Nullable="true" />
+          <Property Type="String" Name="Command" Nullable="false" />
+          <Property Type="String" Name="Arguments" Nullable="true" />
+          <Property Type="String" Name="Bugs" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="SummaryTableForSession_Result">
+          <Property Type="String" Name="SessionId" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="TaskId" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="ModulePath" Nullable="false" />
+          <Property Type="String" Name="PluginName" Nullable="false" MaxLength="50" />
+          <Property Type="String" Name="Bugs" Nullable="true" />
+          <Property Type="Int32" Name="ActionSuccessCount" Nullable="false" />
+          <Property Type="Int32" Name="ActionFailureCount" Nullable="false" />
           <Property Type="String" Name="Command" Nullable="false" />
           <Property Type="String" Name="Arguments" Nullable="true" />
         </ComplexType>
@@ -359,18 +463,37 @@
                 <ScalarProperty Name="Log" ColumnName="Log" />
                 <ScalarProperty Name="Command" ColumnName="Command" />
                 <ScalarProperty Name="Arguments" ColumnName="Arguments" />
+                <ScalarProperty Name="Bugs" ColumnName="Bugs" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="RollUpTables">
+            <EntityTypeMapping TypeName="SmvDbModel.RollUpTable">
+              <MappingFragment StoreEntitySet="RollUpTable">
+                <ScalarProperty Name="SessionId" ColumnName="SessionId" />
+                <ScalarProperty Name="TaskId" ColumnName="TaskId" />
+                <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="Bugs" ColumnName="Bugs" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
+                <ScalarProperty Name="Command" ColumnName="Command" />
+                <ScalarProperty Name="Arguments" ColumnName="Arguments" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <FunctionImportMapping FunctionImportName="ActionDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.ActionDiffBetweenTwoSessions">
             <ResultMapping>
               <ComplexTypeMapping TypeName="SmvDbModel.ActionDiffBetweenTwoSessions_Result">
-                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
-                <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
-                <ScalarProperty Name="Success" ColumnName="Success" />
+                <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="Bugs" ColumnName="Bugs" />
+                <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
+                <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="InsertDataToRollUpTable" FunctionName="SmvDbModel.Store.InsertDataToRollUpTable" />
           <FunctionImportMapping FunctionImportName="ModuleDiffBetweenTwoSessions" FunctionName="SmvDbModel.Store.ModuleDiffBetweenTwoSessions" />
           <FunctionImportMapping FunctionImportName="ModuleOverview" FunctionName="SmvDbModel.Store.ModuleOverview">
             <ResultMapping>
@@ -403,11 +526,43 @@
               </ComplexTypeMapping>
             </ResultMapping>
           </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="SessionActionFailureDetails" FunctionName="SmvDbModel.Store.SessionActionFailureDetails">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.SessionActionFailureDetails_Result">
+                <ScalarProperty Name="WorkingDirectory" ColumnName="WorkingDirectory" />
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="Success" ColumnName="Success" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="SessionActionFailureSummary" FunctionName="SmvDbModel.Store.SessionActionFailureSummary">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.SessionActionFailureSummary_Result">
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="Count" ColumnName="Count" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="SessionBugDetails" FunctionName="SmvDbModel.Store.SessionBugDetails">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="SmvDbModel.SessionBugDetails_Result">
+                <ScalarProperty Name="SessionID" ColumnName="SessionID" />
+                <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
+                <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="Command" ColumnName="Command" />
+                <ScalarProperty Name="Arguments" ColumnName="Arguments" />
+                <ScalarProperty Name="Bugs" ColumnName="Bugs" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
           <FunctionImportMapping FunctionImportName="SummaryTableForSession" FunctionName="SmvDbModel.Store.SummaryTableForSession">
             <ResultMapping>
               <ComplexTypeMapping TypeName="SmvDbModel.SummaryTableForSession_Result">
+                <ScalarProperty Name="SessionId" ColumnName="SessionId" />
+                <ScalarProperty Name="TaskId" ColumnName="TaskId" />
                 <ScalarProperty Name="ModulePath" ColumnName="ModulePath" />
                 <ScalarProperty Name="PluginName" ColumnName="PluginName" />
+                <ScalarProperty Name="Bugs" ColumnName="Bugs" />
                 <ScalarProperty Name="ActionSuccessCount" ColumnName="ActionSuccessCount" />
                 <ScalarProperty Name="ActionFailureCount" ColumnName="ActionFailureCount" />
                 <ScalarProperty Name="Command" ColumnName="Command" />

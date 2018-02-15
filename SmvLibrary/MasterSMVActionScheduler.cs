@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
-
+https://github.com/Microsoft/Static-Module-Verifier/pull/25/conflict?name=SmvLibrary%252FUtility.cs&ancestor_oid=d19ebc04bb723676b04a5dfdc1b6a0106a20ef89&base_oid=92e890ad9e57913341ef398f18fe7b233805d0ae&head_oid=648d5bb769ea85638fd85d8682410f0a41594081
 namespace SmvLibrary
 {
     public class MasterSMVActionScheduler : ISMVActionScheduler
@@ -74,6 +74,7 @@ namespace SmvLibrary
         /// </summary>
         private void Execute()
         {
+            Log.LogDebug("Reached Execute of Master");
             while (!done)
             {
                 ActionsQueueEntry entry;
@@ -109,6 +110,8 @@ namespace SmvLibrary
         /// <param name="context">A context object.</param>
         private void ActionComplete(SMVAction a, IEnumerable<SMVActionResult> results, object context)
         {
+            Log.LogDebug("Reached ActionComplete of Master " + a.GetFullName());
+
             var entry = context as ActionsQueueEntry;
             SMVAction action = entry.Action;
             SMVActionCompleteCallBack callback = entry.Callback;
@@ -133,8 +136,10 @@ namespace SmvLibrary
                 {
                     result = "Success";
                 }
+
                 // Otherwise, add the next action to the queue, if any.
-                lock (Utility.lockObject)
+
+lock (Utility.lockObject)
                 {
                     Utility.result[action.GetFullName()] = result;
                 }
@@ -155,7 +160,6 @@ namespace SmvLibrary
 
                         DebugUtility.DumpVariables(entry.Action.variables, "entry.action");
                         DebugUtility.DumpVariables(Utility.smvVars, "smvvars");
-
                         nextAction.variables = Utility.smvVars.Union(entry.Action.variables).ToDictionary(g => g.Key, g => g.Value);
                         this.AddAction(nextAction, entry.Callback, entry.Context);
                     }
@@ -167,8 +171,8 @@ namespace SmvLibrary
             }
             catch (Exception e)
             {
-                Log.LogError("Error processing finalization for action " + action.GetFullName());
-                Console.WriteLine(e);
+                Log.LogError("Error processing finalization for action " + action.GetFullName() + "\n" + e);
+
                 action.result.output = e.ToString();
                 entry.Callback(action, entry.Results, entry.Context);
             }
@@ -186,6 +190,7 @@ namespace SmvLibrary
             }
         }
 
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposed)
@@ -194,6 +199,14 @@ namespace SmvLibrary
                 {
                     // Clean up managed resources.
                     done = true;
+                    if (schedulers.ContainsKey("cloud"))
+                    {
+                        CloudSMVActionScheduler cloudScheduler = (CloudSMVActionScheduler)schedulers["cloud"];
+                        if (cloudScheduler != null)
+                        {
+                            cloudScheduler.Dispose();
+                        }
+                    }
                 }
             }
             disposed = true;
