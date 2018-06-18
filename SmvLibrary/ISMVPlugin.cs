@@ -55,6 +55,11 @@ namespace SmvLibrary
         /// <param name="analysisResult">List of result of the analysis actions.</param>
         void PostAnalysis(SMVAction[] analysisActions);
 
+        /// <summary>
+        /// Called after everything is completed, either with or without failure. 
+        /// </summary>
+        void Finally(bool failures);
+
         int GenerateBugsCount();
     }
 }
