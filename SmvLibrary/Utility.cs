@@ -651,6 +651,7 @@ namespace SmvLibrary
                         if (!fromWorker)
                         {
                             scheduler.Dispose();
+                            plugin.Finally(true);
                             Log.LogFatalError(String.Format("Action: {0}, failed.", name));
                         }
                     }

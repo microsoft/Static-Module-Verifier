@@ -317,6 +317,10 @@ namespace SmvSkeleton
 
                 List<SMVActionResult> buildActionsResult = Utility.ExecuteActions(Utility.GetRootActions(smvConfig.Build));
                 buildResult = Utility.IsExecuteActionsSuccessful(buildActionsResult);
+                if (Utility.plugin != null && buildResult == false)
+                {
+                    Utility.plugin.Finally(true);
+                }
 
                 if (Utility.plugin != null)
                 {
