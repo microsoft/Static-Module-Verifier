@@ -70,5 +70,10 @@ namespace SmvLineCounter
         {
             throw new NotImplementedException();
         }
+
+        public void Finally(bool failures)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
