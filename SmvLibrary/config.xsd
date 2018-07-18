@@ -4,8 +4,7 @@
     xmlns:xi="http://www.w3.org/2001/XInclude"
     > 
     
-    <xs:import namespace="http://www.w3.org/XML/1998/namespace"
-        schemaLocation="http://www.w3.org/2009/01/xml.xsd"/>
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <!-- Please don't add any comments with double hyphens in them.                                                                              -->
     <!-- XML does not support a double hyphen within a comment, since it is a delimiter.                                                         -->
     <!-- Available variables which can be used inside actions                                                                                    -->
