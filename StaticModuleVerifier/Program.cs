@@ -265,6 +265,7 @@ namespace SmvSkeleton
             {
                 Log.LogFatalError("Could not load Config file");
             }
+
             // Set the variables defined in the Variables node in the config file
             LoadGlobalVariables(smvConfig.Variables);
 
@@ -316,6 +317,10 @@ namespace SmvSkeleton
 
                 List<SMVActionResult> buildActionsResult = Utility.ExecuteActions(Utility.GetRootActions(smvConfig.Build));
                 buildResult = Utility.IsExecuteActionsSuccessful(buildActionsResult);
+                if (Utility.plugin != null && buildResult == false)
+                {
+                    Utility.plugin.Finally(true);
+                }
 
                 if (Utility.plugin != null)
                 {
@@ -351,6 +356,7 @@ namespace SmvSkeleton
                         if (!analysisResult)
                         {
                             Utility.scheduler.Dispose();
+                            Utility.plugin.Finally(true);
                             Log.LogFatalError("Analysis failed.");
                         }
 
@@ -358,15 +364,19 @@ namespace SmvSkeleton
                         analysisTime = sw.Elapsed.TotalSeconds;
                     }
                 }
+                Utility.plugin.Finally(false);
             }
             else
             {
+                Utility.plugin.Finally(true);
                 Utility.scheduler.Dispose();
                 Log.LogFatalError("Build failed, skipping Analysis.");
             }
 
             Utility.PrintResult(Utility.result, (int)buildTime, (int)analysisTime, true);
+
             Log.LogInfo(String.Format("Total time taken {0} seconds", (int)(buildTime + analysisTime)));
+
             if (Utility.plugin != null)
             {
                 int bugCount = Utility.plugin.GenerateBugsCount();
