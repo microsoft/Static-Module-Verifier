@@ -202,7 +202,7 @@ namespace SmvInterceptorWrapper
 
                 p = System.Diagnostics.Process.Start(psi);
                 File.WriteAllText(outDir + "\\smvlink1.log", p.StandardOutput.ReadToEnd());
-                File.AppendAllText(outDir + "\\smvlink1.log", p.StandardOutput.ReadToEnd());
+                File.AppendAllText(outDir + "\\smvlink1.log", p.StandardError.ReadToEnd());
 
                 p.WaitForExit();
                 if (p.ExitCode != 0) return p.ExitCode;
