@@ -132,8 +132,18 @@ namespace SmvInterceptorWrapper
                     psi.EnvironmentVariables.Add("Esp.CfgPersist.ExpandLocalStaticInitializer", "1");
                     psi.EnvironmentVariables.Add("ESP.BplFilesDir", smvOutDir);
                 }
-                
+
                 //Console.WriteLine("iwrap: cl.exe --> " + psi.FileName + " " + psi.Arguments);
+
+                WriteCallLog("LAUNCH: iwrap: cl.exe-- > " + psi.FileName + " " + psi.Arguments);
+                WriteCallLog("PATH: " + Environment.ExpandEnvironmentVariables("%PATH%"));
+                WriteCallLog("SDV: " + Environment.ExpandEnvironmentVariables("%sdv%"));
+                WriteCallLog("SMV: " + Environment.ExpandEnvironmentVariables("%smv%"));
+                WriteCallLog("BE: " + Environment.ExpandEnvironmentVariables("%be%"));
+                WriteCallLog("SMV_OUTPUT_DIR: " + Environment.ExpandEnvironmentVariables("%SMV_OUTPUT_DIR%"));
+                WriteCallLog("STATIC_DRIVER_VERIFIER: " + Environment.ExpandEnvironmentVariables("%STATIC_DRIVER_VERIFIER%"));
+                WriteCallLog("SDVFROMGIT: " + Environment.ExpandEnvironmentVariables("%SDVFROMGIT%"));
+                WriteCallLog("SETERROR_64: " + Environment.ExpandEnvironmentVariables("%SETERROR_64%"));
 
                 Process p = System.Diagnostics.Process.Start(psi);
 
@@ -141,6 +151,9 @@ namespace SmvInterceptorWrapper
                 smvclLogContents.Append(p.StandardError.ReadToEnd());
                 File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
                 p.WaitForExit();
+
+                WriteCallLog("EXIT: CL.exe.  Exit code: " + p.ExitCode);
+
                 return p.ExitCode;
             }
             #endregion
@@ -192,11 +205,23 @@ namespace SmvInterceptorWrapper
                 ProcessStartInfo psi;
                 Process p;
 
+
                 psi = new ProcessStartInfo(Environment.ExpandEnvironmentVariables("slamcl_writer.exe"), "--smv *");
                 psi.RedirectStandardError = true;
                 psi.RedirectStandardOutput = true;
                 psi.UseShellExecute = false;
                 psi.WorkingDirectory = outDir;
+
+                WriteCallLog("LAUNCH: link: slamcl_writer.exe-- > " + psi.FileName + " " + psi.Arguments);
+                WriteCallLog("PATH: " + Environment.ExpandEnvironmentVariables("%PATH%"));
+                WriteCallLog("SDV: " + Environment.ExpandEnvironmentVariables("%sdv%"));
+                WriteCallLog("SMV: " + Environment.ExpandEnvironmentVariables("%smv%"));
+                WriteCallLog("BE: " + Environment.ExpandEnvironmentVariables("%be%"));
+                WriteCallLog("SMV_OUTPUT_DIR: " + Environment.ExpandEnvironmentVariables("%SMV_OUTPUT_DIR%"));
+                WriteCallLog("STATIC_DRIVER_VERIFIER: " + Environment.ExpandEnvironmentVariables("%STATIC_DRIVER_VERIFIER%"));
+                WriteCallLog("SDVFROMGIT: " + Environment.ExpandEnvironmentVariables("%SDVFROMGIT%"));
+                WriteCallLog("SETERROR_64: " + Environment.ExpandEnvironmentVariables("%SETERROR_64%"));
+
 
                 //Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
 
@@ -205,6 +230,8 @@ namespace SmvInterceptorWrapper
                 File.AppendAllText(outDir + "\\smvlink1.log", p.StandardError.ReadToEnd());
 
                 p.WaitForExit();
+
+                WriteCallLog("EXIT: slamcl_writer.exe.  Exit code: " + p.ExitCode);
                 if (p.ExitCode != 0) return p.ExitCode;
 
                 files = files.Select(x => x + ".rawcfgf.obj").ToArray();
@@ -212,6 +239,7 @@ namespace SmvInterceptorWrapper
                 // if only 1 li file then just copy that to slam.li
                 if (files.Length == 1)
                 {
+                    WriteCallLog("DEBUG: only one .rawcfgf.obj file found.");
                     File.Copy(outDir + "\\" + files.ElementAt(0) + ".li", outDir + "\\slam.li", true);
                 }
                 else
@@ -223,6 +251,10 @@ namespace SmvInterceptorWrapper
                     psi.UseShellExecute = false;
                     psi.WorkingDirectory = outDir;
                     psi.Arguments = " --lib " + string.Join(" ", files);
+
+                    WriteCallLog("DEBUG: about to run slamlink on " + files.Length + " .rawcfgf.obj files");
+                    WriteCallLog("LAUNCH: iwrap: slamlink.exe-- > " + psi.FileName + " " + psi.Arguments);
+
                     //Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
                     Process slamLinkProcess = System.Diagnostics.Process.Start(psi);
                     File.AppendAllText(Path.Combine(outDir, "smvlink2.log"), slamLinkProcess.StandardOutput.ReadToEnd());
@@ -234,6 +266,8 @@ namespace SmvInterceptorWrapper
                         File.Copy(outDir + "\\slam.lib.li", outDir + "\\slam.li", true);
                     }
                     slamLinkProcess.WaitForExit();
+
+                    WriteCallLog("EXIT: slamlink.exe.  Exit code: " + slamLinkProcess.ExitCode);
                     if (slamLinkProcess.ExitCode != 0) return slamLinkProcess.ExitCode;
                 }
 
@@ -255,12 +289,15 @@ namespace SmvInterceptorWrapper
 
                 libs.RemoveAll(l => string.IsNullOrEmpty(l));
 
+                WriteCallLog("DEBUG: About to attempt processing " + libs.Count + " libraries." );
+
                 foreach (string l in libs)
                 {
                     //Console.WriteLine("lib is " + l);
                     if (l.Equals(outDir)) continue;
                     try
                     {
+                        WriteCallLog("DEBUG: Processing lib " + l);
                         string[] liFilesInLibDir = Directory.GetFiles(l, "slam.li");
 
                         foreach (string liFile in liFilesInLibDir)
@@ -278,7 +315,13 @@ namespace SmvInterceptorWrapper
                             psi.UseShellExecute = false;
                             psi.WorkingDirectory = outDir;
                             psi.Arguments = " --lib slamorig.obj slamlib.obj /out:slamout.obj";
+
+                            WriteCallLog("DEBUG: about to run slamlink on " + liFile);
+                            WriteCallLog("LAUNCH: iwrap: slamlink.exe-- > " + psi.FileName + " " + psi.Arguments);
+
                             slamLinkProcess = System.Diagnostics.Process.Start(psi);
+
+                            WriteCallLog("EXIT: slamlink.exe.  Exit code: " + slamLinkProcess.ExitCode);
 
                             File.WriteAllText(outDir + "\\smvlink.log", slamLinkProcess.StandardOutput.ReadToEnd());
                             File.AppendAllText(outDir + "\\smvlink.log", slamLinkProcess.StandardError.ReadToEnd());
@@ -296,6 +339,9 @@ namespace SmvInterceptorWrapper
                         File.Copy(outDir + "\\slamout.obj.li", outDir + "\\slam.li", true);
                     }
                 }
+
+                WriteCallLog("DEBUG: Succesfully exiting link.exe section.");
+
                 return 0;
             }
             #endregion
@@ -303,6 +349,7 @@ namespace SmvInterceptorWrapper
             else if (args.Contains("/iwrap:lib.exe"))
             {
                 //Console.WriteLine("iwrap: Currently unimplemented. Consider using link functionality.");
+                WriteCallLog("[SmvInterceptorWrapper] DEBUG: Entering lib.exe region.  This should never happen!");
                 return 1;
             }
             #endregion
@@ -324,6 +371,16 @@ namespace SmvInterceptorWrapper
             }
             #endregion
             return 0;
+        }
+
+        static void WriteCallLog(string toLog)
+        {
+            string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
+            if (string.IsNullOrWhiteSpace(smvOutDir))
+            {
+                smvOutDir = Environment.CurrentDirectory;
+            }
+            File.AppendAllText(Path.Combine(smvOutDir, "smv-callDebug.log"), "[iwrap] " + toLog + Environment.NewLine);
         }
 
         /// <summary>

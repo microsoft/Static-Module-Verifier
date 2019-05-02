@@ -178,6 +178,17 @@ namespace SmvInterceptor
             }
         }
 
+
+        static void WriteCallLog(string toLog)
+        {
+            string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
+            if (string.IsNullOrWhiteSpace(smvOutDir))
+            {
+                smvOutDir = Environment.CurrentDirectory;
+            }
+            File.AppendAllText(Path.Combine(smvOutDir, "smv-callDebug.log"), "[smvInterceptor] " + toLog + Environment.NewLine);
+        }
+
         /// <summary>
         /// Calculates the executable to be used and processes the rules of adding/stripping arguments
         /// </summary>
@@ -376,6 +387,7 @@ namespace SmvInterceptor
 
             try
             {
+                WriteCallLog("LAUNCH: " + p.StartInfo.FileName + " " + p.StartInfo.Arguments);
                 p.Start();
                 p.PriorityClass = priority;
 
@@ -384,6 +396,7 @@ namespace SmvInterceptor
 
                 p.WaitForExit();
 
+                WriteCallLog("EXIT: " + p.StartInfo.FileName + ", return code: " + p.ExitCode);
                 exitCode = p.ExitCode;
 
             }
