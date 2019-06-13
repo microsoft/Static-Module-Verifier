@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Globalization;
-using System.Collections;
 
 namespace SmvInterceptorWrapper
 {
@@ -92,23 +91,14 @@ namespace SmvInterceptorWrapper
 
                 rspFileContent = rspContents;
 
-                string rspContentsDebug = Environment.ExpandEnvironmentVariables(" /nologo /w /Y- /D_PREFAST_ /errorReport:none" + " " + string.Join(" ", iargs)) + " " + rspContents + " /P";
-                rspContentsDebug = rspContentsDebug.Replace("/analyze:only", " ");
-                rspContentsDebug = rspContentsDebug.Replace("/analyze:autolog-", " ");
-
                 rspContents = Environment.ExpandEnvironmentVariables(" /nologo /w /Y- /analyze:only /analyze:plugin \"" + plugin +
                               "\" /errorReport:none" + " " + string.Join(" ", iargs)) + " " + rspContents;
-
-
 
                 // Persist the RSP file 
                 // Remove file names (*.c) from the content
                 Regex fileNameRegex1 = new Regex(@"([\s]+[\w\.-\\]+\.c\b)", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 Regex fileNameRegex2 = new Regex(@"([\s]+[\w\.-\\]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
-
-                List<string> fileNames = new List<string>();
                 int count = 0;
-
                 foreach (Match m in fileNameRegex1.Matches(rspContents))
                 {
                     count++;
@@ -127,25 +117,9 @@ namespace SmvInterceptorWrapper
                 // if no files are left (only .src etc. was given) then just return. nothing to do
                 if(count == 0) { return 0; }
 
-
-                // TODO: Make this based on /debug flag
-
-                // Re-run with /P to get preprocessed output as well
-
-                ProcessStartInfo psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%")), Environment.ExpandEnvironmentVariables(rspContentsDebug));
-                psi.RedirectStandardError = true;
-                psi.RedirectStandardOutput = true;
-                psi.UseShellExecute = false;
-                Process p = System.Diagnostics.Process.Start(psi);
-
-                smvclLogContents.Append(p.StandardOutput.ReadToEnd());
-                smvclLogContents.Append(p.StandardError.ReadToEnd());
-                File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
-                p.WaitForExit();
-
                 // call CL.exe
                 //Console.WriteLine("Using analysis compiler: " + Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%"));
-                psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%")), Environment.ExpandEnvironmentVariables(rspContents));
+                ProcessStartInfo psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%")), Environment.ExpandEnvironmentVariables(rspContents));
                 psi.RedirectStandardError = true;
                 psi.RedirectStandardOutput = true;
                 psi.UseShellExecute = false;
@@ -161,54 +135,25 @@ namespace SmvInterceptorWrapper
 
                 //Console.WriteLine("iwrap: cl.exe --> " + psi.FileName + " " + psi.Arguments);
 
-                WriteCallLog("LAUNCH: iwrap: " + psi.FileName + " " + psi.Arguments);
+                WriteCallLog("LAUNCH: iwrap: cl.exe-- > " + psi.FileName + " " + psi.Arguments);
                 WriteCallLog("PATH: " + Environment.ExpandEnvironmentVariables("%PATH%"));
                 WriteCallLog("SDV: " + Environment.ExpandEnvironmentVariables("%sdv%"));
                 WriteCallLog("SMV: " + Environment.ExpandEnvironmentVariables("%smv%"));
                 WriteCallLog("BE: " + Environment.ExpandEnvironmentVariables("%be%"));
                 WriteCallLog("SMV_OUTPUT_DIR: " + Environment.ExpandEnvironmentVariables("%SMV_OUTPUT_DIR%"));
-                
-                string environmentVars = "";
-                environmentVars += "esp.cfgpersist.persistfile=";
-                environmentVars += (smvOutDir + "\\$SOURCEFILE.rawcfgf");
-                environmentVars += "  ";
-                environmentVars += "Esp.CfgPersist.ExpandLocalStaticInitializer=1";
-                environmentVars += "  ";
-                environmentVars += "ESP.BplFilesDir=";
-                environmentVars += smvOutDir;
-                WriteCallLog("Process-specific environment variables: " + environmentVars);
+                WriteCallLog("STATIC_DRIVER_VERIFIER: " + Environment.ExpandEnvironmentVariables("%STATIC_DRIVER_VERIFIER%"));
+                WriteCallLog("SDVFROMGIT: " + Environment.ExpandEnvironmentVariables("%SDVFROMGIT%"));
+                WriteCallLog("SETERROR_64: " + Environment.ExpandEnvironmentVariables("%SETERROR_64%"));
 
-                p = System.Diagnostics.Process.Start(psi);
+                Process p = System.Diagnostics.Process.Start(psi);
 
                 smvclLogContents.Append(p.StandardOutput.ReadToEnd());
                 smvclLogContents.Append(p.StandardError.ReadToEnd());
                 File.WriteAllText(smvclLogPath, smvclLogContents.ToString());
                 p.WaitForExit();
-                
+
                 WriteCallLog("EXIT: CL.exe.  Exit code: " + p.ExitCode);
 
-                /*
-                // Call ESPSMVPRINT_AUX
-                foreach (FileInfo f in new DirectoryInfo(smvOutDir).GetFiles())
-                {
-                    if (f.Name.Contains(".rawcfgf"))
-                    {
-                        string espSmvPrintPath = Path.Combine(Environment.ExpandEnvironmentVariables("%SDV%"), "bin", "engine", "espsmvprintaux.exe");
-                        psi = new ProcessStartInfo(espSmvPrintPath, f.FullName);
-                        psi.RedirectStandardOutput = true;
-                        psi.RedirectStandardError = true;
-                        psi.UseShellExecute = false;
-
-                        string cfgOutputPath = f.FullName.Replace(".rawcfgf", ".txt");
-                        string cfgErrorPath = f.FullName.Replace(".rawcfgf", ".err");
-
-                        p = System.Diagnostics.Process.Start(psi);
-                        File.WriteAllText(cfgOutputPath, p.StandardOutput.ReadToEnd());
-                        File.WriteAllText(cfgErrorPath, p.StandardError.ReadToEnd());
-                        p.WaitForExit();
-                    }
-                }*/
-                
                 return p.ExitCode;
             }
             #endregion
@@ -267,18 +212,22 @@ namespace SmvInterceptorWrapper
                 psi.UseShellExecute = false;
                 psi.WorkingDirectory = outDir;
 
-                WriteCallLog("LAUNCH: link: " + psi.FileName + " " + psi.Arguments);
+                WriteCallLog("LAUNCH: link: slamcl_writer.exe-- > " + psi.FileName + " " + psi.Arguments);
                 WriteCallLog("PATH: " + Environment.ExpandEnvironmentVariables("%PATH%"));
                 WriteCallLog("SDV: " + Environment.ExpandEnvironmentVariables("%sdv%"));
                 WriteCallLog("SMV: " + Environment.ExpandEnvironmentVariables("%smv%"));
                 WriteCallLog("BE: " + Environment.ExpandEnvironmentVariables("%be%"));
                 WriteCallLog("SMV_OUTPUT_DIR: " + Environment.ExpandEnvironmentVariables("%SMV_OUTPUT_DIR%"));
+                WriteCallLog("STATIC_DRIVER_VERIFIER: " + Environment.ExpandEnvironmentVariables("%STATIC_DRIVER_VERIFIER%"));
+                WriteCallLog("SDVFROMGIT: " + Environment.ExpandEnvironmentVariables("%SDVFROMGIT%"));
+                WriteCallLog("SETERROR_64: " + Environment.ExpandEnvironmentVariables("%SETERROR_64%"));
+
 
                 //Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
 
                 p = System.Diagnostics.Process.Start(psi);
                 File.WriteAllText(outDir + "\\smvlink1.log", p.StandardOutput.ReadToEnd());
-                File.AppendAllText(outDir + "\\smvlink2.log", p.StandardError.ReadToEnd());
+                File.AppendAllText(outDir + "\\smvlink1.log", p.StandardError.ReadToEnd());
 
                 p.WaitForExit();
 
@@ -304,7 +253,7 @@ namespace SmvInterceptorWrapper
                     psi.Arguments = " --lib " + string.Join(" ", files);
 
                     WriteCallLog("DEBUG: about to run slamlink on " + files.Length + " .rawcfgf.obj files");
-                    WriteCallLog("LAUNCH: iwrap: " + psi.FileName + " " + psi.Arguments);
+                    WriteCallLog("LAUNCH: iwrap: slamlink.exe-- > " + psi.FileName + " " + psi.Arguments);
 
                     //Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
                     Process slamLinkProcess = System.Diagnostics.Process.Start(psi);
@@ -368,7 +317,7 @@ namespace SmvInterceptorWrapper
                             psi.Arguments = " --lib slamorig.obj slamlib.obj /out:slamout.obj";
 
                             WriteCallLog("DEBUG: about to run slamlink on " + liFile);
-                            WriteCallLog("LAUNCH: iwrap: " + psi.FileName + " " + psi.Arguments);
+                            WriteCallLog("LAUNCH: iwrap: slamlink.exe-- > " + psi.FileName + " " + psi.Arguments);
 
                             slamLinkProcess = System.Diagnostics.Process.Start(psi);
 
@@ -431,7 +380,7 @@ namespace SmvInterceptorWrapper
             {
                 smvOutDir = Environment.CurrentDirectory;
             }
-            File.AppendAllText(Path.Combine(smvOutDir, "smv-callDebug.log"), "[smvInterceptorWrapper] " + toLog + Environment.NewLine);
+            File.AppendAllText(Path.Combine(smvOutDir, "smv-callDebug.log"), "[iwrap] " + toLog + Environment.NewLine);
         }
 
         /// <summary>

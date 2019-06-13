@@ -396,7 +396,7 @@ namespace SmvInterceptor
 
                 p.WaitForExit();
 
-                WriteCallLog("EXIT: " + p.StartInfo.FileName + ". Exit code: " + p.ExitCode);
+                WriteCallLog("EXIT: " + p.StartInfo.FileName + ", return code: " + p.ExitCode);
                 exitCode = p.ExitCode;
 
             }
