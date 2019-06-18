@@ -278,7 +278,7 @@ namespace SmvInterceptorWrapper
 
                 p = System.Diagnostics.Process.Start(psi);
                 File.WriteAllText(outDir + "\\smvlink1.log", p.StandardOutput.ReadToEnd());
-                File.AppendAllText(outDir + "\\smvlink2.log", p.StandardError.ReadToEnd());
+                File.AppendAllText(outDir + "\\smvlink1.log", p.StandardError.ReadToEnd());
 
                 p.WaitForExit();
 
@@ -374,8 +374,8 @@ namespace SmvInterceptorWrapper
 
                             WriteCallLog("EXIT: slamlink.exe.  Exit code: " + slamLinkProcess.ExitCode);
 
-                            File.WriteAllText(outDir + "\\smvlink.log", slamLinkProcess.StandardOutput.ReadToEnd());
-                            File.AppendAllText(outDir + "\\smvlink.log", slamLinkProcess.StandardError.ReadToEnd());
+                            File.AppendAllText(outDir + "\\smvlink3.log", slamLinkProcess.StandardOutput.ReadToEnd());
+                            File.AppendAllText(outDir + "\\smvlink3.log", slamLinkProcess.StandardError.ReadToEnd());
 
                             if (slamLinkProcess.ExitCode != 0) return slamLinkProcess.ExitCode;
                         }
