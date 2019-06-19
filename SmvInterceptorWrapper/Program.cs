@@ -260,30 +260,32 @@ namespace SmvInterceptorWrapper
                 ProcessStartInfo psi;
                 Process p;
 
+                foreach (string file in rawcfgfFiles)
+                {
+                    psi = new ProcessStartInfo(Environment.ExpandEnvironmentVariables("slamcl_writer.exe"), file + " " + (file + ".obj") );
+                    psi.RedirectStandardError = true;
+                    psi.RedirectStandardOutput = true;
+                    psi.UseShellExecute = false;
+                    psi.WorkingDirectory = outDir;
 
-                psi = new ProcessStartInfo(Environment.ExpandEnvironmentVariables("slamcl_writer.exe"), "--smv *");
-                psi.RedirectStandardError = true;
-                psi.RedirectStandardOutput = true;
-                psi.UseShellExecute = false;
-                psi.WorkingDirectory = outDir;
+                    WriteCallLog("LAUNCH: link: " + psi.FileName + " " + psi.Arguments);
+                    WriteCallLog("PATH: " + Environment.ExpandEnvironmentVariables("%PATH%"));
+                    WriteCallLog("SDV: " + Environment.ExpandEnvironmentVariables("%sdv%"));
+                    WriteCallLog("SMV: " + Environment.ExpandEnvironmentVariables("%smv%"));
+                    WriteCallLog("BE: " + Environment.ExpandEnvironmentVariables("%be%"));
+                    WriteCallLog("SMV_OUTPUT_DIR: " + Environment.ExpandEnvironmentVariables("%SMV_OUTPUT_DIR%"));
 
-                WriteCallLog("LAUNCH: link: " + psi.FileName + " " + psi.Arguments);
-                WriteCallLog("PATH: " + Environment.ExpandEnvironmentVariables("%PATH%"));
-                WriteCallLog("SDV: " + Environment.ExpandEnvironmentVariables("%sdv%"));
-                WriteCallLog("SMV: " + Environment.ExpandEnvironmentVariables("%smv%"));
-                WriteCallLog("BE: " + Environment.ExpandEnvironmentVariables("%be%"));
-                WriteCallLog("SMV_OUTPUT_DIR: " + Environment.ExpandEnvironmentVariables("%SMV_OUTPUT_DIR%"));
+                    //Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
 
-                //Console.WriteLine("iwrap: link.exe --> " + psi.FileName + " " + psi.Arguments);
+                    p = System.Diagnostics.Process.Start(psi);
+                    File.AppendAllText(outDir + "\\smvlink1.log", p.StandardOutput.ReadToEnd());
+                    File.AppendAllText(outDir + "\\smvlink1.log", p.StandardError.ReadToEnd());
 
-                p = System.Diagnostics.Process.Start(psi);
-                File.WriteAllText(outDir + "\\smvlink1.log", p.StandardOutput.ReadToEnd());
-                File.AppendAllText(outDir + "\\smvlink1.log", p.StandardError.ReadToEnd());
+                    p.WaitForExit();
 
-                p.WaitForExit();
-
-                WriteCallLog("EXIT: slamcl_writer.exe.  Exit code: " + p.ExitCode);
-                if (p.ExitCode != 0) return p.ExitCode;
+                    WriteCallLog("EXIT: slamcl_writer.exe.  Exit code: " + p.ExitCode);
+                    if (p.ExitCode != 0) return p.ExitCode;
+                }
 
                 files = files.Select(x => x + ".rawcfgf.obj").ToArray();
                 
