@@ -262,7 +262,7 @@ namespace SmvInterceptorWrapper
 
                 foreach (string file in rawcfgfFiles)
                 {
-                    psi = new ProcessStartInfo(Environment.ExpandEnvironmentVariables("slamcl_writer.exe"), file + " " + (file + ".obj") );
+                    psi = new ProcessStartInfo(Environment.ExpandEnvironmentVariables("slamcl_writer.exe"), "--smv " + file + " " + (file + ".obj") );
                     psi.RedirectStandardError = true;
                     psi.RedirectStandardOutput = true;
                     psi.UseShellExecute = false;
