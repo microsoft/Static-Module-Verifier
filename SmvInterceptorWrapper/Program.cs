@@ -350,7 +350,7 @@ namespace SmvInterceptorWrapper
                     if (l.Equals(outDir)) continue;
                     try
                     {
-                        WriteCallLog("DEBUG: Processing lib " + l);
+                        WriteCallLog("DEBUG: Processing libs in " + l);
                         string[] liFilesInLibDir = Directory.GetFiles(l, "slam.li");
 
                         foreach (string liFile in liFilesInLibDir)
@@ -374,10 +374,12 @@ namespace SmvInterceptorWrapper
 
                             slamLinkProcess = System.Diagnostics.Process.Start(psi);
 
-                            WriteCallLog("EXIT: slamlink.exe.  Exit code: " + slamLinkProcess.ExitCode);
 
                             File.AppendAllText(outDir + "\\smvlink3.log", slamLinkProcess.StandardOutput.ReadToEnd());
                             File.AppendAllText(outDir + "\\smvlink3.log", slamLinkProcess.StandardError.ReadToEnd());
+
+                            slamLinkProcess.WaitForExit();
+                            WriteCallLog("EXIT: slamlink.exe.  Exit code: " + slamLinkProcess.ExitCode);
 
                             if (slamLinkProcess.ExitCode != 0) return slamLinkProcess.ExitCode;
                         }
