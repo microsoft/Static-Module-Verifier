@@ -186,7 +186,7 @@ namespace SmvInterceptor
             {
                 smvOutDir = Environment.CurrentDirectory;
             }
-            File.AppendAllText(Path.Combine(smvOutDir, "smv-callDebug.log"), "[smvInterceptor] " + toLog + Environment.NewLine);
+            File.AppendAllText(Path.Combine(smvOutDir, "smvexecute-Interceptor.log"), "[smvInterceptor] " + toLog + Environment.NewLine);
         }
 
         /// <summary>

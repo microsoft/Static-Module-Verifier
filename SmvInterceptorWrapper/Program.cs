@@ -13,6 +13,9 @@ namespace SmvInterceptorWrapper
 {
     class Program
     {
+
+        static bool debugMode = false;
+
         static int Main(string[] args)
         {
             // Get the output dir from the Environment variable set by SMV
@@ -27,6 +30,11 @@ namespace SmvInterceptorWrapper
             StringBuilder smvclLogContents = new StringBuilder();
             List<string> iargs = args.Where(x => !x.Contains("/iwrap:") && !x.Contains(".rsp") && !x.Contains("/plugin:")).ToList();
 
+            // Below code is non-functional until additional changes
+            // if (args.Contains("--debug-compiler"))
+            // {
+            //     debugMode = true;
+            // }
 
             #region cl.exe            
             if (args.Contains("/iwrap:cl.exe"))
@@ -163,14 +171,17 @@ namespace SmvInterceptorWrapper
                 
                 WriteCallLog("EXIT: CL.exe.  Exit code: " + p.ExitCode);
 
-                // Run with /P to get preprocessed output for debugging
-                psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%")), Environment.ExpandEnvironmentVariables(rspContentsDebug));
-                psi.RedirectStandardError = true;
-                psi.RedirectStandardOutput = true;
-                psi.UseShellExecute = false;
-                p = System.Diagnostics.Process.Start(psi);
+                if (debugMode)
+                {
+                    // Run with /P to get preprocessed output for debugging
+                    psi = new ProcessStartInfo(System.IO.Path.GetFullPath(Environment.ExpandEnvironmentVariables("%SMV_ANALYSIS_COMPILER%")), Environment.ExpandEnvironmentVariables(rspContentsDebug));
+                    psi.RedirectStandardError = true;
+                    psi.RedirectStandardOutput = true;
+                    psi.UseShellExecute = false;
+                    p = System.Diagnostics.Process.Start(psi);
 
-                p.WaitForExit();
+                    p.WaitForExit();
+                }
 
                 /*
                 // Call ESPSMVPRINT_AUX
@@ -409,12 +420,13 @@ namespace SmvInterceptorWrapper
 
         static void WriteCallLog(string toLog)
         {
+            if (!debugMode) return;
             string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
             if (string.IsNullOrWhiteSpace(smvOutDir))
             {
                 smvOutDir = Environment.CurrentDirectory;
             }
-            File.AppendAllText(Path.Combine(smvOutDir, "smv-callDebug.log"), "[smvInterceptorWrapper] " + toLog + Environment.NewLine);
+            File.AppendAllText(Path.Combine(smvOutDir, "smvexecute-Interceptor.log"), "[smvInterceptorWrapper] " + toLog + Environment.NewLine);
         }
 
         /// <summary>
