@@ -30,11 +30,10 @@ namespace SmvInterceptorWrapper
             StringBuilder smvclLogContents = new StringBuilder();
             List<string> iargs = args.Where(x => !x.Contains("/iwrap:") && !x.Contains(".rsp") && !x.Contains("/plugin:")).ToList();
 
-            // Below code is non-functional until additional changes
-            // if (args.Contains("--debug-compiler"))
-            // {
-            //     debugMode = true;
-            // }
+            if (Environment.GetEnvironmentVariable("SMV_DEBUG_MODE") != null)
+            {
+                debugMode = true;
+            }
 
             #region cl.exe            
             if (args.Contains("/iwrap:cl.exe"))
