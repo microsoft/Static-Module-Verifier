@@ -705,7 +705,10 @@ namespace SmvInterceptor
 
         private static void PrintEnvSpew(string[] args, XmlNode settingsNode)
         {
-            debugSpew = !String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SMV_DEBUG_MODE"));
+            // Set debugSpew if set in interceptor XML or environment via /debug flag + plugin settings
+            debugSpew = (RetrieveBool("debug_spew", settingsNode) ||
+                         !String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SMV_DEBUG_MODE")));
+
             if (debugSpew)
             {
                 WriteInterceptorLog(String.Format("INCLUDE = {0}", Environment.GetEnvironmentVariable("INCLUDE")));
