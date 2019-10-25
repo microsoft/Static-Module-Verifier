@@ -705,12 +705,12 @@ namespace SmvInterceptor
 
         private static void PrintEnvSpew(string[] args, XmlNode settingsNode)
         {
-            debugSpew = RetrieveBool("debug_spew", settingsNode);
+            debugSpew = !String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SMV_DEBUG_MODE"));
             if (debugSpew)
             {
-                Console.WriteLine("INCLUDE = {0}", Environment.GetEnvironmentVariable("INCLUDE"));
-                Console.WriteLine("LIB = {0}", Environment.GetEnvironmentVariable("LIB"));
-                Console.WriteLine("PATH = {0}", Environment.GetEnvironmentVariable("PATH"));
+                WriteInterceptorLog(String.Format("INCLUDE = {0}", Environment.GetEnvironmentVariable("INCLUDE")));
+                WriteInterceptorLog(String.Format("LIB = {0}", Environment.GetEnvironmentVariable("LIB")));
+                WriteInterceptorLog(String.Format("PATH = {0}", Environment.GetEnvironmentVariable("PATH")));
                 foreach (string arg in args)
                 {
                     if (arg[0] != '@')
@@ -719,20 +719,20 @@ namespace SmvInterceptor
                     try
                     {
                         string rsp = arg.Substring(1);
-                        Console.WriteLine("Contents of response file ({0}):", rsp);
+                        WriteInterceptorLog(String.Format("Contents of response file ({0}):", rsp));
                         using (var reader = new StreamReader(new FileStream(rsp, FileMode.Open, FileAccess.Read)))
                         {
-                            Console.Write(reader.ReadToEnd());
+                            WriteInterceptorLog(reader.ReadToEnd());
                         }
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine("Error while reading .rsp file");
+                        WriteInterceptorLog("Error while reading .rsp file");
                     }
                 }
                 foreach (XmlAttribute setting in settingsNode.Attributes)
                 {
-                    Console.WriteLine("Setting::" + setting.Name + " = " + setting.Value);
+                    WriteInterceptorLog("Setting::" + setting.Name + " = " + setting.Value);
                 }
             }
         }
