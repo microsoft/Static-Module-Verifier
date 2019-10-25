@@ -178,14 +178,25 @@ namespace SmvInterceptor
             }
         }
 
-
-        static void WriteCallLog(string toLog)
+        /// <summary>
+        /// Log debug information to %SMV_OUTPUT_DIR%\smvexecute-Interceptor.log if in debug mode.
+        /// Prefix any strings with [smvInterceptor]
+        /// </summary>
+        /// <param name="toLog">The string to be logged.</param>
+        static void WriteInterceptorLog(string toLog)
         {
+            // Only log if /debug enabled
+            if (String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SMV_DEBUG_MODE")))
+            {
+                return;
+            }
+
             string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
             if (string.IsNullOrWhiteSpace(smvOutDir))
             {
                 smvOutDir = Environment.CurrentDirectory;
             }
+
             File.AppendAllText(Path.Combine(smvOutDir, "smvexecute-Interceptor.log"), "[smvInterceptor] " + toLog + Environment.NewLine);
         }
 
@@ -387,7 +398,7 @@ namespace SmvInterceptor
 
             try
             {
-                WriteCallLog("LAUNCH: " + p.StartInfo.FileName + " " + p.StartInfo.Arguments);
+                WriteInterceptorLog("LAUNCH: " + p.StartInfo.FileName + " " + p.StartInfo.Arguments);
                 p.Start();
                 p.PriorityClass = priority;
 
@@ -396,7 +407,7 @@ namespace SmvInterceptor
 
                 p.WaitForExit();
 
-                WriteCallLog("EXIT: " + p.StartInfo.FileName + ". Exit code: " + p.ExitCode);
+                WriteInterceptorLog("EXIT: " + p.StartInfo.FileName + ". Exit code: " + p.ExitCode);
                 exitCode = p.ExitCode;
 
             }
@@ -695,8 +706,6 @@ namespace SmvInterceptor
         private static void PrintEnvSpew(string[] args, XmlNode settingsNode)
         {
             debugSpew = RetrieveBool("debug_spew", settingsNode);
-
-            // Spew
             if (debugSpew)
             {
                 Console.WriteLine("INCLUDE = {0}", Environment.GetEnvironmentVariable("INCLUDE"));
