@@ -202,7 +202,9 @@ namespace SmvInterceptorWrapper
                             p = System.Diagnostics.Process.Start(psi);
                             File.WriteAllText(cfgOutputPath, p.StandardOutput.ReadToEnd());
                             File.WriteAllText(cfgErrorPath, p.StandardError.ReadToEnd());
-                            p.WaitForExit();
+
+                            // Allow 5 minutes for each, then continue; don't hang indefinitely on debug
+                            p.WaitForExit(5 * 60 * 1000);
                         }
                     }
                 }
