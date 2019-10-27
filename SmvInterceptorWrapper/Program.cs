@@ -149,16 +149,17 @@ namespace SmvInterceptorWrapper
                 
                 WriteInterceptorLog("LAUNCH: iwrap: " + psi.FileName + " " + psi.Arguments);
                 WriteInterceptorLog("PATH: " + Environment.ExpandEnvironmentVariables("%PATH%"));
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append("esp.cfgpersist.persistfile=");
+                sb.Append((smvOutDir + "\\$SOURCEFILE.rawcfgf"));
+                sb.Append("  ");
+                sb.Append("Esp.CfgPersist.ExpandLocalStaticInitializer=1");
+                sb.Append("  ");
+                sb.Append("ESP.BplFilesDir=");
+                sb.Append(smvOutDir);
                 
-                string environmentVars = "";
-                environmentVars += "esp.cfgpersist.persistfile=";
-                environmentVars += (smvOutDir + "\\$SOURCEFILE.rawcfgf");
-                environmentVars += "  ";
-                environmentVars += "Esp.CfgPersist.ExpandLocalStaticInitializer=1";
-                environmentVars += "  ";
-                environmentVars += "ESP.BplFilesDir=";
-                environmentVars += smvOutDir;
-                WriteInterceptorLog("Process-specific environment variables: " + environmentVars);
+                WriteInterceptorLog("Process-specific environment variables: " + sb.ToString());
 
                 Process p = System.Diagnostics.Process.Start(psi);
 
@@ -430,9 +431,13 @@ namespace SmvInterceptorWrapper
         /// <param name="toLog">The string to be logged.</param>
         static void WriteInterceptorLog(string toLog)
         {
-            if (!debugMode) return;
+            if (!debugMode)
+            {
+                return;
+            }
 
             string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
+
             if (string.IsNullOrWhiteSpace(smvOutDir))
             {
                 smvOutDir = Environment.CurrentDirectory;

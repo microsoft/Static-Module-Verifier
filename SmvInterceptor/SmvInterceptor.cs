@@ -192,6 +192,7 @@ namespace SmvInterceptor
             }
 
             string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
+
             if (string.IsNullOrWhiteSpace(smvOutDir))
             {
                 smvOutDir = Environment.CurrentDirectory;
