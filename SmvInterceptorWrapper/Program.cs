@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Globalization;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace SmvInterceptorWrapper
 {
@@ -14,6 +15,7 @@ namespace SmvInterceptorWrapper
     {
 
         static bool debugMode = false;
+        const int DEFAULT_DEBUG_TIMEOUT = (5 * 60 * 1000);
 
         static int Main(string[] args)
         {
@@ -179,8 +181,21 @@ namespace SmvInterceptorWrapper
                     psi.UseShellExecute = false;
                     p = System.Diagnostics.Process.Start(psi);
 
+                    // Get debug timeout from environment variable set in XML or command line
+                    int debugTimeout = 0;
+
+                    try
+                    {
+                        debugTimeout = int.Parse(Environment.GetEnvironmentVariable("SMV_DEBUG_TIMEOUT"));
+                    }
+                    catch (Exception)
+                    {
+                        // If there was any trouble, just set it to 5 minutes
+                        debugTimeout = DEFAULT_DEBUG_TIMEOUT;
+                    }
+
                     // Allow 5 minutes for this, then continue; don't hang indefinitely on debug
-                    p.WaitForExit(5 * 60 * 1000);
+                    p.WaitForExit(debugTimeout);
 
                     // Call ESPSMVPRINT_AUX
                     foreach (FileInfo f in new DirectoryInfo(smvOutDir).GetFiles())
