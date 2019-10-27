@@ -179,6 +179,29 @@ namespace SmvInterceptor
         }
 
         /// <summary>
+        /// Log debug information to %SMV_OUTPUT_DIR%\smvexecute-Interceptor.log if in debug mode.
+        /// Prefix any strings with [smvInterceptor]
+        /// </summary>
+        /// <param name="toLog">The string to be logged.</param>
+        static void WriteInterceptorLog(string toLog)
+        {
+            // Only log if /debug enabled
+            if (String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SMV_DEBUG_MODE")))
+            {
+                return;
+            }
+
+            string smvOutDir = Environment.GetEnvironmentVariable("SMV_OUTPUT_DIR");
+
+            if (string.IsNullOrWhiteSpace(smvOutDir))
+            {
+                smvOutDir = Environment.CurrentDirectory;
+            }
+
+            File.AppendAllText(Path.Combine(smvOutDir, "smvexecute-Interceptor.log"), "[smvInterceptor] " + toLog + Environment.NewLine);
+        }
+
+        /// <summary>
         /// Calculates the executable to be used and processes the rules of adding/stripping arguments
         /// </summary>
         /// <param name="launchNode">Node containing the binary to be launched and the rules children</param>
@@ -376,6 +399,7 @@ namespace SmvInterceptor
 
             try
             {
+                WriteInterceptorLog("LAUNCH: " + p.StartInfo.FileName + " " + p.StartInfo.Arguments);
                 p.Start();
                 p.PriorityClass = priority;
 
@@ -384,6 +408,7 @@ namespace SmvInterceptor
 
                 p.WaitForExit();
 
+                WriteInterceptorLog("EXIT: " + p.StartInfo.FileName + ". Exit code: " + p.ExitCode);
                 exitCode = p.ExitCode;
 
             }
@@ -681,14 +706,15 @@ namespace SmvInterceptor
 
         private static void PrintEnvSpew(string[] args, XmlNode settingsNode)
         {
-            debugSpew = RetrieveBool("debug_spew", settingsNode);
+            // Set debugSpew if set in interceptor XML or environment via /debug flag + plugin settings
+            debugSpew = (RetrieveBool("debug_spew", settingsNode) ||
+                         !String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SMV_DEBUG_MODE")));
 
-            // Spew
             if (debugSpew)
             {
-                Console.WriteLine("INCLUDE = {0}", Environment.GetEnvironmentVariable("INCLUDE"));
-                Console.WriteLine("LIB = {0}", Environment.GetEnvironmentVariable("LIB"));
-                Console.WriteLine("PATH = {0}", Environment.GetEnvironmentVariable("PATH"));
+                WriteInterceptorLog(String.Format("INCLUDE = {0}", Environment.GetEnvironmentVariable("INCLUDE")));
+                WriteInterceptorLog(String.Format("LIB = {0}", Environment.GetEnvironmentVariable("LIB")));
+                WriteInterceptorLog(String.Format("PATH = {0}", Environment.GetEnvironmentVariable("PATH")));
                 foreach (string arg in args)
                 {
                     if (arg[0] != '@')
@@ -697,20 +723,20 @@ namespace SmvInterceptor
                     try
                     {
                         string rsp = arg.Substring(1);
-                        Console.WriteLine("Contents of response file ({0}):", rsp);
+                        WriteInterceptorLog(String.Format("Contents of response file ({0}):", rsp));
                         using (var reader = new StreamReader(new FileStream(rsp, FileMode.Open, FileAccess.Read)))
                         {
-                            Console.Write(reader.ReadToEnd());
+                            WriteInterceptorLog(reader.ReadToEnd());
                         }
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine("Error while reading .rsp file");
+                        WriteInterceptorLog("Error while reading .rsp file");
                     }
                 }
                 foreach (XmlAttribute setting in settingsNode.Attributes)
                 {
-                    Console.WriteLine("Setting::" + setting.Name + " = " + setting.Value);
+                    WriteInterceptorLog("Setting::" + setting.Name + " = " + setting.Value);
                 }
             }
         }

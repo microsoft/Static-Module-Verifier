@@ -145,6 +145,7 @@ namespace SmvSkeleton
                 else if (args[i].Equals("/debug"))
                 {
                     Utility.debugMode = true;
+                    Utility.SetSmvVar("debugMode", "true");
                     i++;
                 }
                 else if (args[i].StartsWith("/sessionID:", StringComparison.InvariantCultureIgnoreCase))
