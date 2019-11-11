@@ -194,7 +194,6 @@ namespace SmvInterceptorWrapper
                         debugTimeout = DEFAULT_DEBUG_TIMEOUT;
                     }
 
-                    // Allow 5 minutes for this, then continue; don't hang indefinitely on debug
                     p.WaitForExit(debugTimeout);
 
                     // Call ESPSMVPRINT_AUX
@@ -220,7 +219,7 @@ namespace SmvInterceptorWrapper
                             File.WriteAllText(cfgErrorPath, p.StandardError.ReadToEnd());
 
                             // Allow 5 minutes for each, then continue; don't hang indefinitely on debug
-                            p.WaitForExit(5 * 60 * 1000);
+                            p.WaitForExit(debugTimeout);
                         }
                     }
                 }
@@ -387,10 +386,12 @@ namespace SmvInterceptorWrapper
 
                             slamLinkProcess = System.Diagnostics.Process.Start(psi);
 
-                            WriteInterceptorLog("EXIT: slamlink.exe.  Exit code: " + slamLinkProcess.ExitCode);
-
                             File.AppendAllText(outDir + "\\smvlink3.log", slamLinkProcess.StandardOutput.ReadToEnd());
                             File.AppendAllText(outDir + "\\smvlink3.log", slamLinkProcess.StandardError.ReadToEnd());
+
+                            slamLinkProcess.WaitForExit();
+
+                            WriteInterceptorLog("EXIT: slamlink.exe.  Exit code: " + slamLinkProcess.ExitCode);
 
                             if (slamLinkProcess.ExitCode != 0) return slamLinkProcess.ExitCode;
                         }
