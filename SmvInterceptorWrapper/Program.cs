@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Globalization;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace SmvInterceptorWrapper
 {
