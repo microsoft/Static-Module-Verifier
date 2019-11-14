@@ -193,6 +193,7 @@ namespace SmvInterceptorWrapper
                         debugTimeout = DEFAULT_DEBUG_TIMEOUT;
                     }
 
+                    // Allow 5 minutes for this, then continue; don't hang indefinitely on debug
                     p.WaitForExit(debugTimeout);
 
                     // Call ESPSMVPRINT_AUX
