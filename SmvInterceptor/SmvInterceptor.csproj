@@ -11,7 +11,7 @@
     <RootNamespace>SmvInterceptor</RootNamespace>
     <AssemblyName>SmvInterceptor</AssemblyName>
     <StartupObject>SmvInterceptor.SmvInterceptor</StartupObject>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
