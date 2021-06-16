@@ -29,26 +29,6 @@ found in the documentation folder.
 - After cloning, you should be able to open the smv.sln file in your repository in VS2015
 - The smv.sln solution should build in VS2015
 
-## Linux
-- Prerequisites
-  + Mono complete installation
-  + NuGet for Linux
-- After cloning, you will need to install the following packages
-    + `nuget install Microsoft.Data.Edm WindowsAzure.ServiceBus WindowsAzure.Storage WindowsAzure.ServiceBus`
-    + `nuget install WindowsAzure.WindowsAzure.ServiceRuntime WindowsAzure.ServiceBus AzureSDK2.2DLLs WindowsAzure.Storage`
-    + `nuget install WindowsAzure.Storage WindowsAzure.Storage -Version 4.3.0 WindowsAzure.ServiceBus -Version 3.0.0-preview -Pre`
-    + `nuget install WindowsAzure.ServiceBus -Version 3.0.0`
-    + Note that nuget will place them in the current working
-    directory. It is suggested that you create a packages folder and
-    run nuget within that folder to have the packages be centrally
-    located.
-- Edit the following files and make sure the Azure references point to the correct locations (hintpaths):
-    + SMVActionsTable/SMVActionsTable.csproj
-    + SmvCloudWorker/SmvCloudWorker.csproj
-    + SmvLibrary/SmvLibrary.csproj
-    + SmvSkeleton/SmvSkeleton.csproj
-- Now you should be able to do xbuild at the top level to build smv.sln
-
 # Usage
 ## Packaging
 StaticModuleVerifier expects the following directory structure for plugins:
