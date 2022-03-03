@@ -97,6 +97,17 @@ namespace SmvInterceptorWrapper
                 rspContents = rspContents.Replace("/W1", string.Empty);
                 rspContents = rspContents.Replace("/WX", string.Empty);
 
+                // Remove any CA plugins from the RSP file, as they conflict with CfgPersist.dll
+                Regex codeAnalysisRegex1 = new Regex("/analyze:quiet|/analyze:stacksize\\d+|/analyze:projectdirectory\".*?\"");
+                Regex codeAnalysisRegex2 = new Regex("/analyze:rulesetdirectory\".*?\"|/analyze:ruleset\".*?\"");
+                Regex codeAnalysisRegex3 = new Regex("/analyze:plugin\".*?WindowsPrefast.dll\"|/analyze:plugin\".*?EspXEngine.dll\"|/analyze:plugin\".*?drivers.dll\"");
+                Regex codeAnalysisRegex4 = new Regex("/analyze[^:a-zA-Z0-9]+/"); // This line removes any invalid characters passed to analyze
+
+                rspContents = codeAnalysisRegex1.Replace(rspContents, String.Empty);
+                rspContents = codeAnalysisRegex2.Replace(rspContents, String.Empty);
+                rspContents = codeAnalysisRegex3.Replace(rspContents, String.Empty);
+                rspContents = codeAnalysisRegex4.Replace(rspContents, "/");
+
                 rspFileContent = rspContents;
 
                 string rspContentsDebug = Environment.ExpandEnvironmentVariables(" /nologo /w /Y- /D_PREFAST_ /errorReport:none" + " " + string.Join(" ", iargs)) + " " + rspContents + " /P /Fi.\\sdv\\";
