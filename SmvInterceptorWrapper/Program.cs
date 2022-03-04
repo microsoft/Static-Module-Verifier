@@ -121,12 +121,25 @@ namespace SmvInterceptorWrapper
 
                 // Persist the RSP file 
                 // Remove file names (*.c) from the content
-                Regex fileNameRegex1 = new Regex(@"([\s]+[\w\p{P}]+\.c\b(\\"")?)", RegexOptions.IgnoreCase|RegexOptions.Multiline);
-                Regex fileNameRegex2 = new Regex(@"([\s]+[\w\p{P}]+\.(cpp|cxx)\b(\\"")?)", RegexOptions.IgnoreCase|RegexOptions.Multiline);
+                // Ensure we get cases with quotation marks first
+                Regex fileNameRegexQuote1 = new Regex(@"([\s]+("")[\w\p{Pd}\p{Pc}\s]+\.c\b(""))", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                Regex fileNameRegexQuote2 = new Regex(@"([\s]+("")[\w\p{Pd}\p{Pc}\s]+\.(cpp|cxx)\b(""))", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                Regex fileNameRegex1 = new Regex(@"([\s]+[\w\p{Pd}\p{Pc}]+\.c\b)", RegexOptions.IgnoreCase|RegexOptions.Multiline);
+                Regex fileNameRegex2 = new Regex(@"([\s]+[\w\p{Pd}\p{Pc}]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
 
                 List<string> fileNames = new List<string>();
                 int count = 0;
 
+                foreach (Match m in fileNameRegexQuote1.Matches(rspContents))
+                {
+                    count++;
+                    smvclLogContents.Append("match1: " + m.Value + Environment.NewLine);
+                }
+                foreach (Match m in fileNameRegexQuote2.Matches(rspContents))
+                {
+                    count++;
+                    smvclLogContents.Append("match2: " + m.Value + Environment.NewLine);
+                }
                 foreach (Match m in fileNameRegex1.Matches(rspContents))
                 {
                     count++;
@@ -137,6 +150,8 @@ namespace SmvInterceptorWrapper
                     count++;
                     smvclLogContents.Append("match2: " + m.Value + Environment.NewLine);
                 }
+                rspFileContent = fileNameRegexQuote1.Replace(rspFileContent, String.Empty);
+                rspFileContent = fileNameRegexQuote2.Replace(rspFileContent, String.Empty);
                 rspFileContent = fileNameRegex1.Replace(rspFileContent, String.Empty);
                 rspFileContent = fileNameRegex2.Replace(rspFileContent, String.Empty);
 
@@ -325,11 +340,14 @@ namespace SmvInterceptorWrapper
                     }
                 }
 
-                files = files.Select(x => x + ".rawcfgf.obj").ToArray();
+                // Surround each filename in quotes to support cases with spaces
+                files = files.Select(x => '"' + x + ".rawcfgf.obj" + '"').ToArray();
                 
                 // if only 1 li file then just copy that to slam.li
                 if (files.Length == 1)
                 {
+                    // Get rid of quotations before we copy 
+                    files[0] = files[0].Replace('"', ' ').Trim();
                     WriteInterceptorLog("DEBUG: only one .rawcfgf.obj file found.");
                     File.Copy(outDir + "\\" + files.ElementAt(0) + ".li", outDir + "\\slam.li", true);
                 }
