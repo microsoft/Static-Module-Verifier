@@ -101,7 +101,7 @@ namespace SmvInterceptorWrapper
                 Regex codeAnalysisRegex1 = new Regex("/analyze:quiet|/analyze:stacksize\\d+|/analyze:projectdirectory\".*?\"");
                 Regex codeAnalysisRegex2 = new Regex("/analyze:rulesetdirectory\".*?\"|/analyze:ruleset\".*?\"");
                 Regex codeAnalysisRegex3 = new Regex("/analyze:plugin\".*?WindowsPrefast.dll\"|/analyze:plugin\".*?EspXEngine.dll\"|/analyze:plugin\".*?drivers.dll\"");
-                Regex codeAnalysisRegex4 = new Regex("/analyze[^:a-zA-Z0-9]+/"); // This line removes any invalid characters passed to analyze
+                Regex codeAnalysisRegex4 = new Regex(@"/analyze[^\p{Pd}\w:.]+(\s)*"); // Sometimes, garbage characters are passed to /analyze; this removes them
 
                 rspContents = codeAnalysisRegex1.Replace(rspContents, String.Empty);
                 rspContents = codeAnalysisRegex2.Replace(rspContents, String.Empty);
