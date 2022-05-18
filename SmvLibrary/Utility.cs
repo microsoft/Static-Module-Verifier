@@ -1104,34 +1104,43 @@ namespace SmvLibrary
 
                 string regex = String.Format(CultureInfo.InvariantCulture, "/F{0}\"(\\S+)\"|/F{0}(\\S+)", "[a|d|m|p|R|e|o|r|i]");
                 Match matchFromRspPath = Regex.Match(output, @"cl.exe @(.*?)$", RegexOptions.Multiline);
-                Match matchFromRegex = Regex.Match(output, regex);
+                MatchCollection matchFromRegex = Regex.Matches(output, regex);
 
                 string path = String.Empty;
 
                 try
                 {
-                    if (matchFromRegex.Success)
+                    if (matchFromRegex.Count > 0)
                     {
-                        string key = string.Empty;
-                        if (!string.IsNullOrEmpty(matchFromRegex.Groups[1].Value))
-                        {
-                            key = matchFromRegex.Groups[1].Value;
-                        }
-                        else if (!string.IsNullOrEmpty(matchFromRegex.Groups[2].Value))
-                        {
-                            key = matchFromRegex.Groups[2].Value;
-                        }
-                        else
-                        {
-                            Log.LogFatalError("Cannot extract build path from the log file!");
-                        }
-                        path = Path.Combine(workingDir, key.Trim());
-                        path = Path.GetDirectoryName(path);
-                        Log.LogInfo("Build path found - " + path, logger);
-                        return path;
+                        // In rare cases, other lines in the build can match the above regex,
+                        // leading to garbage path data.  Check all matches for validity.
 
+                        foreach (Match currentMatch in matchFromRegex)
+                        {
+                            string key = string.Empty;
+                            if (!string.IsNullOrEmpty(currentMatch.Groups[1].Value))
+                            {
+                                key = currentMatch.Groups[1].Value;
+                            }
+                            else if (!string.IsNullOrEmpty(currentMatch.Groups[2].Value))
+                            {
+                                key = currentMatch.Groups[2].Value;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                            path = Path.Combine(workingDir, key.Trim());
+
+                            // Validate this is a real path
+                            if (Directory.Exists(Path.GetDirectoryName(path)))
+                            {
+                                Log.LogInfo("Build path found - " + path, logger);
+                                return path;
+                            }
+                        }
                     }
-                    else if (matchFromRspPath.Success)
+                    if (matchFromRspPath.Success)
                     {
                         string key = matchFromRspPath.Groups[1].Value;
                         path = key.Trim();
