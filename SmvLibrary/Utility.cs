@@ -1136,6 +1136,7 @@ namespace SmvLibrary
                             if (Directory.Exists(Path.GetDirectoryName(path)))
                             {
                                 Log.LogInfo("Build path found - " + path, logger);
+                                path = Path.GetDirectoryName(path);
                                 return path;
                             }
                         }
