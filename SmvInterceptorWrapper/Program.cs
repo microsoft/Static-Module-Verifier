@@ -124,8 +124,8 @@ namespace SmvInterceptorWrapper
                 // Ensure we get cases with quotation marks first
                 Regex fileNameRegexQuote1 = new Regex(@"([\s]+("")[\w\p{Pd}\p{Pc}(:|\\)\s.]+\.c(""))", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                 Regex fileNameRegexQuote2 = new Regex(@"([\s]+("")[\w\p{Pd}\p{Pc}(:|\\)\s.]+\.(cpp|cxx)(""))", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                Regex fileNameRegex1 = new Regex(@"[\s]+[\w\p{Pd}\p{Pc}(:|\\)\s.]+\.c", RegexOptions.IgnoreCase|RegexOptions.Multiline);
-                Regex fileNameRegex2 = new Regex(@"([\s]+[\w\p{Pd}\p{Pc}(:|\\)\s.]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
+                Regex fileNameRegex1 = new Regex(@"[\s]+[\w\p{Pd}\p{Pc}(:|\\).]+\.c", RegexOptions.IgnoreCase|RegexOptions.Multiline);
+                Regex fileNameRegex2 = new Regex(@"([\s]+[\w\p{Pd}\p{Pc}(:|\\).]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
 
                 List<string> fileNames = new List<string>();
                 int count = 0;
