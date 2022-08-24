@@ -122,9 +122,9 @@ namespace SmvInterceptorWrapper
                 // Persist the RSP file 
                 // Remove file names (*.c) from the content
                 // Ensure we get cases with quotation marks first
-                Regex fileNameRegexQuote1 = new Regex(@"([\s]+("")[\w\p{Pd}\p{Pc}(:|\\).]+\.c\b(""))", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                Regex fileNameRegexQuote1 = new Regex(@"([\s]+("")[\w\p{Pd}\p{Pc}(:|\\).]+\.c(""))", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                 Regex fileNameRegexQuote2 = new Regex(@"([\s]+("")[\w\p{Pd}\p{Pc}(:|\\).]+\.(cpp|cxx)(""))", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                Regex fileNameRegex1 = new Regex(@"[\s]+[\w\p{Pd}\p{Pc}(:|\\).]+\.c\b", RegexOptions.IgnoreCase|RegexOptions.Multiline);
+                Regex fileNameRegex1 = new Regex(@"[\s]+[\w\p{Pd}\p{Pc}(:|\\).]+\.c", RegexOptions.IgnoreCase|RegexOptions.Multiline);
                 Regex fileNameRegex2 = new Regex(@"([\s]+[\w\p{Pd}\p{Pc}(:|\\).]+\.(cpp|cxx))", RegexOptions.IgnoreCase|RegexOptions.Multiline);
 
                 List<string> fileNames = new List<string>();
